@@ -13,7 +13,7 @@ struct Position {
     let id: UUID
     let name: String
     let amount: Double
-    let participants: [PositionParticipant]  
+    let participants: [PositionParticipant]
 
     init(name: String, amount: Double, participants: [PositionParticipant]) {
         self.id = UUID()

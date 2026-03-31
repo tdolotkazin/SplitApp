@@ -9,7 +9,7 @@ import XCTest
 
 final class SplitAppUITestsLaunchTests: XCTestCase {
 
-    override class var runsForEachTargetApplicationUIConfiguration: Bool {
+    override var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
 

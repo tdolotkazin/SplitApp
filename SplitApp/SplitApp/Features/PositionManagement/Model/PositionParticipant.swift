@@ -10,9 +10,4 @@ import Foundation
 struct PositionParticipant {
     let userId: [User]
     let shareAmount: Int
-
-    init(userId: [User], shareAmount: Int) {
-        self.userId = userId
-        self.shareAmount = shareAmount
-    }
 }
