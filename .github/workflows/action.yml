@@ -21,9 +21,25 @@ jobs:
 
       - name: Build iOS App
         run: |
+          PROJECT=$(find . -name "*.xcodeproj" -maxdepth 2 | head -n 1)
+          if [ -z "$PROJECT" ]; then
+            echo "Ошибка: Файл .xcodeproj не найден"
+            exit 1
+          fi
+          
+          SCHEME=$(xcodebuild -list -project "$PROJECT" | awk '/Schemes:/{flag=1;next}/^$/{flag=0}flag' | sed 's/^[[:space:]]*//' | head -n 1)
+          if [ -z "$SCHEME" ]; then
+            echo "Ошибка: Схема не найдена"
+            exit 1
+          fi
+
+          echo "Найден проект: $PROJECT"
+          echo "Найдена схема: $SCHEME"
+
           xcodebuild clean build \
-            -project "SplitApp.xcodeproj" \
-            -scheme "SplitApp" \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
