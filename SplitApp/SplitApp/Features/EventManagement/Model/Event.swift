@@ -14,7 +14,7 @@ struct Event {
     let date: Date
     var positions: [Position]
     var bill: Bill
-    
+
     init(name: String, positions: [Position], bill: Bill) {
         self.id = UUID()
         self.name = name
@@ -22,5 +22,4 @@ struct Event {
         self.positions = positions
         self.bill = bill
     }
-
 }
