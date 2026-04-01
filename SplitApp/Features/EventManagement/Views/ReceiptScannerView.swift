@@ -35,14 +35,14 @@ struct ReceiptScannerView: View {
 
     private var topBar: some View {
         HStack {
-            Button(action: { dismiss() }) {
+            Button(action: { dismiss() }, label: {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.left")
                     Text("Отмена")
                 }
                 .font(.system(size: 17, weight: .medium, design: .rounded))
                 .foregroundStyle(.white.opacity(0.8))
-            }
+            })
 
             Spacer()
 
@@ -112,7 +112,7 @@ struct ReceiptScannerView: View {
     }
 
     private func cameraSideButton(icon: String) -> some View {
-        Button(action: {}) {
+        Button(action: {}, label: {
             Circle()
                 .fill(Color.white.opacity(0.14))
                 .frame(width: 64, height: 64)
@@ -121,7 +121,7 @@ struct ReceiptScannerView: View {
                         .font(.system(size: 22, weight: .medium))
                         .foregroundStyle(.white.opacity(0.85))
                 }
-        }
+        })
     }
 
     private var cornerL: some View {

@@ -25,14 +25,14 @@ struct ReceiptInputView: View {
 
     private var header: some View {
         HStack {
-            Button(action: { dismiss() }) {
+            Button(action: { dismiss() }, label: {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
                     Text("Назад")
                 }
                 .font(.system(size: 17, weight: .medium, design: .rounded))
                 .foregroundStyle(Color.accentColor)
-            }
+            })
             Spacer()
             Text("Ввод чека")
                 .font(.system(size: 34, weight: .semibold, design: .rounded))
@@ -114,7 +114,7 @@ struct ReceiptInputView: View {
     }
 
     private var saveButton: some View {
-        Button(action: {}) {
+        Button(action: {}, label: {
             Text("Сохранить")
                 .font(.system(size: 22, weight: .semibold, design: .rounded))
                 .foregroundStyle(.white)
@@ -122,7 +122,7 @@ struct ReceiptInputView: View {
                 .frame(height: 88)
                 .background(Color.accentColor)
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        }
+        })
     }
 }
 

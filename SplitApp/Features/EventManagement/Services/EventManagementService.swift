@@ -7,65 +7,8 @@ protocol EventManagementServiceProtocol {
 
 struct MockEventManagementService: EventManagementServiceProtocol {
     func fetchHomeData() -> EventsHomeData {
-        let artem = User(from: AuthUser(name: "Артём"))
-        let masha = User(from: AuthUser(name: "Маша"))
-        let ivan = User(from: AuthUser(name: "Иван"))
-
-        let pizzaPositions = [
-            Position(
-                name: "Пицца Маргарита",
-                amount: 12,
-                participants: [PositionParticipant(userId: [artem, masha], shareAmount: 2)]
-            ),
-            Position(
-                name: "Пицца Пепперони",
-                amount: 13,
-                participants: [PositionParticipant(userId: [artem, ivan], shareAmount: 2)]
-            )
-        ]
-
-        let taxiPositions = [
-            Position(
-                name: "Такси до дома",
-                amount: 18,
-                participants: [PositionParticipant(userId: [masha, ivan], shareAmount: 2)]
-            )
-        ]
-
-        let tripPositions = [
-            Position(
-                name: "Музей",
-                amount: 0,
-                participants: [PositionParticipant(userId: [artem, masha, ivan], shareAmount: 3)]
-            )
-        ]
-
-        let events = [
-            Event(
-                name: "Пицца-пятница",
-                positions: pizzaPositions,
-                icon: "🍕",
-                participantsCount: 4,
-                relativeDateText: "вчера",
-                balanceDelta: 12
-            ),
-            Event(
-                name: "Такси",
-                positions: taxiPositions,
-                icon: "🚕",
-                participantsCount: 2,
-                relativeDateText: "3 дня",
-                balanceDelta: -18
-            ),
-            Event(
-                name: "Амстердам",
-                positions: tripPositions,
-                icon: "🏖️",
-                participantsCount: 6,
-                relativeDateText: "2 нед.",
-                balanceDelta: nil
-            )
-        ]
+        let users = makeMockUsers()
+        let events = makeMockEvents(users: users)
 
         return EventsHomeData(
             balanceSummary: EventBalanceSummary(
@@ -112,6 +55,86 @@ struct MockEventManagementService: EventManagementServiceProtocol {
         ]
 
         return ReceiptDraft(lineItems: draft, participants: participants)
+    }
+
+    private func makeMockUsers() -> [User] {
+        [
+            User(from: AuthUser(name: "Артём")),
+            User(from: AuthUser(name: "Маша")),
+            User(from: AuthUser(name: "Иван"))
+        ]
+    }
+
+    private func makeMockEvents(users: [User]) -> [Event] {
+        guard
+            let artem = users[safe: 0],
+            let masha = users[safe: 1],
+            let ivan = users[safe: 2]
+        else {
+            return []
+        }
+
+        return [
+            Event(
+                name: "Пицца-пятница",
+                positions: makePizzaPositions(artem: artem, masha: masha, ivan: ivan),
+                icon: "🍕",
+                participantsCount: 4,
+                relativeDateText: "вчера",
+                balanceDelta: 12
+            ),
+            Event(
+                name: "Такси",
+                positions: makeTaxiPositions(masha: masha, ivan: ivan),
+                icon: "🚕",
+                participantsCount: 2,
+                relativeDateText: "3 дня",
+                balanceDelta: -18
+            ),
+            Event(
+                name: "Амстердам",
+                positions: makeTripPositions(artem: artem, masha: masha, ivan: ivan),
+                icon: "🏖️",
+                participantsCount: 6,
+                relativeDateText: "2 нед.",
+                balanceDelta: nil
+            )
+        ]
+    }
+
+    private func makePizzaPositions(artem: User, masha: User, ivan: User) -> [Position] {
+        [
+            Position(
+                name: "Пицца Маргарита",
+                amount: 12,
+                participants: [PositionParticipant(userId: [artem, masha], shareAmount: 2)]
+            ),
+            Position(
+                name: "Пицца Пепперони",
+                amount: 13,
+                participants: [PositionParticipant(userId: [artem, ivan], shareAmount: 2)]
+            )
+        ]
+    }
+
+    private func makeTaxiPositions(masha: User, ivan: User) -> [Position] {
+        [
+            Position(
+                name: "Такси до дома",
+                amount: 18,
+                participants: [PositionParticipant(userId: [masha, ivan], shareAmount: 2)]
+            )
+        ]
+    }
+
+    private func makeTripPositions(artem: User, masha: User, ivan: User) -> [Position] {
+        [
+            Position(
+                name: "Музей",
+                amount: 0,
+                participants: [PositionParticipant(userId: [artem, masha, ivan], shareAmount: 3)]
+            )
+        ]
     }
 }
 
