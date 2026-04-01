@@ -1,9 +1,3 @@
-//
-//  Event.swift
-//  SplitApp
-//
-//  Created by Valentina Dorina on 31.03.2026.
-//
 import Foundation
 
 struct Event {
@@ -13,11 +7,48 @@ struct Event {
     var positions: [Position]
     var bill: Bill
 
-    init(name: String, positions: [Position], bill: Bill) {
+    let icon: String
+    let participantsCount: Int
+    let relativeDateText: String
+    let balanceDelta: Double?
+
+    init(
+        name: String,
+        positions: [Position],
+        bill: Bill,
+        icon: String = "📌",
+        participantsCount: Int = 0,
+        relativeDateText: String = "сегодня",
+        balanceDelta: Double? = nil
+    ) {
         self.id = UUID()
         self.name = name
         self.date = Date()
         self.positions = positions
         self.bill = bill
+        self.icon = icon
+        self.participantsCount = participantsCount
+        self.relativeDateText = relativeDateText
+        self.balanceDelta = balanceDelta
+    }
+
+    init(
+        name: String,
+        positions: [Position],
+        icon: String = "📌",
+        participantsCount: Int = 0,
+        relativeDateText: String = "сегодня",
+        balanceDelta: Double? = nil
+    ) {
+        let eventID = UUID()
+        self.id = eventID
+        self.name = name
+        self.date = Date()
+        self.positions = positions
+        self.bill = Bill(eventId: eventID, positions: positions)
+        self.icon = icon
+        self.participantsCount = participantsCount
+        self.relativeDateText = relativeDateText
+        self.balanceDelta = balanceDelta
     }
 }
