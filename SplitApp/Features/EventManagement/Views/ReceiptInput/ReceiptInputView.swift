@@ -11,9 +11,15 @@ struct ReceiptInputView: View {
 
             VStack(spacing: 12) {
                 header
-                tableCard
-                totalCard
-                Spacer(minLength: 0)
+
+                ScrollView {
+                    VStack(spacing: 12) {
+                        tableCard
+                        totalCard
+                    }
+                    .padding(.bottom, 8)
+                }
+
                 saveButton
             }
             .padding(.horizontal, 16)
@@ -49,13 +55,14 @@ struct ReceiptInputView: View {
         VStack(spacing: 0) {
             tableHeader
 
-            ForEach(Array(viewModel.lineItems.enumerated()), id: \.element.id) { index, item in
+            ForEach(Array(viewModel.lineItems.indices), id: \.self) { index in
                 ReceiptPositionRowView(
-                    item: item,
+                    item: viewModel.lineItems[index],
+                    amountInput: viewModel.amountInput(for: viewModel.lineItems[index].id),
                     participants: viewModel.participants,
-                    onTitleChange: { viewModel.updateTitle($0, for: item.id) },
-                    onAmountChange: { viewModel.updateAmountInput($0, for: item.id) },
-                    onParticipantSelect: { viewModel.setParticipant($0, for: item.id) }
+                    onTitleChange: { viewModel.updateTitle($0, at: index) },
+                    onAmountChange: { viewModel.updateAmountInput($0, at: index) },
+                    onParticipantSelect: { viewModel.setParticipant($0, at: index) }
                 )
 
                 if index < viewModel.lineItems.count - 1 {

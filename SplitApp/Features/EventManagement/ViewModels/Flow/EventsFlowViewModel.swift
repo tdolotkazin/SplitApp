@@ -20,11 +20,11 @@ final class EventsFlowViewModel: ObservableObject {
     }
 
     convenience init() {
-        let service = MockEventManagementService()
+        let service = EventManagementService()
         self.init(
-            homeViewModel: .mock(service: service),
+            homeViewModel: EventsHomeViewModel(service: service),
             scannerViewModel: ReceiptScannerViewModel(),
-            receiptInputViewModel: .mock(service: service)
+            receiptInputViewModel: ReceiptInputViewModel(service: service)
         )
     }
 
@@ -33,12 +33,18 @@ final class EventsFlowViewModel: ObservableObject {
     }
 
     func openReceiptInput() {
-        receiptInputViewModel.resetDraft()
-        path.append(.receiptInput)
+        Task {
+            await receiptInputViewModel.loadDraftIfNeeded()
+            receiptInputViewModel.resetDraft()
+            path.append(.receiptInput)
+        }
     }
 
     func openReceiptInputFromScanner() {
-        receiptInputViewModel.resetDraft()
-        path.append(.receiptInput)
+        Task {
+            await receiptInputViewModel.loadDraftIfNeeded()
+            receiptInputViewModel.resetDraft()
+            path.append(.receiptInput)
+        }
     }
 }

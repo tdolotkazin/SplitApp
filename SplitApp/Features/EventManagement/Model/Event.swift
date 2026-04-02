@@ -9,46 +9,24 @@ struct Event {
 
     let icon: String
     let participantsCount: Int
-    let relativeDateText: String
-    let balanceDelta: Double?
+    let balanceDelta: Double
 
     init(
         name: String,
         positions: [Position],
-        bill: Bill,
+        date: Date = Date(),
         icon: String = "📌",
         participantsCount: Int = 0,
-        relativeDateText: String = "сегодня",
-        balanceDelta: Double? = nil
-    ) {
-        self.id = UUID()
-        self.name = name
-        self.date = Date()
-        self.positions = positions
-        self.bill = bill
-        self.icon = icon
-        self.participantsCount = participantsCount
-        self.relativeDateText = relativeDateText
-        self.balanceDelta = balanceDelta
-    }
-
-    init(
-        name: String,
-        positions: [Position],
-        icon: String = "📌",
-        participantsCount: Int = 0,
-        relativeDateText: String = "сегодня",
-        balanceDelta: Double? = nil
+        balanceDelta: Double = 0
     ) {
         let eventID = UUID()
         self.id = eventID
         self.name = name
-        self.date = Date()
+        self.date = date
         self.positions = positions
         self.bill = Bill(eventId: eventID, positions: positions)
         self.icon = icon
         self.participantsCount = participantsCount
-        self.relativeDateText = relativeDateText
         self.balanceDelta = balanceDelta
     }
 }

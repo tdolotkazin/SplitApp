@@ -10,6 +10,10 @@ struct EventsFlowView: View {
                 onScanTap: viewModel.openScanner,
                 onAddTap: viewModel.openReceiptInput
             )
+            .task {
+                await viewModel.homeViewModel.loadDataIfNeeded()
+                await viewModel.receiptInputViewModel.loadDraftIfNeeded()
+            }
             .navigationDestination(for: EventRoute.self) { route in
                 switch route {
                 case .scanner:
