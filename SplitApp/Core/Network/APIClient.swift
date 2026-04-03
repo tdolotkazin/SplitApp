@@ -5,22 +5,6 @@
 
 import Foundation
 
-// MARK: - SSL Bypass Delegate (TEMPORARY: DO NOT USE IN PRODUCTION)
-private final class SSLBypassDelegate: NSObject, URLSessionDelegate {
-    func urlSession(
-        _ session: URLSession,
-        didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-    ) {
-        if let trust = challenge.protectionSpace.serverTrust {
-            // ФОРСИРУЕМ доверие к сертификату (игнорируем ошибку mismatching target host name)
-            completionHandler(.useCredential, URLCredential(trust: trust))
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
-    }
-}
-
 final class APIClient {
 
     // MARK: - Singleton
@@ -43,10 +27,7 @@ final class APIClient {
         self.encoder = JSONEncoder()
         self.encoder.dateEncodingStrategy = .iso8601
         
-        // Временное решение: используем кастомную сессию с нашим делегатом для обхода SSL
-        let configuration = URLSessionConfiguration.default
-        let delegate = SSLBypassDelegate()
-        self.session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+        self.session = URLSession(configuration: .default)
     }
 
     // MARK: - Public Methods
