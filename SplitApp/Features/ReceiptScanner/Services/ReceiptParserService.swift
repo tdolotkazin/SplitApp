@@ -55,13 +55,16 @@ final class ReceiptParserService {
         "кассир",
         // Gas station / fiscal device identifiers
         "азк №", "азк no", "азс №", "азс no", "эн ккт", "зн ккт", "рн ккт",
-        "нефтепродукт", "роснефть", "лукойл", "газпром"
+        "нефтепродукт", "роснефть", "лукойл", "газпром",
+        // Online cash register header
+        "онлайн-касса", "онлайн - касса"
     ]
 
     private static let addressKeywords: Set<String> = [
         "обл.,", "область", "район", "ул.", "улица",
         "проспект", "корп.", "офис", "этаж",
-        " д.", "д. ", ". д."
+        " д.", "д. ", ". д.",
+        "г.о.", "г. о.", "сириус", "354340"
     ]
 
     private static let quantityUnits: Set<String> = [
@@ -91,19 +94,22 @@ final class ReceiptParserService {
             // Running-total echo lines: "=89.90"
             if line.hasPrefix("=") { continue }
 
-            if isServiceLine(line) || isAddressLine(line) { continue }
-            if isMaskedLine(line) { continue }
-            if isPurelyNumeric(line) { continue }
-            if isQuantityMarker(line) { continue }
-            if isQuantityLine(line) { continue }
-            if isTaxClassMarker(line) { continue }
-            if isDuplicatePriceMark(line) { continue }
-            if isPriceTimesQuantity(line) { continue }
-            if isPercentageLine(line) { continue }
-            if isAddressWithNumber(line) { continue }
-            if isOCRNoise(line) { continue }
-            if isStoreNumberLine(line) { continue }
-            if isPersonName(line) { continue }
+            func skip(_ reason: String) { print("[Parser] skip(\(reason)): \(line)") }
+
+            if isServiceLine(line) { skip("service"); continue }
+            if isAddressLine(line) { skip("address"); continue }
+            if isMaskedLine(line) { skip("masked"); continue }
+            if isPurelyNumeric(line) { skip("numeric"); continue }
+            if isQuantityMarker(line) { skip("qtyMarker"); continue }
+            if isQuantityLine(line) { skip("qtyLine"); continue }
+            if isTaxClassMarker(line) { skip("taxClass"); continue }
+            if isDuplicatePriceMark(line) { skip("dupPrice"); continue }
+            if isPriceTimesQuantity(line) { skip("pricexQty"); continue }
+            if isPercentageLine(line) { skip("percent"); continue }
+            if isAddressWithNumber(line) { skip("addrNum"); continue }
+            if isOCRNoise(line) { skip("noise"); continue }
+            if isStoreNumberLine(line) { skip("storeNum"); continue }
+            if isPersonName(line) { skip("person"); continue }
 
             // ── Price detection ───────────────────────────────────────────
 
@@ -224,8 +230,11 @@ final class ReceiptParserService {
 
         guard tokens.count >= 2 else { return false }
 
-        // More than 1/3 of tokens are single chars — QR/barcode noise
-        let singleCharCount = tokens.filter { $0.count == 1 }.count
+        // More than 1/3 of tokens are single non-alphanumeric chars — QR/barcode noise.
+        // Exclude alphanumeric single chars: digits (quantity "1") and letters (tax class "А").
+        let singleCharCount = tokens.filter { t in
+            t.count == 1 && t.unicodeScalars.first.map { !CharacterSet.alphanumerics.contains($0) } ?? false
+        }.count
         if singleCharCount * 3 > tokens.count { return true }
 
         // Short mixed tokens with digits and latin caps — QR noise pattern like "B4", "J0", "M0"
@@ -390,6 +399,17 @@ final class ReceiptParserService {
             .replacingOccurrences(of: "\u{00A0}", with: "")
 
         let parts = normalized.components(separatedBy: ".")
+
+        // Integer price — no decimal separator: "280", "350"
+        if parts.count == 1 {
+            guard !parts[0].isEmpty,
+                  parts[0].allSatisfy({ $0.isNumber }),
+                  parts[0].count >= 2,
+                  parts[0].count <= 6 else { return nil }
+            guard let amount = Decimal(string: parts[0]), amount >= 5 else { return nil }
+            return amount
+        }
+
         guard parts.count == 2,
               parts[1].count <= 2,
               parts[1].allSatisfy({ $0.isNumber }),

@@ -1,38 +1,41 @@
 import SwiftUI
 import PhotosUI
 
-struct ContentView: View {
+struct ReceiptScannerView: View {
 
-    @State private var vm = ReceiptViewModel()
+    @Bindable var viewModel: ReceiptViewModel
+    var onCapture: () -> Void
+
     @State private var showCamera = false
     @State private var showPhotoPicker = false
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if vm.isScanning {
-                    ProgressView("Распознаём чек...")
-                } else if vm.items.isEmpty {
-                    emptyState
-                } else {
-                    itemsList
+        Group {
+            if viewModel.isScanning {
+                ProgressView("Распознаём чек...")
+            } else if viewModel.items.isEmpty {
+                emptyState
+            } else {
+                itemsList
+            }
+        }
+        .navigationTitle("Сканер чеков")
+        .toolbar { toolbarContent }
+        .sheet(isPresented: $showCamera) {
+            CameraSheet { image in
+                showCamera = false
+                Task {
+                    await viewModel.process(image: image)
+                    onCapture()
                 }
             }
-            .navigationTitle("Сканер чеков")
-            .toolbar { toolbarContent }
-            .sheet(isPresented: $showCamera) {
-                CameraSheet { image in
-                    showCamera = false
-                    Task { await vm.process(image: image) }
-                }
-                .ignoresSafeArea()
-            }
-            .photosPicker(isPresented: $showPhotoPicker, selection: $vm.selectedPhoto, matching: .images)
-            .alert("Ошибка", isPresented: .constant(vm.errorMessage != nil)) {
-                Button("OK") { vm.errorMessage = nil }
-            } message: {
-                Text(vm.errorMessage ?? "")
-            }
+            .ignoresSafeArea()
+        }
+        .photosPicker(isPresented: $showPhotoPicker, selection: $viewModel.selectedPhoto, matching: .images)
+        .alert("Ошибка", isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button("OK") { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 
@@ -49,7 +52,7 @@ struct ContentView: View {
     private var itemsList: some View {
         List {
             Section("Позиции") {
-                ForEach(vm.items) { item in
+                ForEach(viewModel.items) { item in
                     HStack {
                         Text(item.name).lineLimit(2)
                         Spacer()
@@ -62,7 +65,7 @@ struct ContentView: View {
                 HStack {
                     Text("Итого").bold()
                     Spacer()
-                    Text(vm.total, format: .currency(code: "RUB"))
+                    Text(viewModel.total, format: .currency(code: "RUB"))
                         .bold().monospacedDigit()
                 }
             }
@@ -75,10 +78,10 @@ struct ContentView: View {
             Menu {
                 Button("Камера", systemImage: "camera") { showCamera = true }
                 Button("Галерея", systemImage: "photo") { showPhotoPicker = true }
-                if !vm.items.isEmpty {
+                if !viewModel.items.isEmpty {
                     Divider()
                     Button("Очистить", systemImage: "trash", role: .destructive) {
-                        vm.items = []
+                        viewModel.items = []
                     }
                 }
             } label: {
@@ -122,35 +125,5 @@ private struct CameraSheet: UIViewControllerRepresentable {
 }
 
 #Preview("Пустой экран") {
-    ContentView()
-}
-
-#Preview("С позициями") {
-    // Превью напрямую показывает список — без необходимости пробрасывать vm
-    NavigationStack {
-        List {
-            Section("Позиции") {
-                ForEach([
-                    ReceiptItem(name: "Молоко 3.2%", amount: 89.90),
-                    ReceiptItem(name: "Хлеб белый", amount: 45.00),
-                    ReceiptItem(name: "Кефир 1л", amount: 67.50),
-                    ReceiptItem(name: "Масло сливочное", amount: 210.00),
-                ]) { item in
-                    HStack {
-                        Text(item.name).lineLimit(2)
-                        Spacer()
-                        Text(item.amount, format: .currency(code: "RUB")).monospacedDigit()
-                    }
-                }
-            }
-            Section {
-                HStack {
-                    Text("Итого").bold()
-                    Spacer()
-                    Text(Decimal(412.40), format: .currency(code: "RUB")).bold().monospacedDigit()
-                }
-            }
-        }
-        .navigationTitle("Сканер чеков")
-    }
+    ReceiptScannerView(viewModel: ReceiptViewModel(), onCapture: {})
 }

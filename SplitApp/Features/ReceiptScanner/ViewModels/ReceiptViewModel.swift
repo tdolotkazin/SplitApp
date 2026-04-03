@@ -33,10 +33,14 @@ final class ReceiptViewModel {
         }
     }
 
-    private func loadFromPhoto() async {
-        guard let photo = selectedPhoto else { return }
+    func process(photo: PhotosPickerItem) async {
         guard let data = try? await photo.loadTransferable(type: Data.self),
               let image = UIImage(data: data) else { return }
         await process(image: image)
+    }
+
+    private func loadFromPhoto() async {
+        guard let photo = selectedPhoto else { return }
+        await process(photo: photo)
     }
 }
