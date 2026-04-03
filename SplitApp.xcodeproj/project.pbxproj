@@ -36,21 +36,6 @@
 				Core/Cache/.gitkeep,
 				Core/Data/.gitkeep,
 				Core/Network/.gitkeep,
-				Features/Authentication/Services/.gitkeep,
-				Features/Authentication/ViewModels/.gitkeep,
-				Features/Authentication/Views/.gitkeep,
-				Features/BillSettlement/Services/.gitkeep,
-				Features/BillSettlement/ViewModels/.gitkeep,
-				Features/BillSettlement/Views/.gitkeep,
-				Features/EventManagement/Services/.gitkeep,
-				Features/EventManagement/ViewModels/.gitkeep,
-				Features/EventManagement/Views/.gitkeep,
-				Features/PositionManagement/Services/.gitkeep,
-				Features/PositionManagement/ViewModels/.gitkeep,
-				Features/PositionManagement/Views/.gitkeep,
-				Features/UserProfile/Services/.gitkeep,
-				Features/UserProfile/ViewModels/.gitkeep,
-				Features/UserProfile/Views/.gitkeep,
 			);
 			target = BFD5EB562F7C10DD00877F4C /* SplitApp */;
 		};
