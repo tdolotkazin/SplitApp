@@ -7,102 +7,111 @@ enum HTTPMethod: String {
     case DELETE
 }
 
-enum Endpoint {
-    // MARK: - Users
-    case createUser
+protocol Endpoint {
+    var path: String { get }
+    var method: HTTPMethod { get }
+    var queryItems: [URLQueryItem]? { get }
+}
 
-    // MARK: - Events
-    case createEvent
-    case listEvents(userId: UUID?)
-    case getEvent(id: UUID)
-    case updateEvent(id: UUID)
-    case addParticipants(eventId: UUID)
-    case removeParticipant(eventId: UUID, userId: UUID)
+extension Endpoint {
+    var queryItems: [URLQueryItem]? { nil }
+}
 
-    // MARK: - Receipts
-    case createReceipt(eventId: UUID)
-    case listReceipts(eventId: UUID)
-    case updateReceipt(id: UUID)
-    case deleteReceipt(id: UUID)
+// MARK: - Users
+struct CreateUserEndpoint: Endpoint {
+    let path = "/api/users"
+    let method: HTTPMethod = .POST
+}
 
-    // MARK: - Balances
-    case getBalances(eventId: UUID)
+// MARK: - Events
+struct CreateEventEndpoint: Endpoint {
+    let path = "/api/events"
+    let method: HTTPMethod = .POST
+}
 
-    // MARK: - Payments
-    case createPayment(eventId: UUID)
-    case listPayments(eventId: UUID)
-    case updatePayment(id: UUID)
-
-    // MARK: - Path
-
-    var path: String {
-        switch self {
-        // Users
-        case .createUser:
-            return "/api/users"
-
-        // Events
-        case .createEvent:
-            return "/api/events"
-        case .listEvents:
-            return "/api/events"
-        case .getEvent(let id):
-            return "/api/events/\(id.uuidString)"
-        case .updateEvent(let id):
-            return "/api/events/\(id.uuidString)"
-        case .addParticipants(let eventId):
-            return "/api/events/\(eventId.uuidString)/participants"
-        case .removeParticipant(let eventId, let userId):
-            return "/api/events/\(eventId.uuidString)/participants/\(userId.uuidString)"
-
-        // Receipts
-        case .createReceipt(let eventId):
-            return "/api/events/\(eventId.uuidString)/receipts"
-        case .listReceipts(let eventId):
-            return "/api/events/\(eventId.uuidString)/receipts"
-        case .updateReceipt(let id):
-            return "/api/receipts/\(id.uuidString)"
-        case .deleteReceipt(let id):
-            return "/api/receipts/\(id.uuidString)"
-
-        // Balances
-        case .getBalances(let eventId):
-            return "/api/events/\(eventId.uuidString)/balances"
-
-        // Payments
-        case .createPayment(let eventId):
-            return "/api/events/\(eventId.uuidString)/payments"
-        case .listPayments(let eventId):
-            return "/api/events/\(eventId.uuidString)/payments"
-        case .updatePayment(let id):
-            return "/api/payments/\(id.uuidString)"
-        }
-    }
-
-    // MARK: - Method
-
-    var method: HTTPMethod {
-        switch self {
-        case .createUser, .createEvent, .addParticipants, .createReceipt, .createPayment:
-            return .POST
-        case .listEvents, .getEvent, .listReceipts, .getBalances, .listPayments:
-            return .GET
-        case .updateEvent, .updateReceipt, .updatePayment:
-            return .PATCH
-        case .removeParticipant, .deleteReceipt:
-            return .DELETE
-        }
-    }
-
-    // MARK: - Query Items
+struct ListEventsEndpoint: Endpoint {
+    let userId: UUID?
+    let path = "/api/events"
+    let method: HTTPMethod = .GET
 
     var queryItems: [URLQueryItem]? {
-        switch self {
-        case .listEvents(let userId):
-            guard let userId else { return nil }
-            return [URLQueryItem(name: "user_id", value: userId.uuidString)]
-        default:
-            return nil
-        }
+        guard let userId else { return nil }
+        return [URLQueryItem(name: "user_id", value: userId.uuidString)]
     }
+}
+
+struct GetEventEndpoint: Endpoint {
+    let id: UUID
+    var path: String { "/api/events/\(id.uuidString)" }
+    let method: HTTPMethod = .GET
+}
+
+struct UpdateEventEndpoint: Endpoint {
+    let id: UUID
+    var path: String { "/api/events/\(id.uuidString)" }
+    let method: HTTPMethod = .PATCH
+}
+
+struct AddParticipantsEndpoint: Endpoint {
+    let eventId: UUID
+    var path: String { "/api/events/\(eventId.uuidString)/participants" }
+    let method: HTTPMethod = .POST
+}
+
+struct RemoveParticipantEndpoint: Endpoint {
+    let eventId: UUID
+    let userId: UUID
+    var path: String { "/api/events/\(eventId.uuidString)/participants/\(userId.uuidString)" }
+    let method: HTTPMethod = .DELETE
+}
+
+// MARK: - Receipts
+struct CreateReceiptEndpoint: Endpoint {
+    let eventId: UUID
+    var path: String { "/api/events/\(eventId.uuidString)/receipts" }
+    let method: HTTPMethod = .POST
+}
+
+struct ListReceiptsEndpoint: Endpoint {
+    let eventId: UUID
+    var path: String { "/api/events/\(eventId.uuidString)/receipts" }
+    let method: HTTPMethod = .GET
+}
+
+struct UpdateReceiptEndpoint: Endpoint {
+    let id: UUID
+    var path: String { "/api/receipts/\(id.uuidString)" }
+    let method: HTTPMethod = .PATCH
+}
+
+struct DeleteReceiptEndpoint: Endpoint {
+    let id: UUID
+    var path: String { "/api/receipts/\(id.uuidString)" }
+    let method: HTTPMethod = .DELETE
+}
+
+// MARK: - Balances
+struct GetBalancesEndpoint: Endpoint {
+    let eventId: UUID
+    var path: String { "/api/events/\(eventId.uuidString)/balances" }
+    let method: HTTPMethod = .GET
+}
+
+// MARK: - Payments
+struct CreatePaymentEndpoint: Endpoint {
+    let eventId: UUID
+    var path: String { "/api/events/\(eventId.uuidString)/payments" }
+    let method: HTTPMethod = .POST
+}
+
+struct ListPaymentsEndpoint: Endpoint {
+    let eventId: UUID
+    var path: String { "/api/events/\(eventId.uuidString)/payments" }
+    let method: HTTPMethod = .GET
+}
+
+struct UpdatePaymentEndpoint: Endpoint {
+    let id: UUID
+    var path: String { "/api/payments/\(id.uuidString)" }
+    let method: HTTPMethod = .PATCH
 }
