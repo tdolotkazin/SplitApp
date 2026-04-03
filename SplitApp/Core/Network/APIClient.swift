@@ -1,8 +1,3 @@
-//
-//  APIClient.swift
-//  SplitApp
-//
-
 import Foundation
 
 final class APIClient {
@@ -82,7 +77,7 @@ final class APIClient {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         // TODO: Replace with AuthManager.shared.token when Auth layer is implemented
-        let token = "splitapp-production-token" // Оставил ваш токен
+        let token = "splitapp-production-token"
         if !token.isEmpty {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
