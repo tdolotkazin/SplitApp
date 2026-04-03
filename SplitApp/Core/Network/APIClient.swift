@@ -21,7 +21,7 @@ final class APIClient {
 
         self.encoder = JSONEncoder()
         self.encoder.dateEncodingStrategy = .iso8601
-        
+
         self.session = URLSession(configuration: .default)
     }
 
@@ -61,7 +61,9 @@ final class APIClient {
         endpoint: Endpoint,
         body: (any Encodable)?
     ) throws -> URLRequest {
-        var components = URLComponents(url: baseURL.appendingPathComponent(endpoint.path), resolvingAgainstBaseURL: false)
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent(endpoint.path),
+            resolvingAgainstBaseURL: false)
 
         if let queryItems = endpoint.queryItems {
             components?.queryItems = queryItems
@@ -76,7 +78,6 @@ final class APIClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        // TODO: Replace with AuthManager.shared.token when Auth layer is implemented
         let token = "splitapp-production-token"
         if !token.isEmpty {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
