@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 enum TabItem: String, CaseIterable {
@@ -21,29 +20,32 @@ struct CustomTabBar: View {
     var body: some View {
         HStack(spacing: 0) {
             ForEach(TabItem.allCases, id: \.self) { tab in
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedTab = tab
-                    }
-                }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: tab.rawValue)
-                            .font(.system(size: 24))
-                            .foregroundStyle(selectedTab == tab ? AppTheme.accent : AppTheme.textSecondary)
-
-                        if selectedTab == tab {
-                            Circle()
-                                .fill(AppTheme.accent)
-                                .frame(width: 4, height: 4)
-                        } else {
-                            Circle()
-                                .fill(Color.clear)
-                                .frame(width: 4, height: 4)
+                Button(
+                    action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedTab = tab
                         }
+                    },
+                    label: {
+                        VStack(spacing: 4) {
+                            Image(systemName: tab.rawValue)
+                                .font(.system(size: 24))
+                                .foregroundStyle(selectedTab == tab ? AppTheme.accent : AppTheme.textSecondary)
+
+                            if selectedTab == tab {
+                                Circle()
+                                    .fill(AppTheme.accent)
+                                    .frame(width: 4, height: 4)
+                            } else {
+                                Circle()
+                                    .fill(Color.clear)
+                                    .frame(width: 4, height: 4)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                }
+                )
                 .buttonStyle(PlainButtonStyle())
             }
         }

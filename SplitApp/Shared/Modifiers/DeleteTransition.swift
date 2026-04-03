@@ -13,7 +13,7 @@ struct DeleteTransitionModifier: ViewModifier {
             .rotationEffect(.degrees(isDeleting ? rotationAngle : 0), anchor: .trailing)
             .blur(radius: isDeleting ? 8 : 0)
             .animation(.spring(response: 0.45, dampingFraction: 0.75), value: isDeleting)
-            .onChange(of: isDeleting) { oldValue, newValue in
+            .onChange(of: isDeleting) { _, newValue in
                 if newValue {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         rotationAngle = -5

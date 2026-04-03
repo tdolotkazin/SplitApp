@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct ThemeToggle: View {
@@ -16,15 +15,17 @@ struct ThemeToggle: View {
 
             Spacer()
 
-            // Toggle переключатель
-            Toggle("", isOn: Binding(
-                get: { themeManager.currentTheme == .dark },
-                set: { _ in
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                        themeManager.toggleTheme()
+            Toggle(
+                "",
+                isOn: Binding(
+                    get: { themeManager.currentTheme == .dark },
+                    set: { _ in
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            themeManager.toggleTheme()
+                        }
                     }
-                }
-            ))
+                )
+            )
             .labelsHidden()
             .tint(AppTheme.accent)
         }
@@ -38,27 +39,29 @@ struct ThemeToggle: View {
     }
 }
 
-// MARK: - Вариант с кнопкой
 struct ThemeToggleButton: View {
     @ObservedObject var themeManager = ThemeManager.shared
 
     var body: some View {
-        Button(action: {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                themeManager.toggleTheme()
+        Button(
+            action: {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    themeManager.toggleTheme()
+                }
+            },
+            label: {
+                Image(systemName: themeManager.currentTheme == .light ? "moon.fill" : "sun.max.fill")
+                    .font(.system(size: 20))
+                    .foregroundStyle(AppTheme.accent)
+                    .frame(width: 44, height: 44)
+                    .background(AppTheme.cardBackground)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(AppTheme.cardBorder, lineWidth: 1)
+                    )
             }
-        }) {
-            Image(systemName: themeManager.currentTheme == .light ? "moon.fill" : "sun.max.fill")
-                .font(.system(size: 20))
-                .foregroundStyle(AppTheme.accent)
-                .frame(width: 44, height: 44)
-                .background(AppTheme.cardBackground)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .stroke(AppTheme.cardBorder, lineWidth: 1)
-                )
-        }
+        )
         .buttonStyle(PlainButtonStyle())
     }
 }

@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct GlassCard<Content: View>: View {

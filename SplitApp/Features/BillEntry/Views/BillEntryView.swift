@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct BillEntryView: View {
@@ -12,7 +11,6 @@ struct BillEntryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Фон — многослойный градиент
                 ZStack {
                     AppTheme.backgroundGradient
                         .ignoresSafeArea()
@@ -23,14 +21,12 @@ struct BillEntryView: View {
                 .dismissKeyboardOnTap()
 
                 VStack(spacing: 0) {
-                    // Заголовки столбцов
                     HeaderRow()
                         .padding(.top, 8)
                         .onTapGesture {
                             hideKeyboard()
                         }
 
-                    // Список позиций
                     ScrollViewReader { proxy in
                         List {
                             ForEach(viewModel.items) { item in
@@ -71,7 +67,6 @@ struct BillEntryView: View {
                                 }
                             }
 
-                            // Пустая область для закрытия клавиатуры
                             Color.clear
                                 .frame(height: 300)
                                 .listRowBackground(Color.clear)
@@ -93,7 +88,6 @@ struct BillEntryView: View {
                         }
 
                     if !keyboardObserver.isVisible {
-                        // Кнопка добавления
                         AddItemButton {
                             viewModel.addItem()
                         }
@@ -101,7 +95,6 @@ struct BillEntryView: View {
                         .padding(.vertical, 12)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
 
-                        // Блок "Итого"
                         GlassCard {
                             HStack {
                                 Text("Итого")
@@ -117,10 +110,8 @@ struct BillEntryView: View {
                         .padding(.horizontal, 20)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
 
-                        // Кнопка "Разделить счёт"
                         GlassButton(title: "Разделить счёт") {
                             viewModel.save()
-                            // TODO: Переход к экрану разделения счёта
                             dismiss()
                         }
                         .padding(.horizontal, 20)
@@ -128,7 +119,6 @@ struct BillEntryView: View {
                         .padding(.bottom, 8)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
 
-                        // Custom Tab Bar
                         CustomTabBar(selectedTab: $selectedTab)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
