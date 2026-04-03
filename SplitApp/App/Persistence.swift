@@ -1,10 +1,3 @@
-//
-//  Persistence.swift
-//  SplitApp
-//
-//  Created by Valentina Dorina on 31.03.2026.
-//
-
 import CoreData
 
 struct PersistenceController {
