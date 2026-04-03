@@ -33,9 +33,6 @@
 		49EF729B2F7D0FEC00BDBEA0 /* Exceptions for "SplitApp" folder in "SplitApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Core/Cache/.gitkeep,
-				Core/Data/.gitkeep,
-				Core/Network/.gitkeep,
 			);
 			target = BFD5EB562F7C10DD00877F4C /* SplitApp */;
 		};
