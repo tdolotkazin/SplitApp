@@ -1,0 +1,47 @@
+import Foundation
+
+struct EventDTO: Codable, Identifiable {
+    let id: UUID
+    let creatorId: UUID
+    let name: String
+    let isClosed: Bool
+    let users: [UUID]
+    let createdAt: Date
+    let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, users
+        case creatorId = "creator_id"
+        case isClosed = "is_closed"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+}
+
+struct CreateEventRequest: Codable {
+    let creatorId: UUID
+    let name: String
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case creatorId = "creator_id"
+    }
+}
+
+struct UpdateEventRequest: Codable {
+    let isClosed: Bool?
+    let name: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case isClosed = "is_closed"
+    }
+}
+
+struct AddParticipantsRequest: Codable {
+    let userIds: [UUID]
+
+    enum CodingKeys: String, CodingKey {
+        case userIds = "user_ids"
+    }
+}
