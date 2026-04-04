@@ -26,6 +26,18 @@ final class ReceiptInputViewModel: ObservableObject {
         rebuildAmountInputs()
     }
 
+    func populate(from items: [ReceiptItem]) {
+        guard let defaultParticipant = participants.first else { return }
+        lineItems = items.map {
+            ReceiptLineItem(
+                title: $0.name,
+                amount: (NSDecimalNumber(decimal: $0.amount)).doubleValue,
+                participant: defaultParticipant
+            )
+        }
+        rebuildAmountInputs()
+    }
+
     var totalAmount: Double {
         lineItems.reduce(0) { $0 + $1.amount }
     }
@@ -92,7 +104,9 @@ final class ReceiptInputViewModel: ObservableObject {
 }
 
 extension ReceiptInputViewModel {
-    static func mock(service: EventManagementServiceProtocol = EventManagementService()) -> ReceiptInputViewModel {
+    @MainActor static func mock(
+        service: EventManagementServiceProtocol = EventManagementService()
+    ) -> ReceiptInputViewModel {
         let viewModel = ReceiptInputViewModel(service: service)
         Task { await viewModel.loadDraftIfNeeded() }
         return viewModel
