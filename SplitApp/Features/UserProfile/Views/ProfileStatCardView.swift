@@ -1,29 +1,25 @@
 import SwiftUI
 
 struct ProfileStatCardView: View {
-    let profileData: ProfileScreenModel
+    let title: String
+    let value: String
+    let valueColor: Color
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            itemTitle
-            itemValue
-            Spacer()
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.gray)
+
+            Text(value)
+                .font(.system(size: 28, weight: .medium))
+                .foregroundStyle(valueColor)
+
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, alignment: .topLeading)
-        .padding(16)
-        .background(Color.white)
+        .padding(20)
+        .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
+        .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 24))
     }
-
-    private var itemTitle: some View {
-        Text(item.title)
-            .font(.subheadline)
-            .foregroundStyle(.black)
-    }
-
-    private var itemValue: some View {
-        Text(item.value)
-            .font(.system(size: 28, weight: .medium))
-    }
 }
-
