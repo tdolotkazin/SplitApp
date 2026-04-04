@@ -17,8 +17,7 @@ final class ReceiptParserService {
     private static let singleWordServiceTokens: Set<String> = [
         "цена", "скидка", "скидкой", "итого", "итог", "сумма", "оплата",
         "наличными", "безналичными", "сдача", "приход", "расход",
-        "блюдо", "всего", "количество", "наименование",
-        "товар", "товары", "услуга",
+        "блюдо", "всего", "количество", "наименование", "товар", "товары", "услуга",
         "пятерочка", "пятёрочка", "агроторг", "магнит", "дикси",
         "перекрёсток", "перекресток", "лента", "ашан", "метро"
     ]
@@ -26,10 +25,8 @@ final class ReceiptParserService {
     private static let serviceKeywords: Set<String> = [
         "итого", "итог:", "total", "наличными", "безналичными",
         "visa", "mastercard", "скидка:", "бонус", "баллы",
-        "ндс", "сумма ндс", "nds", "vat",
-        "кассовый чек", "чек №", "чек #", "спасибо",
-        "инн:", "кпп:", "огрн",
-        "фискальный", "фн:", "фд:", "фп:", "офд",
+        "ндс", "сумма ндс", "nds", "vat", "кассовый чек", "чек №", "чек #", "спасибо",
+        "инн:", "кпп:", "огрн", "фискальный", "фн:", "фд:", "фп:", "офд",
         "приход", "расход", "возврат прихода", "возврат расхода",
         "www.", "http", ".ru", ".com", "receipt", "cashier",
         "подытог", "округление", "принято:", "сдача:",
@@ -43,24 +40,18 @@ final class ReceiptParserService {
         "всего:", "итого:", "обслуживание", "сервисный сбор",
         "сканируй", "чаевые", "qr код", "qr-код", "оставить отзыв",
         "спасибо за", "приятного аппетита", "ждём вас",
-        "электронными", "округлени",
-        "агроторг", "торговый зал",
-        "кассир",
+        "электронными", "округлени", "агроторг", "торговый зал", "кассир",
         "азк №", "азк no", "азс №", "азс no", "эн ккт", "зн ккт", "рн ккт",
         "нефтепродукт", "роснефть", "лукойл", "газпром",
         "онлайн-касса", "онлайн - касса"
     ]
 
     private static let addressKeywords: Set<String> = [
-        "обл.,", "область", "район", "ул.", "улица",
-        "проспект", "корп.", "офис", "этаж",
-        " д.", "д. ", ". д.",
-        "г.о.", "г. о.", "сириус", "354340"
+        "обл.,", "область", "район", "ул.", "улица", "проспект", "корп.", "офис", "этаж",
+        " д.", "д. ", ". д.", "г.о.", "г. о.", "сириус", "354340"
     ]
 
-    private static let quantityUnits: Set<String> = [
-        "шт", "кг", " x ", " х ", " × "
-    ]
+    private static let quantityUnits: Set<String> = ["шт", "кг", " x ", " х ", " × "]
 
     private let tokenizer = NLTokenizer(unit: .word)
     private let languageRecognizer = NLLanguageRecognizer()
@@ -74,32 +65,19 @@ final class ReceiptParserService {
 
         for line in cleaned {
             guard !line.isEmpty, !line.hasPrefix("=") else { continue }
-            guard !shouldSkip(line) else {
-                print("[Parser] skip: \(line)")
-                continue
-            }
+            guard !shouldSkip(line) else { continue }
 
             if let (namePart, amount) = findPriceAtEnd(of: line) {
                 let nameParts = namePart.isEmpty
                     ? (nameQueue.isEmpty ? [] : [nameQueue.removeFirst()])
                     : [namePart]
-                if let item = makeItem(nameParts: nameParts, amount: amount) {
-                    items.append(item)
-                    print("[Parser] ✓ \(item.name) — \(item.amount)")
-                } else {
-                    print("[Parser] ✗ rejected name=\(nameParts) amount=\(amount)")
-                }
+                if let item = makeItem(nameParts: nameParts, amount: amount) { items.append(item) }
                 continue
             }
 
             if let amount = findStandalonePrice(in: line) {
                 let nameParts = nameQueue.isEmpty ? [] : [nameQueue.removeFirst()]
-                if let item = makeItem(nameParts: nameParts, amount: amount) {
-                    items.append(item)
-                    print("[Parser] ✓ \(item.name) — \(item.amount)")
-                } else {
-                    print("[Parser] ✗ rejected name=\(nameParts) amount=\(amount)")
-                }
+                if let item = makeItem(nameParts: nameParts, amount: amount) { items.append(item) }
                 continue
             }
 
@@ -117,32 +95,20 @@ final class ReceiptParserService {
 
             if shouldMerge {
                 nameQueue[nameQueue.count - 1] += " " + enqueueLine
-                print("[Parser] merged: \(nameQueue.last!)")
             } else {
                 nameQueue.append(enqueueLine)
-                print("[Parser] queued: \(enqueueLine)")
             }
         }
 
-        print("[Parser] Total items: \(items.count)")
         return items
     }
 
     private func shouldSkip(_ line: String) -> Bool {
-        isServiceLine(line) ||
-        isAddressLine(line) ||
-        isMaskedLine(line) ||
-        isPurelyNumeric(line) ||
-        isQuantityMarker(line) ||
-        isQuantityLine(line) ||
-        isTaxClassMarker(line) ||
-        isDuplicatePriceMark(line) ||
-        isPriceTimesQuantity(line) ||
-        isPercentageLine(line) ||
-        isAddressWithNumber(line) ||
-        isOCRNoise(line) ||
-        isStoreNumberLine(line) ||
-        isPersonName(line)
+        isServiceLine(line) || isAddressLine(line) || isMaskedLine(line) ||
+        isPurelyNumeric(line) || isQuantityMarker(line) || isQuantityLine(line) ||
+        isTaxClassMarker(line) || isDuplicatePriceMark(line) || isPriceTimesQuantity(line) ||
+        isPercentageLine(line) || isAddressWithNumber(line) || isOCRNoise(line) ||
+        isStoreNumberLine(line) || isPersonName(line)
     }
 }
 
@@ -185,8 +151,6 @@ private extension ReceiptParserService {
         return trimmed.count == 1 && trimmed.first?.isLetter == true
     }
 
-    /// *1, *2, *3 — quantity markers (max 2 digits after asterisk).
-    /// *3691951 ТОВАР — article number prefix, NOT a quantity marker.
     func isQuantityMarker(_ line: String) -> Bool {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         guard trimmed.hasPrefix("*") else { return false }
@@ -194,15 +158,10 @@ private extension ReceiptParserService {
         return after.count <= 2 && after.allSatisfy { $0.isNumber }
     }
 
-    /// OCR noise from QR codes, barcodes, or garbled text.
     func isOCRNoise(_ line: String) -> Bool {
         let tokens = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-
         if tokens.count == 1, let first = tokens[0].unicodeScalars.first,
-           !CharacterSet.alphanumerics.contains(first) {
-            return true
-        }
-
+           !CharacterSet.alphanumerics.contains(first) { return true }
         guard tokens.count >= 2 else { return false }
 
         let singleCharCount = tokens.filter { tok in
@@ -220,9 +179,7 @@ private extension ReceiptParserService {
 
         let total = line.unicodeScalars.filter { !CharacterSet.whitespaces.contains($0) }
         let alphanumeric = total.filter { CharacterSet.alphanumerics.contains($0) }
-        if total.count > 4 && alphanumeric.count * 3 < total.count { return true }
-
-        return false
+        return total.count > 4 && alphanumeric.count * 3 < total.count
     }
 
     static let continuationWords: Set<String> = [
@@ -250,8 +207,7 @@ private extension ReceiptParserService {
 
     func isPersonName(_ line: String) -> Bool {
         let tokens = line.trimmingCharacters(in: .whitespaces)
-            .components(separatedBy: .whitespaces)
-            .filter { !$0.isEmpty }
+            .components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         guard tokens.count == 2 else { return false }
         return tokens.allSatisfy { token in
             guard let first = token.unicodeScalars.first,
@@ -262,20 +218,19 @@ private extension ReceiptParserService {
 
     func isPriceTimesQuantity(_ line: String) -> Bool {
         let parts = line.trimmingCharacters(in: .whitespaces)
-            .components(separatedBy: .whitespaces)
-            .filter { !$0.isEmpty }
-        guard parts.count == 2 else { return false }
-        guard parsePrice(from: parts[0]) != nil else { return false }
+            .components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+        guard parts.count == 2, parsePrice(from: parts[0]) != nil else { return false }
         let second = parts[1]
         guard second.hasPrefix("*") else { return false }
         let digits = String(second.dropFirst())
-        return !digits.isEmpty && digits.replacingOccurrences(of: ".", with: "")
-                                        .replacingOccurrences(of: ",", with: "")
-                                        .allSatisfy({ $0.isNumber })
+        return !digits.isEmpty && digits
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: ",", with: "")
+            .allSatisfy({ $0.isNumber })
     }
 
     func isPercentageLine(_ line: String) -> Bool {
-        return line.trimmingCharacters(in: .whitespaces).hasSuffix("%")
+        line.trimmingCharacters(in: .whitespaces).hasSuffix("%")
     }
 
     func isAddressWithNumber(_ line: String) -> Bool {
@@ -286,14 +241,12 @@ private extension ReceiptParserService {
         let letters = lastToken.unicodeScalars.filter { CharacterSet.letters.contains($0) }
         guard digits.count > 0 && letters.count > 0 && lastToken.count <= 6 else { return false }
         let measureSuffixes = ["г", "кг", "мл", "л", "гр", "oz", "ml", "kg"]
-        if measureSuffixes.contains(where: { lastToken.hasSuffix($0) }) { return false }
-        return true
+        return !measureSuffixes.contains(where: { lastToken.hasSuffix($0) })
     }
 
     func isDuplicatePriceMark(_ line: String) -> Bool {
         let parts = line.trimmingCharacters(in: .whitespaces)
-            .components(separatedBy: .whitespaces)
-            .filter { !$0.isEmpty }
+            .components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         guard parts.count >= 2, parts.last!.allSatisfy({ $0 == "*" }) else { return false }
         return parsePrice(from: parts.dropLast().joined()) != nil
     }
@@ -307,36 +260,26 @@ private extension ReceiptParserService {
         let stripped = stripCurrencySuffix(from: line)
         let parts = stripped.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         guard parts.count >= 2 else { return nil }
-
         if let amount = parsePrice(from: parts.last!) {
-            let namePart = parts.dropLast(1).joined(separator: " ")
-            return (namePart.trimmingCharacters(in: .whitespaces), amount)
+            return (parts.dropLast(1).joined(separator: " ").trimmingCharacters(in: .whitespaces), amount)
         }
-
         let lastTwo = parts.suffix(2).joined()
         if let amount = parsePrice(from: lastTwo) {
-            let namePart = parts.dropLast(2).joined(separator: " ")
-            return (namePart.trimmingCharacters(in: .whitespaces), amount)
+            return (parts.dropLast(2).joined(separator: " ").trimmingCharacters(in: .whitespaces), amount)
         }
-
         return nil
     }
 
     func findStandalonePrice(in line: String) -> Decimal? {
         var stripped = stripCurrencySuffix(from: line)
-
         let parts = stripped.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        if parts.count == 2,
-           let last = parts.last,
-           last.count == 1, last.first?.isLetter == true {
+        if parts.count == 2, let last = parts.last, last.count == 1, last.first?.isLetter == true {
             stripped = parts[0]
         }
-
         let compact = stripped
             .replacingOccurrences(of: " ", with: "")
             .replacingOccurrences(of: "\u{00A0}", with: "")
         guard !compact.isEmpty else { return nil }
-
         let allowed = CharacterSet.decimalDigits.union(CharacterSet(charactersIn: ".,"))
         guard compact.unicodeScalars.allSatisfy({ allowed.contains($0) }) else { return nil }
         return parsePrice(from: compact)
@@ -355,33 +298,20 @@ private extension ReceiptParserService {
         let normalized = token
             .replacingOccurrences(of: ",", with: ".")
             .replacingOccurrences(of: "\u{00A0}", with: "")
-
         let parts = normalized.components(separatedBy: ".")
-
         if parts.count == 1 {
-            guard !parts[0].isEmpty,
-                  parts[0].allSatisfy({ $0.isNumber }),
-                  parts[0].count >= 2,
-                  parts[0].count <= 6 else { return nil }
+            guard !parts[0].isEmpty, parts[0].allSatisfy({ $0.isNumber }),
+                  parts[0].count >= 2, parts[0].count <= 6 else { return nil }
             guard let amount = Decimal(string: parts[0]), amount >= 5 else { return nil }
             return amount
         }
-
-        guard parts.count == 2,
-              parts[1].count <= 2,
-              parts[1].allSatisfy({ $0.isNumber }),
-              !parts[0].isEmpty,
-              parts[0].allSatisfy({ $0.isNumber }),
+        guard parts.count == 2, parts[1].count <= 2, parts[1].allSatisfy({ $0.isNumber }),
+              !parts[0].isEmpty, parts[0].allSatisfy({ $0.isNumber }),
               parts[0].count <= 6 else { return nil }
-
-        guard let amount = Decimal(string: normalized), amount > 0 else { return nil }
-        guard amount >= 5 else { return nil }
-
+        guard let amount = Decimal(string: normalized), amount >= 5 else { return nil }
         return amount
     }
 
-    /// Removes leading article number from product lines.
-    /// "*3691951 ФРЕГ Скумбрия" → "ФРЕГ Скумбрия"
     func stripArticleNumber(from line: String) -> String {
         var trimmed = line.trimmingCharacters(in: .whitespaces)
         if trimmed.hasPrefix("*") { trimmed = String(trimmed.dropFirst()) }
@@ -402,8 +332,7 @@ private extension ReceiptParserService {
     }
 
     func makeItem(nameParts: [String], amount: Decimal) -> ReceiptItem? {
-        let raw = nameParts.joined(separator: " ")
-        let name = extractMeaningfulWords(from: raw)
+        let name = extractMeaningfulWords(from: nameParts.joined(separator: " "))
         let letterCount = name.unicodeScalars.filter { CharacterSet.letters.contains($0) }.count
         guard letterCount >= minLettersInName else { return nil }
         return ReceiptItem(name: name, amount: amount)
@@ -413,10 +342,7 @@ private extension ReceiptParserService {
         tokenizer.string = text
         languageRecognizer.reset()
         languageRecognizer.processString(text)
-        if let lang = languageRecognizer.dominantLanguage {
-            tokenizer.setLanguage(lang)
-        }
-
+        if let lang = languageRecognizer.dominantLanguage { tokenizer.setLanguage(lang) }
         var words: [String] = []
         tokenizer.enumerateTokens(in: text.startIndex..<text.endIndex) { range, _ in
             let token = String(text[range])
