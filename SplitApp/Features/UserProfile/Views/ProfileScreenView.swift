@@ -62,22 +62,3 @@ struct ProfileScreenView: View {
         )
     }
 }
-
-extension ProfileScreenModel {
-    static let mock = ProfileScreenModel(
-        initials: "ИВ",
-        email: "ivan@example.com",
-        name: "Иван Волков",
-        eventsCountText: "12",
-        friendsCountText: "8",
-        closedBillsText: "€340",
-        openBillsText: "€34"
-    )
-}
-
-#Preview {
-    ProfileScreenView(
-        model: .mock,
-        notificationsEnabled: true
-    )
-}
