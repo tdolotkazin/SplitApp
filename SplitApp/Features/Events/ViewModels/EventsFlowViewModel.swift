@@ -10,12 +10,12 @@ final class EventsFlowViewModel: ObservableObject {
     @Published var showPhotoPicker = false
 
     let homeViewModel: EventsHomeViewModel
-    let scannerViewModel: ReceiptViewModel
+    let scannerViewModel: ReceiptScannerViewModel
     let receiptInputViewModel: ReceiptInputViewModel
 
     init(
         homeViewModel: EventsHomeViewModel,
-        scannerViewModel: ReceiptViewModel,
+        scannerViewModel: ReceiptScannerViewModel,
         receiptInputViewModel: ReceiptInputViewModel
     ) {
         self.homeViewModel = homeViewModel
@@ -27,7 +27,7 @@ final class EventsFlowViewModel: ObservableObject {
         let service = EventManagementService()
         self.init(
             homeViewModel: EventsHomeViewModel(service: service),
-            scannerViewModel: ReceiptViewModel(),
+            scannerViewModel: ReceiptScannerViewModel(),
             receiptInputViewModel: ReceiptInputViewModel(service: service)
         )
     }

@@ -3,7 +3,7 @@ import PhotosUI
 
 @MainActor
 @Observable
-final class ReceiptViewModel {
+final class ReceiptScannerViewModel {
 
     var items: [ReceiptItem] = []
     var isScanning = false
