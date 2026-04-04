@@ -21,4 +21,3 @@ extension ProfileScreenModel {
         self.openBillsText = "€\(response.openBillsAmount)"
     }
 }
-
