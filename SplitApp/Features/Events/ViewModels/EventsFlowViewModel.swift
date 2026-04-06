@@ -8,6 +8,7 @@ final class EventsFlowViewModel: ObservableObject {
     @Published var showScanOptions = false
     @Published var showCamera = false
     @Published var showPhotoPicker = false
+    @Published var showBillEntry = false
 
     let homeViewModel: EventsHomeViewModel
     let scannerViewModel: ReceiptScannerViewModel
@@ -47,6 +48,10 @@ final class EventsFlowViewModel: ObservableObject {
             receiptInputViewModel.resetDraft()
             path.append(.receiptInput)
         }
+    }
+
+    func openBillEntry() {
+        showBillEntry = true
     }
 
     private func openReceiptInputFromScanner() async {

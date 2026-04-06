@@ -10,7 +10,7 @@ struct EventsFlowView: View {
             EventsHomeView(
                 viewModel: viewModel.homeViewModel,
                 onScanTap: viewModel.openScanOptions,
-                onAddTap: viewModel.openReceiptInput
+                onAddTap: viewModel.openBillEntry
             )
             .task {
                 await viewModel.homeViewModel.loadDataIfNeeded()
@@ -22,6 +22,11 @@ struct EventsFlowView: View {
                     ReceiptInputView(viewModel: viewModel.receiptInputViewModel)
                         .navigationBarBackButtonHidden(true)
                 }
+            }
+            .sheet(isPresented: $viewModel.showBillEntry) {
+                BillEntryView()
+                    .presentationDragIndicator(.visible)
+                    .interactiveDismissDisabled()
             }
             .confirmationDialog("Сканировать чек", isPresented: $viewModel.showScanOptions) {
                 Button("Камера") { viewModel.showCamera = true }
