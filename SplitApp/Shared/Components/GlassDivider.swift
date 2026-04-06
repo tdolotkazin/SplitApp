@@ -5,7 +5,7 @@ struct GlassDivider: View {
         LinearGradient(
             colors: [
                 Color.clear,
-                Color.white.opacity(0.15),
+                AppTheme.dividerHighlight,
                 Color.clear
             ],
             startPoint: .leading,

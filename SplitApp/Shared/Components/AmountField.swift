@@ -39,7 +39,7 @@ struct AmountField: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Color.white.opacity(isFocused ? 0.1 : 0.05))
+        .background(isFocused ? AppTheme.inputBackgroundFocused : AppTheme.inputBackground)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)

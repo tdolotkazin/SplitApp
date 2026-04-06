@@ -14,7 +14,7 @@ struct GlassButton: View {
             label: {
                 Text(title)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AppTheme.accentForeground)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
                     .background(AppTheme.accentGradient)

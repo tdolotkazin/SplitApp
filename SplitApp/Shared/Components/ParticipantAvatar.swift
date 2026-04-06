@@ -25,7 +25,7 @@ struct ParticipantAvatar: View {
         .clipShape(Circle())
         .overlay(
             Circle()
-                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                .stroke(AppTheme.avatarStroke, lineWidth: 1)
         )
     }
 }

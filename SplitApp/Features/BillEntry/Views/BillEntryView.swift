@@ -3,7 +3,6 @@ import SwiftUI
 struct BillEntryView: View {
     @StateObject private var viewModel = BillViewModel()
     @StateObject private var keyboardObserver = KeyboardObserver()
-    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var showParticipantSheet = false
     @State private var selectedTab: TabItem = .events
     @Environment(\.dismiss) private var dismiss
@@ -98,11 +97,11 @@ struct BillEntryView: View {
                         GlassCard {
                             HStack {
                                 Text("Итого")
-                                    .font(.title2.bold())
+                                    .font(.system(size: 24, weight: .semibold, design: .rounded))
                                     .foregroundStyle(AppTheme.textPrimary)
                                 Spacer()
                                 Text("€\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
-                                    .font(.title.bold())
+                                    .font(.system(size: 32, weight: .bold, design: .rounded))
                                     .foregroundStyle(AppTheme.accent)
                                     .contentTransition(.numericText())
                             }
@@ -153,7 +152,6 @@ struct BillEntryView: View {
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(themeManager.currentTheme == .light ? .light : .dark, for: .navigationBar)
             .sheet(isPresented: $showParticipantSheet) {
                 ParticipantPickerSheet(
                     participants: viewModel.participants,
@@ -168,7 +166,6 @@ struct BillEntryView: View {
                 .presentationDragIndicator(.visible)
             }
         }
-        .preferredColorScheme(themeManager.currentTheme == .light ? .light : .dark)
     }
 }
 
