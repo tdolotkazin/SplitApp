@@ -28,6 +28,9 @@ final class ReceiptScannerViewModel {
         do {
             let lines = try await scanner.recognizeText(in: image)
             items = parser.parse(lines: lines)
+            if items.isEmpty {
+                errorMessage = "Не удалось распознать чек"
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
