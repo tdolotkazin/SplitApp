@@ -5,7 +5,6 @@ struct BillEntryView: View {
     @StateObject private var keyboardObserver = KeyboardObserver()
     @ObservedObject private var themeManager = ThemeManager.shared
     @State private var showParticipantSheet = false
-    @State private var selectedTab: TabItem = .events
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -118,9 +117,6 @@ struct BillEntryView: View {
                         .padding(.top, 16)
                         .padding(.bottom, 8)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
-
-                        CustomTabBar(selectedTab: $selectedTab)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
                 .animation(.spring(response: 0.35, dampingFraction: 0.8), value: keyboardObserver.isVisible)

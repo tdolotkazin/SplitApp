@@ -29,21 +29,9 @@
 		BFD5EB732F7C10E100877F4C /* SplitAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SplitAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		49EF729B2F7D0FEC00BDBEA0 /* Exceptions for "SplitApp" folder in "SplitApp" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-			);
-			target = BFD5EB562F7C10DD00877F4C /* SplitApp */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFD5EB592F7C10DD00877F4C /* SplitApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				49EF729B2F7D0FEC00BDBEA0 /* Exceptions for "SplitApp" folder in "SplitApp" target */,
-			);
 			path = SplitApp;
 			sourceTree = "<group>";
 		};
