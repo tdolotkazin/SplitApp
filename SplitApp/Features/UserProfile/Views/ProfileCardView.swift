@@ -33,7 +33,6 @@ struct ProfileCardView: View {
             Text(name)
                 .font(.title3)
                 .fontWeight(.semibold)
-            
             Text(email)
                 .font(.subheadline)
                 .foregroundColor(.gray)

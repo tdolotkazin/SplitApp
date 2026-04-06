@@ -16,7 +16,6 @@ struct ProfileScreenView: View {
         ZStack(alignment: .bottom) {
             Color(.systemGray6)
                 .ignoresSafeArea()
-
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     profileText
@@ -27,7 +26,6 @@ struct ProfileScreenView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
             }
-
             BottomTabBarView()
         }
     }

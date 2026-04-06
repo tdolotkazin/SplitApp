@@ -24,12 +24,12 @@ struct ProfileSettingsCardView: View {
                     .labelsHidden()
                     .tint(.green)
             }
-             Divider()
+            Divider()
                 .padding(.leading, 68)
-
+            
         }
     }
-
+    
     private var settings: some View {
         ProfileSettingsRowView(
             icon: "rectangle.portrait.and.arrow.right",
