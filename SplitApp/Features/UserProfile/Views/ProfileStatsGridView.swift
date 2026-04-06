@@ -5,12 +5,12 @@ struct ProfileStatsGridView: View {
     let friendsCountText: String
     let closedBillsText: String
     let openBillsText: String
-    
+
     private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
-    
+
     var body: some View {
         LazyVGrid(columns: columns, spacing: 16) {
             events
@@ -19,7 +19,7 @@ struct ProfileStatsGridView: View {
             openBill
         }
     }
-    
+
     private var events: some View {
         ProfileStatCardView(
             title: "События",
@@ -27,7 +27,7 @@ struct ProfileStatsGridView: View {
             valueColor: .black
         )
     }
-    
+
     private var friends: some View {
         ProfileStatCardView(
             title: "Друзья",
@@ -35,7 +35,7 @@ struct ProfileStatsGridView: View {
             valueColor: .black
         )
     }
-    
+
     private var closeBill: some View {
         ProfileStatCardView(
             title: "Закрытые счета",
@@ -43,7 +43,7 @@ struct ProfileStatsGridView: View {
             valueColor: .green
         )
     }
-    
+
     private var openBill: some View {
         ProfileStatCardView(
             title: "Открытые счета",
