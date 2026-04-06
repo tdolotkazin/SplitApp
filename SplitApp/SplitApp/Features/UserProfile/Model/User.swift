@@ -1,18 +1,13 @@
-//
-//  User.swift
-//  SplitApp
-//
-//  Created by Valentina Dorina on 31.03.2026.
-//
-
 import Foundation
 
-struct User: Hashable {
-    let id: UUID
-    var name: String
+struct User {
+    let id: String
+    let token: String
+    let provider: AuthProvider
+}
 
-    init(from authUser: AuthUser) {
-        self.id = authUser.id
-        self.name = authUser.name
-    }
+enum AuthProvider {
+    case yandex
+   // case google
+    case apple
 }

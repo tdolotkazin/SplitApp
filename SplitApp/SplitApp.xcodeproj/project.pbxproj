@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BFD5EE1C2F7F466100877F4C /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = BFD5EE1B2F7F466100877F4C /* GoogleSignIn */; };
+		BFD5EE1E2F7F466100877F4C /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = BFD5EE1D2F7F466100877F4C /* GoogleSignInSwift */; };
+		BFD5EE212F7F473B00877F4C /* YandexLoginSDK in Frameworks */ = {isa = PBXBuildFile; productRef = BFD5EE202F7F473B00877F4C /* YandexLoginSDK */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BFD5EB6A2F7C10E100877F4C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,14 +30,27 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		BFD5EB572F7C10DD00877F4C /* SplitApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SplitApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BFD5EB692F7C10E100877F4C /* SplitAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SplitAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BFD5EB732F7C10E100877F4C /* SplitAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SplitAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFD5EDC42F7F446500877F4C /* SplitApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SplitApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFD5EDC52F7F446500877F4C /* SplitAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SplitAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFD5EDC62F7F446500877F4C /* SplitAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SplitAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BFD5EE282F7F51E500877F4C /* Exceptions for "SplitApp" folder in "SplitApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BFD5EB562F7C10DD00877F4C /* SplitApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFD5EB592F7C10DD00877F4C /* SplitApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BFD5EE282F7F51E500877F4C /* Exceptions for "SplitApp" folder in "SplitApp" target */,
+			);
 			path = SplitApp;
 			sourceTree = "<group>";
 		};
@@ -52,6 +71,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BFD5EE1C2F7F466100877F4C /* GoogleSignIn in Frameworks */,
+				BFD5EE212F7F473B00877F4C /* YandexLoginSDK in Frameworks */,
+				BFD5EE1E2F7F466100877F4C /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,18 +100,10 @@
 				BFD5EB592F7C10DD00877F4C /* SplitApp */,
 				BFD5EB6C2F7C10E100877F4C /* SplitAppTests */,
 				BFD5EB762F7C10E100877F4C /* SplitAppUITests */,
-				BFD5EB582F7C10DD00877F4C /* Products */,
+				BFD5EDC42F7F446500877F4C /* SplitApp.app */,
+				BFD5EDC52F7F446500877F4C /* SplitAppTests.xctest */,
+				BFD5EDC62F7F446500877F4C /* SplitAppUITests.xctest */,
 			);
-			sourceTree = "<group>";
-		};
-		BFD5EB582F7C10DD00877F4C /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				BFD5EB572F7C10DD00877F4C /* SplitApp.app */,
-				BFD5EB692F7C10E100877F4C /* SplitAppTests.xctest */,
-				BFD5EB732F7C10E100877F4C /* SplitAppUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,9 +126,12 @@
 			);
 			name = SplitApp;
 			packageProductDependencies = (
+				BFD5EE1B2F7F466100877F4C /* GoogleSignIn */,
+				BFD5EE1D2F7F466100877F4C /* GoogleSignInSwift */,
+				BFD5EE202F7F473B00877F4C /* YandexLoginSDK */,
 			);
 			productName = SplitApp;
-			productReference = BFD5EB572F7C10DD00877F4C /* SplitApp.app */;
+			productReference = BFD5EDC42F7F446500877F4C /* SplitApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 		BFD5EB682F7C10E100877F4C /* SplitAppTests */ = {
@@ -137,7 +154,7 @@
 			packageProductDependencies = (
 			);
 			productName = SplitAppTests;
-			productReference = BFD5EB692F7C10E100877F4C /* SplitAppTests.xctest */;
+			productReference = BFD5EDC52F7F446500877F4C /* SplitAppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		BFD5EB722F7C10E100877F4C /* SplitAppUITests */ = {
@@ -160,7 +177,7 @@
 			packageProductDependencies = (
 			);
 			productName = SplitAppUITests;
-			productReference = BFD5EB732F7C10E100877F4C /* SplitAppUITests.xctest */;
+			productReference = BFD5EDC62F7F446500877F4C /* SplitAppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -195,8 +212,12 @@
 			);
 			mainGroup = BFD5EB4E2F7C10DD00877F4C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BFD5EE1A2F7F466100877F4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				BFD5EE1F2F7F473B00877F4C /* XCRemoteSwiftPackageReference "yandex-login-sdk-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = BFD5EB582F7C10DD00877F4C /* Products */;
+			productRefGroup = BFD5EB4E2F7C10DD00877F4C;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -393,10 +414,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = SplitApp/SplitApp.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = S23K6FZZPL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SplitApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -408,8 +434,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dorina.valentuna.SplitApp;
+				PRODUCT_BUNDLE_IDENTIFIER = tech.splitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = SplitApp;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -425,10 +453,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = SplitApp/SplitApp.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = S23K6FZZPL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SplitApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -440,8 +473,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dorina.valentuna.SplitApp;
+				PRODUCT_BUNDLE_IDENTIFIER = tech.splitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = SplitApp;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -572,6 +607,43 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BFD5EE1A2F7F466100877F4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
+		BFD5EE1F2F7F473B00877F4C /* XCRemoteSwiftPackageReference "yandex-login-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/yandexmobile/yandex-login-sdk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BFD5EE1B2F7F466100877F4C /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD5EE1A2F7F466100877F4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		BFD5EE1D2F7F466100877F4C /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD5EE1A2F7F466100877F4C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+		BFD5EE202F7F473B00877F4C /* YandexLoginSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFD5EE1F2F7F473B00877F4C /* XCRemoteSwiftPackageReference "yandex-login-sdk-ios" */;
+			productName = YandexLoginSDK;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BFD5EB4F2F7C10DD00877F4C /* Project object */;
 }
