@@ -38,7 +38,7 @@ struct BillItemRow: View {
                     .frame(maxWidth: .infinity)
 
                 AmountField(amount: $amount)
-                    .frame(width: 80)
+                    .frame(width: BillEntryColumns.amountWidth)
                     .onChange(of: amount) { _, newValue in
                         onUpdate(name, newValue)
                     }
@@ -58,18 +58,20 @@ struct BillItemRow: View {
                     label: {
                         if let participant = item.assignedTo {
                             ParticipantAvatar(participant: participant)
+                                .frame(maxWidth: .infinity)
                         } else {
                             HStack(spacing: 4) {
                                 Image(systemName: "person.circle.fill")
-                                    .font(.system(size: 16))
+                                    .font(.system(size: 17))
                                 Text("Кто?")
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(.system(size: 14, weight: .medium))
                             }
                             .foregroundStyle(AppTheme.textTertiary)
-                            .frame(width: 70)
+                            .frame(maxWidth: .infinity)
                         }
                     }
                 )
+                .frame(width: BillEntryColumns.participantWidth)
                 .buttonStyle(PlainButtonStyle())
             }
         }

@@ -16,7 +16,7 @@ struct AddItemButton: View {
             .foregroundStyle(AppTheme.accent)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
-            .background(Color.white.opacity(0.05))
+            .background(AppTheme.surfaceOverlay)
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
