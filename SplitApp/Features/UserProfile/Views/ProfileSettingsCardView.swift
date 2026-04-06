@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProfileSettingsCardView: View {
     @Binding var notificationsEnabled: Bool
-    
+
     var body: some View {
         VStack(spacing: 0) {
             notifications
@@ -11,7 +11,7 @@ struct ProfileSettingsCardView: View {
         .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 24))
     }
-    
+
     private var notifications: some View {
         VStack {
             ProfileSettingsRowView(
@@ -26,10 +26,9 @@ struct ProfileSettingsCardView: View {
             }
             Divider()
                 .padding(.leading, 68)
-            
         }
     }
-    
+
     private var settings: some View {
         ProfileSettingsRowView(
             icon: "rectangle.portrait.and.arrow.right",

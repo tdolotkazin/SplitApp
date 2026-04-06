@@ -7,7 +7,7 @@ struct ProfileSettingsRowView<Trailing: View>: View {
     let iconColor: Color
     let iconBackgroundColor: Color
     let trailing: Trailing
-    
+
     init(
         icon: String,
         title: String,
@@ -23,7 +23,7 @@ struct ProfileSettingsRowView<Trailing: View>: View {
         self.iconBackgroundColor = iconBackgroundColor
         self.trailing = trailing()
     }
-    
+
     var body: some View {
         HStack(spacing: 14) {
             settingsIcon
@@ -34,18 +34,17 @@ struct ProfileSettingsRowView<Trailing: View>: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 18)
     }
-    
+
     private var settingsIcon: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
                 .fill(iconBackgroundColor)
                 .frame(width: 40, height: 40)
-            
             Image(systemName: icon)
                 .foregroundColor(iconColor)
         }
     }
-    
+
     private var settingsText: some View {
         Text(title)
             .font(.body)

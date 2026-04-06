@@ -4,7 +4,7 @@ struct ProfileCardView: View {
     let initials: String
     let name: String
     let email: String
-    
+
     var body: some View {
         HStack(spacing: 16) {
             avatarCircleWithInitials
@@ -15,7 +15,7 @@ struct ProfileCardView: View {
         .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 24))
     }
-    
+
     private var avatarCircleWithInitials: some View {
         Circle()
             .fill(.green.opacity(0.6))
@@ -27,7 +27,7 @@ struct ProfileCardView: View {
                     .foregroundColor(.white)
             }
     }
-    
+
     private var profileText: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(name)

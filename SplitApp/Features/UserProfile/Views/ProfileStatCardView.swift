@@ -4,7 +4,7 @@ struct ProfileStatCardView: View {
     let title: String
     let value: String
     let valueColor: Color
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
@@ -13,7 +13,6 @@ struct ProfileStatCardView: View {
             Text(value)
                 .font(.system(size: 28, weight: .medium))
                 .foregroundStyle(valueColor)
-            
             Spacer(minLength: 0)
         }
         .padding(20)
