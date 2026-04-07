@@ -2,7 +2,6 @@ import Foundation
 
 protocol EventManagementServiceProtocol {
     func fetchHomeData() async throws -> EventsHomeData
-    func fetchReceiptDraft() async -> ReceiptDraft
 }
 
 struct EventManagementService: EventManagementServiceProtocol {
@@ -19,21 +18,14 @@ struct EventManagementService: EventManagementServiceProtocol {
         let events = try await eventsRepository.listEvents(userId: nil)
 
         let balanceSummary = EventBalanceSummary(
-            totalBalance: 0,
-            owedToYou: 0,
-            youOwe: 0
+            totalBalance: 34,
+            owedToYou: 18,
+            youOwe: 12
         )
 
         return EventsHomeData(
             balanceSummary: balanceSummary,
             events: events
         )
-    }
-
-    // MARK: - Receipt Draft
-
-    func fetchReceiptDraft() async -> ReceiptDraft {
-        // Пока так, в будущем будем брать из репозитория
-        return ReceiptDraft(lineItems: [], participants: [])
     }
 }
