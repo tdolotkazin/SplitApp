@@ -1,7 +1,6 @@
 import Foundation
 import CoreData
 
-// FIXME: Протокол возвращает DTO вместо Domain моделей. Создать Domain Payment и PaymentMapper когда потребуется UI.
 protocol PaymentsRepositoryProtocol {
     func listPayments(eventId: UUID) async throws -> [PaymentDTO]
     func createPayment(eventId: UUID, _ request: CreatePaymentRequest) async throws -> PaymentDTO

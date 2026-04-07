@@ -1,7 +1,6 @@
 import Foundation
 import CoreData
 
-// FIXME: Протокол возвращает DTO вместо Domain моделей. Создать Domain Receipt и ReceiptMapper когда потребуется UI.
 protocol ReceiptsRepositoryProtocol {
     func listReceipts(eventId: UUID) async throws -> [ReceiptDTO]
     func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> ReceiptDTO
