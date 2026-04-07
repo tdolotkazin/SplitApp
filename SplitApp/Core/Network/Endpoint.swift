@@ -16,4 +16,3 @@ protocol Endpoint {
 extension Endpoint {
     var queryItems: [URLQueryItem]? { nil }
 }
-

@@ -16,7 +16,7 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
         self.apiClient = apiClient
         self.coreDataStore = coreDataStore
     }
-    
+
     func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> ReceiptDTO {
         let dto: ReceiptDTO = try await apiClient.request(
             endpoint: CreateReceiptEndpoint(eventId: eventId),

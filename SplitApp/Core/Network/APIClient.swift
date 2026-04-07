@@ -25,11 +25,11 @@ final class APIClient {
             manualFormatter.locale = Locale(identifier: "en_US_POSIX")
             manualFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
             manualFormatter.timeZone = TimeZone(identifier: "UTC")
-            
+
             if let date = manualFormatter.date(from: dateString) {
                 return date
             }
-            
+
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date")
         }
 
