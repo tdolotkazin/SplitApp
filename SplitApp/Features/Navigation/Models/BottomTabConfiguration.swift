@@ -66,16 +66,15 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    let model = ProfileScreenModel(
-                        initials: "JD",
-                        email: "john.doe@example.com",
-                        name: "John Doe",
+                    ProfileScreenView(model: ProfileScreenModel(
+                        initials: "ИВ",
+                        email: "ivan@example.com",
+                        name: "Иван Волков",
                         eventsCountText: "12",
                         friendsCountText: "8",
-                        closedBillsText: "€150",
-                        openBillsText: "€45"
+                        closedBillsText: "€340",
+                        openBillsText: "€34")
                     )
-                    return ProfileScreenView(model: model)
                 }
             ]
         )
