@@ -29,18 +29,21 @@ struct FriendDebtCard: View {
 
                 Spacer()
 
-                Button(action: {
-                    hideKeyboard()
-                    onSettle()
-                }) {
-                    Text("Закрыть")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.accent)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(AppTheme.accent.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
+                Button(
+                    action: {
+                        hideKeyboard()
+                        onSettle()
+                    },
+                    label: {
+                        Text("Закрыть")
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.accent)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(AppTheme.accent.opacity(0.15))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                )
                 .buttonStyle(PlainButtonStyle())
                 .scaleEffect(isPressed ? 0.95 : 1.0)
                 .simultaneousGesture(
