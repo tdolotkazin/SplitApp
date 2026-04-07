@@ -5,10 +5,7 @@ import Combine
 class BillViewModel: ObservableObject {
     @Published var items: [BillItem] = []
     @Published var participants: [Participant] = []
-    @Published var isAddingItem: Bool = false
     @Published var selectedItemForAssignment: BillItem?
-    @Published var showParticipantPicker: Bool = false
-    @Published var triggerAnimation: UUID = UUID()
 
     var total: Decimal {
         items.reduce(0) { $0 + $1.amount }
@@ -28,11 +25,17 @@ class BillViewModel: ObservableObject {
     }
 
     func addItem() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-            let newItem = BillItem(name: "", amount: 0, isEditing: true)
+        let newItem = BillItem(name: "", amount: 0, isEditing: true)
+        var transaction = Transaction()
+        transaction.animation = nil
+
+        withTransaction(transaction) {
             items.append(newItem)
-            isAddingItem = true
-            triggerAnimation = UUID()
+        }
+
+        // Mark insertion animation as completed so it doesn't replay.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+            self?.finishInsertAnimation(for: newItem.id)
         }
 
         // Haptic feedback
@@ -91,5 +94,10 @@ class BillViewModel: ObservableObject {
         // Haptic feedback
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
+    }
+
+    private func finishInsertAnimation(for id: UUID) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].isEditing = false
     }
 }

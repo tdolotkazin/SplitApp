@@ -3,8 +3,6 @@ import SwiftUI
 struct AddItemButton: View {
     let action: () -> Void
 
-    @State private var isPulsing = false
-
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
@@ -22,13 +20,7 @@ struct AddItemButton: View {
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
                     .stroke(AppTheme.accent.opacity(0.3), lineWidth: 1)
             )
-            .scaleEffect(isPulsing ? 1.02 : 1.0)
         }
         .buttonStyle(PlainButtonStyle())
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                isPulsing = true
-            }
-        }
     }
 }
