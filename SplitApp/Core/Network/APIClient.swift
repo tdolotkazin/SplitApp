@@ -17,7 +17,21 @@ final class APIClient {
 
     private init() {
         self.decoder = JSONDecoder()
-        self.decoder.dateDecodingStrategy = .iso8601
+        self.decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+
+            let manualFormatter = DateFormatter()
+            manualFormatter.locale = Locale(identifier: "en_US_POSIX")
+            manualFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+            manualFormatter.timeZone = TimeZone(identifier: "UTC")
+
+            if let date = manualFormatter.date(from: dateString) {
+                return date
+            }
+
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date")
+        }
 
         self.encoder = JSONEncoder()
         self.encoder.dateEncodingStrategy = .iso8601
