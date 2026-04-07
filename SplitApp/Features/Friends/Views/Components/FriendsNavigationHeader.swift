@@ -5,7 +5,6 @@ struct FriendsNavigationHeader: View {
 
     @State private var isPressed = false
 
-
     var body: some View {
         HStack(alignment: .center) {
             Text("Друзья")

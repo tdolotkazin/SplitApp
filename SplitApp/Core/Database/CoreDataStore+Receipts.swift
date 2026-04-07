@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-
     /// Insert or update a single receipt from DTO, including nested items and share items.
     func upsertReceipt(_ dto: ReceiptDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
@@ -44,7 +43,6 @@ extension CoreDataStore {
         }
     }
 
-
     /// Fetch all receipts for a given event.
     func fetchReceipts(eventId: UUID, in context: NSManagedObjectContext) throws -> [CDReceipt] {
         let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
@@ -52,7 +50,6 @@ extension CoreDataStore {
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDReceipt.createdAt, ascending: false)]
         return try context.fetch(fetchRequest)
     }
-
 
     /// Delete a receipt by ID (cascades to items and share items).
     func deleteReceipt(id: UUID, in context: NSManagedObjectContext) throws {

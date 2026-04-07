@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-
     /// Insert or update a single payment from DTO.
     func upsertPayment(_ dto: PaymentDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDPayment> = CDPayment.fetchRequest()
@@ -27,7 +26,6 @@ extension CoreDataStore {
         }
     }
 
-
     /// Fetch all payments for a given event.
     func fetchPayments(eventId: UUID, in context: NSManagedObjectContext) throws -> [CDPayment] {
         let fetchRequest: NSFetchRequest<CDPayment> = CDPayment.fetchRequest()
@@ -35,7 +33,6 @@ extension CoreDataStore {
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDPayment.createdAt, ascending: false)]
         return try context.fetch(fetchRequest)
     }
-
 
     /// Delete a payment by ID.
     func deletePayment(id: UUID, in context: NSManagedObjectContext) throws {

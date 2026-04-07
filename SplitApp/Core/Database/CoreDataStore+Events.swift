@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-
     /// Insert or update a single event from DTO.
     func upsertEvent(_ dto: EventDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
@@ -27,7 +26,6 @@ extension CoreDataStore {
         }
     }
 
-
     /// Fetch a single event by ID.
     func fetchEvent(id: UUID, in context: NSManagedObjectContext) throws -> CDEvent? {
         let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
@@ -42,7 +40,6 @@ extension CoreDataStore {
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDEvent.createdAt, ascending: false)]
         return try context.fetch(fetchRequest)
     }
-
 
     /// Delete an event by ID (cascades to receipts and payments).
     func deleteEvent(id: UUID, in context: NSManagedObjectContext) throws {

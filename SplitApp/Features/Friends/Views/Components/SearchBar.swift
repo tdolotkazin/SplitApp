@@ -4,7 +4,6 @@ struct SearchBar: View {
     @Binding var searchText: String
     @FocusState private var isFocused: Bool
 
-
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
@@ -19,15 +18,18 @@ struct SearchBar: View {
                 .textInputAutocapitalization(.never)
 
             if !searchText.isEmpty {
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        searchText = ""
+                Button(
+                    action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            searchText = ""
+                        }
+                    },
+                    label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(AppTheme.textTertiary.opacity(0.6))
                     }
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(AppTheme.textTertiary.opacity(0.6))
-                }
+                )
                 .buttonStyle(PlainButtonStyle())
                 .transition(.scale.combined(with: .opacity))
             }

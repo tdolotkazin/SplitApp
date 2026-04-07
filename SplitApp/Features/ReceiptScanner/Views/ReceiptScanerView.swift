@@ -39,7 +39,6 @@ struct ReceiptScannerView: View {
         }
     }
 
-
     private var emptyState: some View {
         ContentUnavailableView(
             "Нет данных",
@@ -89,7 +88,6 @@ struct ReceiptScannerView: View {
         }
     }
 }
-
 
 private struct CameraSheet: UIViewControllerRepresentable {
 

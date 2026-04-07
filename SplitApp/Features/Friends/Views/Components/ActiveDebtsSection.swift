@@ -4,7 +4,6 @@ struct ActiveDebtsSection: View {
     let debts: [FriendDebt]
     let onSettle: (FriendDebt) -> Void
 
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "Активные долги")

@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-
     /// Insert or update a single user from DTO.
     func upsertUser(_ dto: UserDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDUser> = CDUser.fetchRequest()
@@ -21,7 +20,6 @@ extension CoreDataStore {
         }
     }
 
-
     /// Fetch a single user by ID.
     func fetchUser(id: UUID, in context: NSManagedObjectContext) throws -> CDUser? {
         let fetchRequest: NSFetchRequest<CDUser> = CDUser.fetchRequest()
@@ -36,7 +34,6 @@ extension CoreDataStore {
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDUser.name, ascending: true)]
         return try context.fetch(fetchRequest)
     }
-
 
     /// Delete a user by ID.
     func deleteUser(id: UUID, in context: NSManagedObjectContext) throws {

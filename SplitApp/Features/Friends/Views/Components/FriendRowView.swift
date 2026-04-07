@@ -3,7 +3,6 @@ import SwiftUI
 struct FriendRowView: View {
     let friend: Friend
 
-
     var body: some View {
         HStack(spacing: 12) {
             FriendAvatar(friend: friend, size: 56)

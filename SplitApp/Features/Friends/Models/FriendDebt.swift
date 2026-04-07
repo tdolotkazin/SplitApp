@@ -11,7 +11,6 @@ struct FriendDebt: Identifiable {
     let amount: Decimal
     let type: DebtType
 
-
     init(id: UUID = UUID(), friend: Friend, amount: Decimal, type: DebtType) {
         self.id = id
         self.friend = friend
