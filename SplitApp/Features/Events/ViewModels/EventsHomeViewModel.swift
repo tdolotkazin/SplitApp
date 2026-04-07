@@ -51,4 +51,3 @@ final class EventsHomeViewModel: ObservableObject {
         return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
-
