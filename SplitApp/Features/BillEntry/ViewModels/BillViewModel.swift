@@ -15,7 +15,6 @@ class BillViewModel: ObservableObject {
     }
 
     init() {
-        // Предзаполнение тестовыми участниками
         participants = [
             Participant(name: "Артём", initials: "АР", color: Color(hex: "#7C3AED")),
             Participant(name: "Маша", initials: "МС", color: Color(hex: "#06B6D4")),
@@ -25,14 +24,6 @@ class BillViewModel: ObservableObject {
         let scanned = ScannedReceiptStore.shared.consume()
         if !scanned.isEmpty {
             items = scanned
-        } else {
-            // Предзаполнение тестовыми позициями
-            items = [
-                BillItem(name: "Пицца Маргарита", amount: 12, assignedTo: participants[0]),
-                BillItem(name: "Пицца Пепперони", amount: 13, assignedTo: participants[1]),
-                BillItem(name: "Газировка", amount: 8, assignedTo: participants[2]),
-                BillItem(name: "Десерт", amount: 0, assignedTo: nil)
-            ]
         }
     }
 
