@@ -44,6 +44,7 @@ final class ReceiptViewModel {
 
     private func loadFromPhoto() async {
         guard let photo = selectedPhoto else { return }
+        selectedPhoto = nil
         await process(photo: photo)
     }
 }

@@ -117,7 +117,6 @@ struct BillEntryView: View {
 
                         GlassButton(title: "Разделить счёт") {
                             viewModel.save()
-                            dismiss()
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
@@ -147,7 +146,6 @@ struct BillEntryView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Готово") {
                         viewModel.save()
-                        dismiss()
                     }
                     .foregroundStyle(AppTheme.accent)
                     .font(.system(size: 17, weight: .semibold))
