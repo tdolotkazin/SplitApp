@@ -130,7 +130,7 @@ private struct BalanceMiniTile: View {
 
 #Preview {
     EventsHomeView(
-        viewModel: .mock(),
+        viewModel: EventsHomeViewModel(service: EventManagementService()),
         onScanTap: {},
         onAddTap: {}
     )

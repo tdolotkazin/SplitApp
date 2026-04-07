@@ -30,20 +30,15 @@ final class EventsRepository: EventsRepositoryProtocol {
     }
 
     func listEvents(userId: UUID? = nil) async throws -> [Event] {
-        // 1. Try fetching from API
         do {
             let dtos: [EventDTO] = try await apiClient.request(endpoint: ListEventsEndpoint(userId: userId))
 
-            // Save to local cache
             try await coreDataStore.performBackground { [weak self] context in
                 try self?.upsertEvents(dtos, in: context)
             }
 
             return dtos.map(EventMapper.mapToDomain)
         } catch {
-            // 2. API failed — fall back to local CoreData cache
-            print("Сеть недоступна, загружаем из локального кэша: \(error.localizedDescription)")
-
             let cachedEvents: [Event] = try await coreDataStore.performBackground { context in
                 let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
                 fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDEvent.createdAt, ascending: false)]
@@ -52,7 +47,7 @@ final class EventsRepository: EventsRepositoryProtocol {
             }
 
             if cachedEvents.isEmpty {
-                throw error // No cache — propagate original network error
+                throw error
             }
 
             return cachedEvents
@@ -96,10 +91,8 @@ final class EventsRepository: EventsRepositoryProtocol {
 
         let existing = try context.fetch(fetchRequest).first
         let event = existing ?? CDEvent(context: context)
-        // Ensure CDEvent+DTO exists in DTOMappers
         event.update(from: dto)
 
-        // Sync participants
         let participantFetch: NSFetchRequest<CDUser> = CDUser.fetchRequest()
         participantFetch.predicate = NSPredicate(format: "id IN %@", dto.users)
         let participants = try context.fetch(participantFetch)
