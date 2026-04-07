@@ -4,16 +4,17 @@ import Combine
 @MainActor
 final class EventsNavigationViewModel: ObservableObject {
     @Published var path: [EventsNavigationRoute] = []
+    @Published var showBillEntry = false
 
     let homeViewModel: EventsHomeViewModel
-    let scannerViewModel: ReceiptScannerViewModel
+    let scannerViewModel: ReceiptViewModel
     let receiptInputViewModel: ReceiptInputViewModel
 
     private let rules: EventsNavigationRules
 
     init(
         homeViewModel: EventsHomeViewModel,
-        scannerViewModel: ReceiptScannerViewModel,
+        scannerViewModel: ReceiptViewModel,
         receiptInputViewModel: ReceiptInputViewModel,
         rules: EventsNavigationRules
     ) {
@@ -29,7 +30,7 @@ final class EventsNavigationViewModel: ObservableObject {
     ) {
         self.init(
             homeViewModel: EventsHomeViewModel(service: service),
-            scannerViewModel: ReceiptScannerViewModel(),
+            scannerViewModel: ReceiptViewModel(),
             receiptInputViewModel: ReceiptInputViewModel(service: service),
             rules: rules
         )
@@ -55,6 +56,13 @@ final class EventsNavigationViewModel: ObservableObject {
                 receiptInputViewModel.resetDraft()
                 path.append(.receiptInput)
             }
+        case .billEntry:
+            let billItems = scannerViewModel.items.map {
+                BillItem(name: $0.name, amount: $0.amount)
+            }
+            ScannedReceiptStore.shared.store(billItems)
+            path.removeAll()        // убираем камеру со стека
+            showBillEntry = true
         }
     }
 }

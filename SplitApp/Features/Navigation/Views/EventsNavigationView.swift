@@ -28,7 +28,7 @@ struct EventsNavigationView: View {
             .navigationDestination(for: EventsNavigationRoute.self) { route in
                 switch route {
                 case .scanner:
-                    ReceiptScannerView(
+                    CameraView(
                         viewModel: viewModel.scannerViewModel,
                         onCapture: { viewModel.handle(.scannerCaptureCompleted) }
                     )
@@ -36,8 +36,13 @@ struct EventsNavigationView: View {
                 case .receiptInput:
                     ReceiptInputView(viewModel: viewModel.receiptInputViewModel)
                         .navigationBarBackButtonHidden(true)
+                case .billEntry:
+                    EmptyView()
                 }
             }
+        }
+        .fullScreenCover(isPresented: $viewModel.showBillEntry) {
+            BillEntryView()
         }
     }
 }
