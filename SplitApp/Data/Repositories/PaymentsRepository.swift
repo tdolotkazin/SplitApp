@@ -17,32 +17,32 @@ final class PaymentsRepository: PaymentsRepositoryProtocol {
     }
 
     func createPayment(eventId: UUID, _ request: CreatePaymentRequest) async throws -> PaymentDTO {
-        let dto: PaymentDTO = try await apiClient.request(endpoint: CreatePaymentEndpoint(eventId: eventId), body: request)
-        
+        let dto: PaymentDTO = try await apiClient.request(
+            endpoint: CreatePaymentEndpoint(eventId: eventId),
+            body: request
+        )
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertPayment(dto, in: context)
         }
-        
         return dto
     }
 
     func listPayments(eventId: UUID) async throws -> [PaymentDTO] {
         let dtos: [PaymentDTO] = try await apiClient.request(endpoint: ListPaymentsEndpoint(eventId: eventId))
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertPayments(dtos, in: context)
         }
-        
         return dtos
     }
 
     func updatePayment(id: UUID, _ request: UpdatePaymentRequest) async throws -> PaymentDTO {
-        let dto: PaymentDTO = try await apiClient.request(endpoint: UpdatePaymentEndpoint(id: id), body: request)
-        
+        let dto: PaymentDTO = try await apiClient.request(
+            endpoint: UpdatePaymentEndpoint(id: id),
+            body: request
+        )
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertPayment(dto, in: context)
         }
-        
         return dto
     }
 

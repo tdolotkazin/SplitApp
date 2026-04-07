@@ -10,7 +10,6 @@ protocol EventsRepositoryProtocol {
     func removeParticipant(eventId: UUID, userId: UUID) async throws
 }
 
-
 final class EventsRepository: EventsRepositoryProtocol {
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
@@ -24,11 +23,9 @@ final class EventsRepository: EventsRepositoryProtocol {
 
     func createEvent(_ request: CreateEventRequest) async throws -> Event {
         let dto: EventDTO = try await apiClient.request(endpoint: CreateEventEndpoint(), body: request)
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertEvent(dto, in: context)
         }
-        
         return EventMapper.mapToDomain(dto: dto)
     }
 
@@ -64,26 +61,25 @@ final class EventsRepository: EventsRepositoryProtocol {
 
     func getEvent(id: UUID) async throws -> Event {
         let dto: EventDTO = try await apiClient.request(endpoint: GetEventEndpoint(id: id))
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertEvent(dto, in: context)
         }
-        
         return EventMapper.mapToDomain(dto: dto)
     }
 
     func updateEvent(id: UUID, _ request: UpdateEventRequest) async throws -> Event {
         let dto: EventDTO = try await apiClient.request(endpoint: UpdateEventEndpoint(id: id), body: request)
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertEvent(dto, in: context)
         }
-        
         return EventMapper.mapToDomain(dto: dto)
     }
 
     func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User] {
-        let dtos: [UserDTO] = try await apiClient.request(endpoint: AddParticipantsEndpoint(eventId: eventId), body: request)
+        let dtos: [UserDTO] = try await apiClient.request(
+            endpoint: AddParticipantsEndpoint(eventId: eventId),
+            body: request
+        )
         return dtos.map(UserMapper.mapToDomain)
     }
 

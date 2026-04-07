@@ -16,11 +16,9 @@ final class UsersRepository: UsersRepositoryProtocol {
 
     func createUser(_ request: CreateUserRequest) async throws -> User {
         let dto: UserDTO = try await apiClient.request(endpoint: CreateUserEndpoint(), body: request)
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertUser(dto, in: context)
         }
-        
         return UserMapper.mapToDomain(dto: dto)
     }
 

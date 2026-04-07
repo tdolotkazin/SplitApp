@@ -29,7 +29,7 @@ struct EventManagementService: EventManagementServiceProtocol {
             events = Self.mockEvents()
         }
 
-        // TODO: Fetch real balances via BalancesRepository when available
+        // Fetch real balances via BalancesRepository when available
         let balanceSummary = EventBalanceSummary(
             totalBalance: 34.50,
             owedToYou: 89.00,

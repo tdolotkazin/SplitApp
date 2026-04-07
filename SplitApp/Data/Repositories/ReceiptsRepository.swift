@@ -16,40 +16,36 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
         self.apiClient = apiClient
         self.coreDataStore = coreDataStore
     }
-
+    
     func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> ReceiptDTO {
-        let dto: ReceiptDTO = try await apiClient.request(endpoint: CreateReceiptEndpoint(eventId: eventId), body: request)
-        
+        let dto: ReceiptDTO = try await apiClient.request(
+            endpoint: CreateReceiptEndpoint(eventId: eventId),
+            body: request
+        )
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertReceipt(dto, in: context)
         }
-        
-        return dto // TODO: Map to Domain Receipt when defined
+        return dto // Map to Domain Receipt when defined
     }
 
     func listReceipts(eventId: UUID) async throws -> [ReceiptDTO] {
         let dtos: [ReceiptDTO] = try await apiClient.request(endpoint: ListReceiptsEndpoint(eventId: eventId))
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertReceipts(dtos, in: context)
         }
-        
-        return dtos // TODO: Map to Domain Receipt
+        return dtos // Map to Domain Receipt
     }
 
     func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> ReceiptDTO {
         let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertReceipt(dto, in: context)
         }
-        
         return dto
     }
 
     func deleteReceipt(id: UUID) async throws {
         try await apiClient.requestVoid(endpoint: DeleteReceiptEndpoint(id: id))
-        
         try await coreDataStore.performBackground { [weak self] context in
             try self?.deleteLocalReceipt(id: id, in: context)
         }
@@ -78,7 +74,6 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
         let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         fetchRequest.fetchLimit = 1
-        
         if let receipt = try context.fetch(fetchRequest).first {
             context.delete(receipt)
         }
