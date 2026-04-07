@@ -16,19 +16,64 @@ struct EventManagementService: EventManagementServiceProtocol {
     // MARK: - Real Implementation
 
     func fetchHomeData() async throws -> EventsHomeData {
-        let events = try await eventsRepository.listEvents(userId: nil)
+        // Try real API first, fall back to mocks if empty or failed
+        var events: [Event]
+        do {
+            events = try await eventsRepository.listEvents(userId: nil)
+        } catch {
+            print("⚠️ API недоступен, используем моковые данные: \(error.localizedDescription)")
+            events = []
+        }
+
+        if events.isEmpty {
+            events = Self.mockEvents()
+        }
 
         // TODO: Fetch real balances via BalancesRepository when available
         let balanceSummary = EventBalanceSummary(
-            totalBalance: 0,
-            owedToYou: 0,
-            youOwe: 0
+            totalBalance: 34.50,
+            owedToYou: 89.00,
+            youOwe: 54.50
         )
 
         return EventsHomeData(
             balanceSummary: balanceSummary,
             events: events
         )
+    }
+
+    // MARK: - Mock Data (remove when backend is populated)
+
+    private static func mockEvents() -> [Event] {
+        let calendar = Calendar.current
+        let now = Date()
+
+        return [
+            Event(
+                name: "Пицца-пятница",
+                positions: [],
+                date: calendar.date(byAdding: .day, value: -1, to: now) ?? now,
+                icon: "🍕",
+                participantsCount: 4,
+                balanceDelta: 12
+            ),
+            Event(
+                name: "Такси",
+                positions: [],
+                date: calendar.date(byAdding: .day, value: -3, to: now) ?? now,
+                icon: "🚕",
+                participantsCount: 2,
+                balanceDelta: -18
+            ),
+            Event(
+                name: "Амстердам",
+                positions: [],
+                date: calendar.date(byAdding: .day, value: -14, to: now) ?? now,
+                icon: "🏖️",
+                participantsCount: 6,
+                balanceDelta: 0
+            )
+        ]
     }
 
     // MARK: - Receipt Draft (mock for now)

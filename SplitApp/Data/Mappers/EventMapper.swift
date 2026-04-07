@@ -1,20 +1,38 @@
 import Foundation
 
-// TODO: If you want to decouple DTOs and CoreData from the Features completely, 
-// Domain mappers convert lower-level representations into Domain models used by UI/Services.
 enum EventMapper {
+
+    /// Maps network/cache DTO to the domain model used by Services and UI.
     static func mapToDomain(dto: EventDTO) -> Event {
         Event(
             id: dto.id,
             name: dto.name,
-            positions: [], // Aggregate from other sources or leave empty if not fetched
+            positions: [],
             date: dto.createdAt,
-            icon: "📌", // Add icon logic if present in backend later
+            icon: "📌",
             participantsCount: dto.users.count,
-            balanceDelta: 0 // Fetch from EventBalanceDTO later
+            balanceDelta: 0
         )
     }
 
-    // Example map from CDEvent (Assuming CDEvent properties exist)
-    // static func mapToDomain(cdEvent: CDEvent) -> Event { ... }
+    /// Maps CoreData entity directly to the domain model (avoids intermediate DTO).
+    static func mapToDomain(cdEvent: CDEvent) -> Event? {
+        guard let id = cdEvent.id,
+              let name = cdEvent.name,
+              let createdAt = cdEvent.createdAt else {
+            return nil
+        }
+
+        let participantCount = (cdEvent.participants as? Set<CDUser>)?.count ?? 0
+
+        return Event(
+            id: id,
+            name: name,
+            positions: [],
+            date: createdAt,
+            icon: "📌",
+            participantsCount: participantCount,
+            balanceDelta: 0
+        )
+    }
 }

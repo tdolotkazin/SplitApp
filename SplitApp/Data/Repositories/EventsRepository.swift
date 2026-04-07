@@ -6,9 +6,10 @@ protocol EventsRepositoryProtocol {
     func createEvent(_ request: CreateEventRequest) async throws -> Event
     func getEvent(id: UUID) async throws -> Event
     func updateEvent(id: UUID, _ request: UpdateEventRequest) async throws -> Event
-    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [UserDTO]
+    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User]
     func removeParticipant(eventId: UUID, userId: UUID) async throws
 }
+
 
 final class EventsRepository: EventsRepositoryProtocol {
     private let apiClient: APIClient
@@ -32,13 +33,33 @@ final class EventsRepository: EventsRepositoryProtocol {
     }
 
     func listEvents(userId: UUID? = nil) async throws -> [Event] {
-        let dtos: [EventDTO] = try await apiClient.request(endpoint: ListEventsEndpoint(userId: userId))
-        
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.upsertEvents(dtos, in: context)
+        // 1. Try fetching from API
+        do {
+            let dtos: [EventDTO] = try await apiClient.request(endpoint: ListEventsEndpoint(userId: userId))
+
+            // Save to local cache
+            try await coreDataStore.performBackground { [weak self] context in
+                try self?.upsertEvents(dtos, in: context)
+            }
+
+            return dtos.map(EventMapper.mapToDomain)
+        } catch {
+            // 2. API failed — fall back to local CoreData cache
+            print("Сеть недоступна, загружаем из локального кэша: \(error.localizedDescription)")
+
+            let cachedEvents: [Event] = try await coreDataStore.performBackground { context in
+                let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
+                fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDEvent.createdAt, ascending: false)]
+                let cdEvents = try context.fetch(fetchRequest)
+                return cdEvents.compactMap(EventMapper.mapToDomain)
+            }
+
+            if cachedEvents.isEmpty {
+                throw error // No cache — propagate original network error
+            }
+
+            return cachedEvents
         }
-        
-        return dtos.map(EventMapper.mapToDomain)
     }
 
     func getEvent(id: UUID) async throws -> Event {
@@ -61,9 +82,9 @@ final class EventsRepository: EventsRepositoryProtocol {
         return EventMapper.mapToDomain(dto: dto)
     }
 
-    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [UserDTO] {
-        let users: [UserDTO] = try await apiClient.request(endpoint: AddParticipantsEndpoint(eventId: eventId), body: request)
-        return users
+    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User] {
+        let dtos: [UserDTO] = try await apiClient.request(endpoint: AddParticipantsEndpoint(eventId: eventId), body: request)
+        return dtos.map(UserMapper.mapToDomain)
     }
 
     func removeParticipant(eventId: UUID, userId: UUID) async throws {
