@@ -24,6 +24,14 @@ class BillViewModel: ObservableObject {
         let scanned = ScannedReceiptStore.shared.consume()
         if !scanned.isEmpty {
             items = scanned
+        } else {
+            // Предзаполнение тестовыми позициями
+            items = [
+                BillItem(name: "Пицца Маргарита", amount: 12, assignedTo: [participants[0]]),
+                BillItem(name: "Пицца Пепперони", amount: 13, assignedTo: [participants[1]]),
+                BillItem(name: "Газировка", amount: 8, assignedTo: [participants[2]]),
+                BillItem(name: "Десерт", amount: 0, assignedTo: [])
+            ]
         }
     }
 
@@ -50,7 +58,7 @@ class BillViewModel: ObservableObject {
         generator.impactOccurred()
     }
 
-    func updateItem(id: UUID, name: String? = nil, amount: Decimal? = nil, assignedTo: Participant? = nil) {
+    func updateItem(id: UUID, name: String? = nil, amount: Decimal? = nil) {
         if let index = items.firstIndex(where: { $0.id == id }) {
             if let name = name {
                 items[index].name = name
@@ -58,17 +66,19 @@ class BillViewModel: ObservableObject {
             if let amount = amount {
                 items[index].amount = amount
             }
-            if assignedTo != nil {
-                items[index].assignedTo = assignedTo
-            }
         }
     }
 
-    func assignParticipant(to itemId: UUID, participant: Participant) {
+    func toggleParticipant(to itemId: UUID, participant: Participant) {
         if let index = items.firstIndex(where: { $0.id == itemId }) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                items[index].assignedTo = participant
+                if items[index].assignedTo.contains(where: { $0.id == participant.id }) {
+                    items[index].assignedTo.removeAll { $0.id == participant.id }
+                } else {
+                    items[index].assignedTo.append(participant)
+                }
             }
+            selectedItemForAssignment = items[index]
         }
 
         // Haptic feedback
@@ -78,7 +88,7 @@ class BillViewModel: ObservableObject {
 
     func save() {
         // Валидация
-        let validItems = items.filter { !$0.name.isEmpty && $0.amount > 0 && $0.assignedTo != nil }
+        let validItems = items.filter { !$0.name.isEmpty && $0.amount > 0 && !$0.assignedTo.isEmpty }
 
         guard !validItems.isEmpty else {
             print("Нет валидных позиций для сохранения")
