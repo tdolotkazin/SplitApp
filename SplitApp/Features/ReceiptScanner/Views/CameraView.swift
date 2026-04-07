@@ -3,7 +3,7 @@ import AVFoundation
 import PhotosUI
 
 struct CameraView: View {
-    @Bindable var viewModel: ReceiptScannerViewModel
+    @Bindable var viewModel: ReceiptViewModel
     var onCapture: () -> Void
 
     @State private var cameraBox = CameraBox()

@@ -5,7 +5,6 @@ import UIKit
 @MainActor
 final class EventsFlowViewModel: ObservableObject {
     @Published var path: [EventRoute] = []
-    @Published var showScanOptions = false
     @Published var showCamera = false
     @Published var showPhotoPicker = false
 
@@ -30,10 +29,6 @@ final class EventsFlowViewModel: ObservableObject {
             scannerViewModel: ReceiptViewModel(),
             receiptInputViewModel: ReceiptInputViewModel(service: service)
         )
-    }
-
-    func openScanOptions() {
-        showScanOptions = true
     }
 
     func didCaptureImage(_ image: UIImage) async {
