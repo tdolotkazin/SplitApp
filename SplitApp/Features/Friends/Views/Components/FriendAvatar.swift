@@ -4,6 +4,7 @@ struct FriendAvatar: View {
     let friend: Friend
     var size: CGFloat = 56
 
+
     var body: some View {
         ZStack {
             LinearGradient(

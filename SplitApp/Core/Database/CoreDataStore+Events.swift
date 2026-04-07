@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-    // MARK: - Upsert
 
     /// Insert or update a single event from DTO.
     func upsertEvent(_ dto: EventDTO, in context: NSManagedObjectContext) throws {
@@ -28,7 +27,6 @@ extension CoreDataStore {
         }
     }
 
-    // MARK: - Fetch
 
     /// Fetch a single event by ID.
     func fetchEvent(id: UUID, in context: NSManagedObjectContext) throws -> CDEvent? {
@@ -45,7 +43,6 @@ extension CoreDataStore {
         return try context.fetch(fetchRequest)
     }
 
-    // MARK: - Delete
 
     /// Delete an event by ID (cascades to receipts and payments).
     func deleteEvent(id: UUID, in context: NSManagedObjectContext) throws {

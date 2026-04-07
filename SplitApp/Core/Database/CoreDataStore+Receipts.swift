@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-    // MARK: - Upsert
 
     /// Insert or update a single receipt from DTO, including nested items and share items.
     func upsertReceipt(_ dto: ReceiptDTO, in context: NSManagedObjectContext) throws {
@@ -45,7 +44,6 @@ extension CoreDataStore {
         }
     }
 
-    // MARK: - Fetch
 
     /// Fetch all receipts for a given event.
     func fetchReceipts(eventId: UUID, in context: NSManagedObjectContext) throws -> [CDReceipt] {
@@ -55,7 +53,6 @@ extension CoreDataStore {
         return try context.fetch(fetchRequest)
     }
 
-    // MARK: - Delete
 
     /// Delete a receipt by ID (cascades to items and share items).
     func deleteReceipt(id: UUID, in context: NSManagedObjectContext) throws {

@@ -6,6 +6,7 @@ struct FriendDebtCard: View {
 
     @State private var isPressed = false
 
+
     var body: some View {
         GlassCard(padding: 16) {
             HStack(spacing: 12) {
@@ -29,7 +30,10 @@ struct FriendDebtCard: View {
 
                 Spacer()
 
-                Button(action: onSettle) {
+                Button(action: {
+                    hideKeyboard()
+                    onSettle()
+                }) {
                     Text("Закрыть")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.accent)
@@ -54,6 +58,9 @@ struct FriendDebtCard: View {
                         }
                 )
             }
+        }
+        .onTapGesture {
+            hideKeyboard()
         }
     }
 }

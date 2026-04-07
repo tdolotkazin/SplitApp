@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-    // MARK: - Upsert
 
     /// Insert or update a single user from DTO.
     func upsertUser(_ dto: UserDTO, in context: NSManagedObjectContext) throws {
@@ -22,7 +21,6 @@ extension CoreDataStore {
         }
     }
 
-    // MARK: - Fetch
 
     /// Fetch a single user by ID.
     func fetchUser(id: UUID, in context: NSManagedObjectContext) throws -> CDUser? {
@@ -39,7 +37,6 @@ extension CoreDataStore {
         return try context.fetch(fetchRequest)
     }
 
-    // MARK: - Delete
 
     /// Delete a user by ID.
     func deleteUser(id: UUID, in context: NSManagedObjectContext) throws {

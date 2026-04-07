@@ -2,7 +2,6 @@ import CoreData
 
 extension CoreDataStore {
 
-    // MARK: - Upsert
 
     /// Insert or update a single payment from DTO.
     func upsertPayment(_ dto: PaymentDTO, in context: NSManagedObjectContext) throws {
@@ -28,7 +27,6 @@ extension CoreDataStore {
         }
     }
 
-    // MARK: - Fetch
 
     /// Fetch all payments for a given event.
     func fetchPayments(eventId: UUID, in context: NSManagedObjectContext) throws -> [CDPayment] {
@@ -38,7 +36,6 @@ extension CoreDataStore {
         return try context.fetch(fetchRequest)
     }
 
-    // MARK: - Delete
 
     /// Delete a payment by ID.
     func deletePayment(id: UUID, in context: NSManagedObjectContext) throws {

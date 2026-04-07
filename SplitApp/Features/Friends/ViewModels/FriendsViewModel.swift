@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class FriendsViewModel: ObservableObject {
@@ -22,6 +23,12 @@ class FriendsViewModel: ObservableObject {
         loadMockData()
     }
 
+    func settleDebt(_ debt: FriendDebt) {
+        debts.removeAll { $0.id == debt.id }
+    }
+}
+
+private extension FriendsViewModel {
     func loadMockData() {
         friends = [
             Friend(name: "Артём Романов", initials: "АР", color: Color(hex: "#FFB5A7")),
@@ -34,9 +41,5 @@ class FriendsViewModel: ObservableObject {
             FriendDebt(friend: friends[0], amount: 12.00, type: .owedBy),
             FriendDebt(friend: friends[1], amount: 18.50, type: .owes)
         ]
-    }
-
-    func settleDebt(_ debt: FriendDebt) {
-        debts.removeAll { $0.id == debt.id }
     }
 }

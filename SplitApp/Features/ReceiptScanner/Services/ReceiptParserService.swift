@@ -10,7 +10,6 @@ import NaturalLanguage
 ///              each standalone price dequeues the oldest name.
 final class ReceiptParserService {
 
-    // MARK: - Configuration
 
     private let minLettersInName = 4
 
@@ -56,7 +55,6 @@ final class ReceiptParserService {
     private let tokenizer = NLTokenizer(unit: .word)
     private let languageRecognizer = NLLanguageRecognizer()
 
-    // MARK: - Public
 
     func parse(lines: [String]) -> [ReceiptItem] {
         let cleaned = lines.map { $0.trimmingCharacters(in: .whitespaces) }
@@ -112,7 +110,6 @@ final class ReceiptParserService {
     }
 }
 
-// MARK: - Line Classification
 
 private extension ReceiptParserService {
 
@@ -252,7 +249,6 @@ private extension ReceiptParserService {
     }
 }
 
-// MARK: - Price Detection & Name Construction
 
 private extension ReceiptParserService {
 

@@ -17,13 +17,11 @@ extension Endpoint {
     var queryItems: [URLQueryItem]? { nil }
 }
 
-// MARK: - Users
 struct CreateUserEndpoint: Endpoint {
     let path = "/api/users"
     let method: HTTPMethod = .POST
 }
 
-// MARK: - Events
 struct CreateEventEndpoint: Endpoint {
     let path = "/api/events"
     let method: HTTPMethod = .POST
@@ -65,7 +63,6 @@ struct RemoveParticipantEndpoint: Endpoint {
     let method: HTTPMethod = .DELETE
 }
 
-// MARK: - Receipts
 struct CreateReceiptEndpoint: Endpoint {
     let eventId: UUID
     var path: String { "/api/events/\(eventId.uuidString)/receipts" }
@@ -90,14 +87,12 @@ struct DeleteReceiptEndpoint: Endpoint {
     let method: HTTPMethod = .DELETE
 }
 
-// MARK: - Balances
 struct GetBalancesEndpoint: Endpoint {
     let eventId: UUID
     var path: String { "/api/events/\(eventId.uuidString)/balances" }
     let method: HTTPMethod = .GET
 }
 
-// MARK: - Payments
 struct CreatePaymentEndpoint: Endpoint {
     let eventId: UUID
     var path: String { "/api/events/\(eventId.uuidString)/payments" }

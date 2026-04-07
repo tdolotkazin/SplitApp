@@ -54,7 +54,6 @@ struct EventsFlowView: View {
     }
 }
 
-// MARK: - Camera bridge
 
 private struct CameraPickerSheet: UIViewControllerRepresentable {
     let onCapture: (UIImage) -> Void

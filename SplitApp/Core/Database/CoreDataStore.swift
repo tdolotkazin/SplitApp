@@ -2,27 +2,22 @@ import CoreData
 
 final class CoreDataStore {
 
-    // MARK: - Singleton
 
     static let shared = CoreDataStore()
 
-    // MARK: - Properties
 
     private let persistenceController: PersistenceController
 
-    // MARK: - Init
 
     init(persistenceController: PersistenceController = .shared) {
         self.persistenceController = persistenceController
     }
 
-    // MARK: - Context Access
 
     var viewContext: NSManagedObjectContext {
         persistenceController.viewContext
     }
 
-    // MARK: - Background Operations
 
     /// Perform a block on a background context and return the result.
     func performBackground<T: Sendable>(
@@ -51,7 +46,6 @@ final class CoreDataStore {
         }
     }
 
-    // MARK: - Save
 
     /// Save the given context if it has changes.
     func save(context: NSManagedObjectContext) throws {

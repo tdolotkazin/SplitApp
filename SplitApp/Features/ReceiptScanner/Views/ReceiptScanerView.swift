@@ -39,7 +39,6 @@ struct ReceiptScannerView: View {
         }
     }
 
-    // MARK: - Subviews
 
     private var emptyState: some View {
         ContentUnavailableView(
@@ -91,7 +90,6 @@ struct ReceiptScannerView: View {
     }
 }
 
-// MARK: - Camera bridge (UIKit required — SwiftUI has no native camera API)
 
 private struct CameraSheet: UIViewControllerRepresentable {
 
