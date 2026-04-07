@@ -33,9 +33,6 @@ struct EventsNavigationView: View {
                         onCapture: { viewModel.handle(.scannerCaptureCompleted) }
                     )
                     .navigationBarBackButtonHidden(true)
-                case .receiptInput:
-                    ReceiptInputView(viewModel: viewModel.receiptInputViewModel)
-                        .navigationBarBackButtonHidden(true)
                 case .billEntry:
                     EmptyView()
                 }
