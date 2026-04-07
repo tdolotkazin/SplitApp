@@ -104,9 +104,7 @@ final class ReceiptInputViewModel: ObservableObject {
 }
 
 extension ReceiptInputViewModel {
-    @MainActor static func mock(
-        service: EventManagementServiceProtocol = EventManagementService()
-    ) -> ReceiptInputViewModel {
+    @MainActor static func mock(service: EventManagementServiceProtocol = EventManagementService()) -> ReceiptInputViewModel {
         let viewModel = ReceiptInputViewModel(service: service)
         Task { await viewModel.loadDraftIfNeeded() }
         return viewModel
