@@ -47,7 +47,7 @@ extension BottomTabConfiguration {
                     title: "События",
                     systemImage: "square.grid.2x2"
                 ) {
-                    EventsFlowView()
+                    EventsNavigationView()
                 },
                 BottomTabItem(
                     id: .friends,

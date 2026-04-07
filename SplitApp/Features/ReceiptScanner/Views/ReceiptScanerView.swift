@@ -3,7 +3,7 @@ import PhotosUI
 
 struct ReceiptScannerView: View {
 
-    @Bindable var viewModel: ReceiptScannerViewModel
+    @Bindable var viewModel: ReceiptViewModel
     var onCapture: () -> Void
 
     @State private var showCamera = false
@@ -125,5 +125,5 @@ private struct CameraSheet: UIViewControllerRepresentable {
 }
 
 #Preview("Пустой экран") {
-    ReceiptScannerView(viewModel: ReceiptScannerViewModel(), onCapture: {})
+    ReceiptScannerView(viewModel: ReceiptViewModel(), onCapture: {})
 }
