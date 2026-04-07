@@ -7,14 +7,14 @@ final class EventsNavigationViewModel: ObservableObject {
     @Published var showBillEntry = false
 
     let homeViewModel: EventsHomeViewModel
-    let scannerViewModel: ReceiptScannerViewModel
+    let scannerViewModel: ReceiptViewModel
     let receiptInputViewModel: ReceiptInputViewModel
 
     private let rules: EventsNavigationRules
 
     init(
         homeViewModel: EventsHomeViewModel,
-        scannerViewModel: ReceiptScannerViewModel,
+        scannerViewModel: ReceiptViewModel,
         receiptInputViewModel: ReceiptInputViewModel,
         rules: EventsNavigationRules
     ) {
@@ -30,7 +30,7 @@ final class EventsNavigationViewModel: ObservableObject {
     ) {
         self.init(
             homeViewModel: EventsHomeViewModel(service: service),
-            scannerViewModel: ReceiptScannerViewModel(),
+            scannerViewModel: ReceiptViewModel(),
             receiptInputViewModel: ReceiptInputViewModel(service: service),
             rules: rules
         )

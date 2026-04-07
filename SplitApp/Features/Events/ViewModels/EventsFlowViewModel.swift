@@ -8,15 +8,14 @@ final class EventsFlowViewModel: ObservableObject {
     @Published var showScanOptions = false
     @Published var showCamera = false
     @Published var showPhotoPicker = false
-    @Published var showBillEntry = false
 
     let homeViewModel: EventsHomeViewModel
-    let scannerViewModel: ReceiptScannerViewModel
+    let scannerViewModel: ReceiptViewModel
     let receiptInputViewModel: ReceiptInputViewModel
 
     init(
         homeViewModel: EventsHomeViewModel,
-        scannerViewModel: ReceiptScannerViewModel,
+        scannerViewModel: ReceiptViewModel,
         receiptInputViewModel: ReceiptInputViewModel
     ) {
         self.homeViewModel = homeViewModel
@@ -28,7 +27,7 @@ final class EventsFlowViewModel: ObservableObject {
         let service = EventManagementService()
         self.init(
             homeViewModel: EventsHomeViewModel(service: service),
-            scannerViewModel: ReceiptScannerViewModel(),
+            scannerViewModel: ReceiptViewModel(),
             receiptInputViewModel: ReceiptInputViewModel(service: service)
         )
     }
@@ -48,10 +47,6 @@ final class EventsFlowViewModel: ObservableObject {
             receiptInputViewModel.resetDraft()
             path.append(.receiptInput)
         }
-    }
-
-    func openBillEntry() {
-        showBillEntry = true
     }
 
     private func openReceiptInputFromScanner() async {
