@@ -2,7 +2,6 @@ import Foundation
 
 enum EventsNavigationRoute: Hashable {
     case scanner
-    case receiptInput
     case billEntry
 }
 
@@ -19,7 +18,7 @@ struct EventsNavigationRules {
 
     init(
         scanButtonRoute: EventsNavigationRoute = .scanner,
-        addButtonRoute: EventsNavigationRoute = .receiptInput,
+        addButtonRoute: EventsNavigationRoute = .billEntry,
         scannerCaptureRoute: EventsNavigationRoute = .billEntry
     ) {
         self.scanButtonRoute = scanButtonRoute
