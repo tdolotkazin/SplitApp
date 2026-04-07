@@ -69,7 +69,7 @@ extension BottomTabConfiguration {
                     ProfileScreenView(model: ProfileScreenModel(
                         initials: "ИВ",
                         email: "ivan@example.com",
-                        name: "Иван Волков",
+                        name: "Иван Волков 🌸",
                         eventsCountText: "12",
                         friendsCountText: "8",
                         closedBillsText: "€340",
