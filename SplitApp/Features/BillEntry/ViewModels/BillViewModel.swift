@@ -15,6 +15,13 @@ class BillViewModel: ObservableObject {
     }
 
     init() {
+        // Предзаполнение тестовыми участниками
+        participants = [
+            Participant(name: "Артём", initials: "АР", color: Color(hex: "#7C3AED")),
+            Participant(name: "Маша", initials: "МС", color: Color(hex: "#06B6D4")),
+            Participant(name: "Иван", initials: "ИВ", color: Color(hex: "#3B82F6"))
+        ]
+        
         let scanned = ScannedReceiptStore.shared.consume()
         if !scanned.isEmpty {
             items = scanned
