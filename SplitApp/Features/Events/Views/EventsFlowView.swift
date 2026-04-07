@@ -9,7 +9,7 @@ struct EventsFlowView: View {
         NavigationStack(path: $viewModel.path) {
             EventsHomeView(
                 viewModel: viewModel.homeViewModel,
-                onScanTap: viewModel.openScanOptions,
+                onScanTap: { viewModel.showCamera = true },
                 onAddTap: viewModel.openReceiptInput
             )
             .task {
@@ -22,11 +22,6 @@ struct EventsFlowView: View {
                     ReceiptInputView(viewModel: viewModel.receiptInputViewModel)
                         .navigationBarBackButtonHidden(true)
                 }
-            }
-            .confirmationDialog("Сканировать чек", isPresented: $viewModel.showScanOptions) {
-                Button("Камера") { viewModel.showCamera = true }
-                Button("Галерея") { viewModel.showPhotoPicker = true }
-                Button("Отмена", role: .cancel) {}
             }
             .sheet(isPresented: $viewModel.showCamera) {
                 CameraPickerSheet { image in
