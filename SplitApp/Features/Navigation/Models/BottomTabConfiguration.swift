@@ -66,12 +66,15 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    NavigationStack {
-                        TabPlaceholderView(
-                            title: "Профиль",
-                            message: "Экран в разработке. Пока можно пользоваться только экраном событий."
-                        )
-                    }
+                    ProfileScreenView(model: ProfileScreenModel(
+                        initials: "ИВ",
+                        email: "ivan@example.com",
+                        name: "Иван Волков 🌸",
+                        eventsCountText: "12",
+                        friendsCountText: "8",
+                        closedBillsText: "€340",
+                        openBillsText: "€34")
+                    )
                 }
             ]
         )
