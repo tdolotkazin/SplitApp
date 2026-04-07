@@ -6,6 +6,7 @@ final class EventsHomeViewModel: ObservableObject {
     @Published private(set) var balanceSummary: EventBalanceSummary
     @Published private(set) var latestEvents: [EventListItem]
     @Published private(set) var isLoaded = false
+    @Published private(set) var errorMessage: String?
 
     private let service: EventManagementServiceProtocol
 
@@ -17,11 +18,15 @@ final class EventsHomeViewModel: ObservableObject {
 
     func loadDataIfNeeded() async {
         guard !isLoaded else { return }
-        isLoaded = true
 
-        let homeData = await service.fetchHomeData()
-        balanceSummary = homeData.balanceSummary
-        latestEvents = homeData.events.map(Self.mapEventToListItem)
+        do {
+            let homeData = try await service.fetchHomeData()
+            balanceSummary = homeData.balanceSummary
+            latestEvents = homeData.events.map(Self.mapEventToListItem)
+            isLoaded = true
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     private static func mapEventToListItem(_ event: Event) -> EventListItem {
@@ -44,15 +49,5 @@ final class EventsHomeViewModel: ObservableObject {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
         return formatter.localizedString(for: date, relativeTo: Date())
-    }
-}
-
-extension EventsHomeViewModel {
-    @MainActor static func mock(
-        service: EventManagementServiceProtocol = EventManagementService()
-    ) -> EventsHomeViewModel {
-        let viewModel = EventsHomeViewModel(service: service)
-        Task { await viewModel.loadDataIfNeeded() }
-        return viewModel
     }
 }

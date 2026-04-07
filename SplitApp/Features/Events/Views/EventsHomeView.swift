@@ -11,32 +11,36 @@ struct EventsHomeView: View {
             Color(.systemGroupedBackground)
                 .ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 18) {
-                Text("События")
-                    .font(.system(size: 38, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(.label))
+            VStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 18) {
+                        Text("События")
+                            .font(.system(size: 38, weight: .semibold, design: .rounded))
+                            .foregroundStyle(Color(.label))
 
-                BalanceCardView(summary: viewModel.balanceSummary)
+                        BalanceCardView(summary: viewModel.balanceSummary)
 
-                Text("ПОСЛЕДНИЕ СОБЫТИЯ")
-                    .font(.system(size: 17, weight: .semibold))
-                    .tracking(1.0)
-                    .foregroundStyle(Color(.secondaryLabel))
+                        Text("ПОСЛЕДНИЕ СОБЫТИЯ")
+                            .font(.system(size: 17, weight: .semibold))
+                            .tracking(1.0)
+                            .foregroundStyle(Color(.secondaryLabel))
 
-                VStack(spacing: 0) {
-                    ForEach(Array(viewModel.latestEvents.enumerated()), id: \.element.id) { index, event in
-                        EventRowView(event: event)
+                        VStack(spacing: 0) {
+                            ForEach(Array(viewModel.latestEvents.enumerated()), id: \.element.id) { index, event in
+                                EventRowView(event: event)
 
-                        if index < viewModel.latestEvents.count - 1 {
-                            Divider()
-                                .padding(.leading, 52)
+                                if index < viewModel.latestEvents.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 52)
+                                }
+                            }
                         }
+                        .background(Color(.systemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                     }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 12)
                 }
-                .background(Color(.systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-
-                Spacer(minLength: 12)
 
                 HStack(spacing: 12) {
                     Button(action: onScanTap) {
@@ -60,10 +64,10 @@ struct EventsHomeView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                     }
                 }
+                .padding(.horizontal, 18)
+                .padding(.top, 12)
+                .padding(.bottom, 18)
             }
-            .padding(.horizontal, 18)
-            .padding(.top, 12)
-            .padding(.bottom, 18)
         }
         .navigationBarHidden(true)
     }
@@ -126,7 +130,7 @@ private struct BalanceMiniTile: View {
 
 #Preview {
     EventsHomeView(
-        viewModel: .mock(),
+        viewModel: EventsHomeViewModel(service: EventManagementService()),
         onScanTap: {},
         onAddTap: {}
     )
