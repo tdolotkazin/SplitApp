@@ -54,12 +54,7 @@ extension BottomTabConfiguration {
                     title: "Друзья",
                     systemImage: "person.2"
                 ) {
-                    NavigationStack {
-                        TabPlaceholderView(
-                            title: "Друзья",
-                            message: "Экран в разработке. Пока можно пользоваться только экраном событий."
-                        )
-                    }
+                    FriendsView()
                 },
                 BottomTabItem(
                     id: .profile,
