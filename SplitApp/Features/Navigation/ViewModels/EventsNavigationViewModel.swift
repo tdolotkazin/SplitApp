@@ -8,19 +8,16 @@ final class EventsNavigationViewModel: ObservableObject {
 
     let homeViewModel: EventsHomeViewModel
     let scannerViewModel: ReceiptViewModel
-    let receiptInputViewModel: ReceiptInputViewModel
 
     private let rules: EventsNavigationRules
 
     init(
         homeViewModel: EventsHomeViewModel,
         scannerViewModel: ReceiptViewModel,
-        receiptInputViewModel: ReceiptInputViewModel,
         rules: EventsNavigationRules
     ) {
         self.homeViewModel = homeViewModel
         self.scannerViewModel = scannerViewModel
-        self.receiptInputViewModel = receiptInputViewModel
         self.rules = rules
     }
 
@@ -31,17 +28,26 @@ final class EventsNavigationViewModel: ObservableObject {
         self.init(
             homeViewModel: EventsHomeViewModel(service: service),
             scannerViewModel: ReceiptViewModel(),
-            receiptInputViewModel: ReceiptInputViewModel(service: service),
             rules: rules
         )
     }
 
     func loadInitialDataIfNeeded() async {
         await homeViewModel.loadDataIfNeeded()
-        await receiptInputViewModel.loadDraftIfNeeded()
     }
 
     func handle(_ action: EventsNavigationAction) {
+        if action == .addButtonTapped {
+            ScannedReceiptStore.shared.store([])
+        }
+
+        if action == .scannerCaptureCompleted {
+            let billItems = scannerViewModel.items.map {
+                BillItem(name: $0.name, amount: $0.amount)
+            }
+            ScannedReceiptStore.shared.store(billItems)
+        }
+
         let route = rules.route(for: action)
         open(route)
     }
@@ -50,18 +56,8 @@ final class EventsNavigationViewModel: ObservableObject {
         switch route {
         case .scanner:
             path.append(.scanner)
-        case .receiptInput:
-            Task {
-                await receiptInputViewModel.loadDraftIfNeeded()
-                receiptInputViewModel.resetDraft()
-                path.append(.receiptInput)
-            }
         case .billEntry:
-            let billItems = scannerViewModel.items.map {
-                BillItem(name: $0.name, amount: $0.amount)
-            }
-            ScannedReceiptStore.shared.store(billItems)
-            path.removeAll()        // убираем камеру со стека
+            path.removeAll()
             showBillEntry = true
         }
     }
