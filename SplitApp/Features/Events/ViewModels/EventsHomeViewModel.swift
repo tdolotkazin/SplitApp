@@ -51,3 +51,11 @@ final class EventsHomeViewModel: ObservableObject {
         return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
+
+extension EventsHomeViewModel {
+    @MainActor static func mock(service: EventManagementServiceProtocol = EventManagementService()) -> EventsHomeViewModel {
+        let viewModel = EventsHomeViewModel(service: service)
+        Task { await viewModel.loadDataIfNeeded() }
+        return viewModel
+    }
+}
