@@ -5,10 +5,7 @@ import Combine
 class BillViewModel: ObservableObject {
     @Published var items: [BillItem] = []
     @Published var participants: [Participant] = []
-    @Published var isAddingItem: Bool = false
     @Published var selectedItemForAssignment: BillItem?
-    @Published var showParticipantPicker: Bool = false
-    @Published var triggerAnimation: UUID = UUID()
 
     var total: Decimal {
         items.reduce(0) { $0 + $1.amount }
@@ -45,11 +42,12 @@ class BillViewModel: ObservableObject {
     }
 
     func addItem() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-            let newItem = BillItem(name: "", amount: 0, isEditing: true)
+        let newItem = BillItem(name: "", amount: 0, isEditing: true)
+        var transaction = Transaction()
+        transaction.animation = nil
+
+        withTransaction(transaction) {
             items.append(newItem)
-            isAddingItem = true
-            triggerAnimation = UUID()
         }
 
         // Haptic feedback
