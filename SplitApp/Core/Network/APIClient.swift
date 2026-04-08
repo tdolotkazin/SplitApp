@@ -60,7 +60,6 @@ final class APIClient {
     ) async throws -> T {
 
         let request = try buildRequest(endpoint: endpoint, body: body)
-
         let (data, response) = try await session.data(for: request)
 
         do {
@@ -73,13 +72,14 @@ final class APIClient {
                 throw NetworkError.unauthorized
             }
 
-            try await refreshToken()
+            try await refreshAccessTokenIfNeeded()
 
-            return try await performRequest(
-                endpoint: endpoint,
-                body: body,
-                isRetry: true
-            )
+            let retryRequest = try buildRequest(endpoint: endpoint, body: body)
+            let (retryData, retryResponse) = try await session.data(for: retryRequest)
+
+            try validateResponse(retryResponse, data: retryData)
+
+            return try decoder.decode(T.self, from: retryData)
         }
     }
 
@@ -131,35 +131,34 @@ final class APIClient {
         return request
     }
 
-    func refreshToken() async throws {
+    func refreshAccessTokenIfNeeded() async throws {
+
+        if let _ = TokenStore.shared.accessToken,
+           TokenStore.shared.isValid {
+            return
+        }
 
         guard let refreshToken = secureStorage.get("refresh_token") else {
             throw NetworkError.unauthorized
         }
 
-        let url = baseURL.appendingPathComponent("/api/refresh")
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         let body = ["refresh_token": refreshToken]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await session.data(for: request)
+        let response: AuthResponseRefreshToken = try await performRequest(
+            endpoint: RefreshTokenEndpoint(),
+            body: body,
+            isRetry: true
+        )
 
-        try validateResponse(response, data: data)
+        TokenStore.shared.accessToken = response.accessToken
 
-        let authResponse = try decoder.decode(AuthResponse.self, from: data)
-
-        TokenStore.shared.accessToken = authResponse.accessToken
-        secureStorage.save(authResponse.refreshToken, for: "refresh_token")
+        secureStorage.save(response.refreshToken, for: "refresh_token")
     }
 
     // MARK: - Validate
 
     private func validateResponse(_ response: URLResponse, data: Data) throws {
-
+        print(response)
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse
         }
@@ -174,7 +173,7 @@ final class APIClient {
         default:
             throw NetworkError.httpError(
                 statusCode: http.statusCode,
-                detail: nil
+                detail: response.debugDescription
             )
         }
     }

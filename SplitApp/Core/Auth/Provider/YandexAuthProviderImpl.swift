@@ -18,7 +18,8 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
         YandexLoginSDK.shared.remove(observer: self)
     }
 
-    func login(from viewContollerProvider: UIViewController) async throws -> UserSessionToken {
+    func login(from viewContollerProvider: UIViewController) async throws
+    -> UserSessionToken {
         guard let viewContollerProvider = vcProvider.rootViewController else {
             throw AuthError.invalidToken
         }
@@ -33,7 +34,6 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
                 self.continuation = nil
             }
         }
-
     }
 }
 
@@ -50,18 +50,8 @@ extension YandexAuthProviderImpl: YandexLoginSDKObserver {
             continuation?.resume(returning: authToken)
 
         case .failure(let error):
+            continuation?.resume(throwing: error)
             print("Ошибка входа: \(error.localizedDescription)")
         }
     }
 }
-
-/*
- return try await withCheckedThrowingContinuation { continuation in self.continuation = continuation
-
- do {
- try YandexLoginSDK.shared.authorize(with: vc)
- } catch {
- continuation.resume(throwing: error)
- self.continuation = nil
- }
- }*/

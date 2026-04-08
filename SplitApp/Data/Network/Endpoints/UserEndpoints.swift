@@ -12,7 +12,6 @@ struct AuthUserEndpoint: Endpoint {
 }
 
 struct RefreshTokenEndpoint: Endpoint {
-    let refreshToken: String
     let path = "/api/refresh"
     let method: HTTPMethod = .POST
 }

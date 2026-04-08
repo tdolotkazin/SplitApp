@@ -15,7 +15,7 @@ final class BootstrapAuthUseCase {
         }
 
         do {
-            try await APIClient.shared.refreshToken()
+            try await APIClient.shared.refreshAccessTokenIfNeeded()
             return true
         } catch {
             storage.delete("refresh_token")

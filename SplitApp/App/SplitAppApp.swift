@@ -76,7 +76,19 @@ struct SplitAppApp: App {
             }
             return
         }
-        appState.isLoggedIn = true
-        appState.isLoading = false
+
+        do {
+            try await APIClient.shared.refreshAccessTokenIfNeeded()
+            await MainActor.run {
+                appState.isLoggedIn = true
+                appState.isLoading = false
+            }
+        } catch {
+            print("Не удалось обновить токен: \(error)")
+            await MainActor.run {
+                appState.isLoggedIn = false
+                appState.isLoading = false
+            }
+        }
     }
 }
