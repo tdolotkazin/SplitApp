@@ -95,9 +95,6 @@ struct BillEntryView: View {
                                     hideKeyboard()
                                 }
                         }
-                        .listStyle(.plain)
-                        .scrollContentBackground(.hidden)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.items.count)
                     }
 
                     Spacer()
@@ -196,59 +193,56 @@ struct BillEntryView: View {
         }
     }
 
-    private var receiptNameField: some View {
-        TextField("Название чека", text: $viewModel.receiptTitle)
-            .font(.system(size: 20, weight: .semibold, design: .rounded))
-            .foregroundStyle(AppTheme.textPrimary)
-            .tint(AppTheme.accent)
-            .multilineTextAlignment(.center)
+    private var bottomActionPanel: some View {
+        VStack(spacing: 0) {
+            AddItemButton {
+                viewModel.addItem()
+            }
+            .padding(.horizontal, 20)
             .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(AppTheme.accent.opacity(0.25), lineWidth: 1)
-            )
-    }
 
-    private var savingOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.01)
-                .ignoresSafeArea()
-                .allowsHitTesting(false)
+            GlassCard {
+                HStack {
+                    Text("Итого")
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Spacer()
+                    Text("€\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.accent)
+                        .contentTransition(.numericText())
+                }
+            }
+            .padding(.horizontal, 20)
 
-            Text(viewModel.receiptTitle.isEmpty ? "Чек" : viewModel.receiptTitle)
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.accent)
-                .shadow(color: AppTheme.accent.opacity(0.6), radius: 16, y: 4)
-                .offset(y: savingTextOffset)
-                .opacity(savingTextOpacity)
-                .allowsHitTesting(false)
+            GlassButton(title: "Разделить счёт") {
+                saveAndDismiss()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
         }
     }
 
-    private func triggerSave() {
-        hideKeyboard()
-        viewModel.save()
+    private func load() async {
+        await viewModel.load()
+    }
 
-        showSavingAnimation = true
-        savingTextOffset = 0
-        savingTextOpacity = 0
-
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-            savingTextOpacity = 1
-        }
-
-        withAnimation(.spring(response: 0.7, dampingFraction: 0.65).delay(0.15)) {
-            savingTextOffset = -160
-            savingTextOpacity = 0
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            showSavingAnimation = false
-            savingTextOffset = 0
+    private func saveAndDismiss() {
+        Task {
+            if await viewModel.save() {
+                dismiss()
+            }
         }
     }
+
+    private func dismissView() {
+        dismiss()
+    }
+}
+
+private enum BillEntryLayout {
+    static let bottomPanelReservedSpace: CGFloat = 228
 }
 
 #Preview {
