@@ -1,10 +1,18 @@
 import Foundation
 import CoreData
 
+enum ReceiptFetchPolicy {
+    case localOnly
+    case refreshIfPossible
+}
+
 protocol ReceiptsRepositoryProtocol {
-    func listReceipts(eventId: UUID) async throws -> [ReceiptDTO]
-    func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> ReceiptDTO
-    func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> ReceiptDTO
+    func getCachedReceipts(eventId: UUID) async throws -> [Receipt]
+    func refreshReceipts(eventId: UUID) async throws -> [Receipt]
+    func getCachedReceipt(id: UUID) async throws -> Receipt
+    func getReceipt(id: UUID, eventId: UUID, policy: ReceiptFetchPolicy) async throws -> Receipt
+    func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> Receipt
+    func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> Receipt
     func deleteReceipt(id: UUID) async throws
 }
 
@@ -129,6 +137,70 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
             LocalReceiptsStore.shared.updateReceipt(updatedDto)
             return updatedDto
         }
+    func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> Receipt {
+        let dto: ReceiptDTO = try await apiClient.request(
+            endpoint: CreateReceiptEndpoint(eventId: eventId),
+            body: request
+        )
+        try await coreDataStore.performBackground { [weak self] context in
+            try self?.upsertReceipt(dto, in: context)
+        }
+        return try await getCachedReceipt(id: dto.id)
+    }
+
+    func getCachedReceipts(eventId: UUID) async throws -> [Receipt] {
+        try await coreDataStore.performBackground { context in
+            let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "eventId == %@", eventId as CVarArg)
+            fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDReceipt.createdAt, ascending: false)]
+            let cdReceipts = try context.fetch(fetchRequest)
+            return cdReceipts.map { self.mapToDomain($0) }
+        }
+    }
+
+    func refreshReceipts(eventId: UUID) async throws -> [Receipt] {
+        let dtos: [ReceiptDTO] = try await apiClient.request(endpoint: ListReceiptsEndpoint(eventId: eventId))
+        try await coreDataStore.performBackground { [weak self] context in
+            try self?.syncReceipts(dtos, eventId: eventId, in: context)
+        }
+        return try await getCachedReceipts(eventId: eventId)
+    }
+
+    func getCachedReceipt(id: UUID) async throws -> Receipt {
+        try await coreDataStore.performBackground { context in
+            let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            fetchRequest.fetchLimit = 1
+            guard let cdReceipt = try context.fetch(fetchRequest).first else {
+                throw NetworkError.invalidResponse
+            }
+            return self.mapToDomain(cdReceipt)
+        }
+    }
+
+    func getReceipt(id: UUID, eventId: UUID, policy: ReceiptFetchPolicy) async throws -> Receipt {
+        switch policy {
+        case .localOnly:
+            return try await getCachedReceipt(id: id)
+        case .refreshIfPossible:
+            do {
+                let receipts = try await refreshReceipts(eventId: eventId)
+                if let receipt = receipts.first(where: { $0.id == id }) {
+                    return receipt
+                }
+                throw NetworkError.noData
+            } catch {
+                return try await getCachedReceipt(id: id)
+            }
+        }
+    }
+
+    func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> Receipt {
+        let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
+        try await coreDataStore.performBackground { [weak self] context in
+            try self?.upsertReceipt(dto, in: context)
+        }
+        return try await getCachedReceipt(id: dto.id)
     }
 
     func deleteReceipt(id: UUID) async throws {
@@ -138,7 +210,32 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
         }
     }
 
-    // MARK: - Core Data Internal Methods (Extracted from CoreDataStore+Receipts)
+    private func mapToDomain(_ cdReceipt: CDReceipt) -> Receipt {
+        let cdItems = ((cdReceipt.items as? Set<CDReceiptItem>) ?? [])
+            .sorted { ($0.name ?? "") < ($1.name ?? "") }
+        let items: [EventReceiptItem] = cdItems.compactMap { item in
+            guard let iid = item.id else { return nil }
+            let cdShares = ((item.shareItems as? Set<CDShareItem>) ?? [])
+                .sorted { $0.shareValue > $1.shareValue }
+            let shares: [Share] = cdShares.compactMap { share in
+                guard let sid = share.id, let uid = share.userId else { return nil }
+                return Share(id: sid, userId: uid, shareValue: share.shareValue)
+            }
+            return EventReceiptItem(id: iid, name: item.name ?? "", cost: item.cost, shares: shares)
+        }
+
+        return Receipt(
+            id: cdReceipt.id ?? UUID(),
+            eventId: cdReceipt.eventId ?? UUID(),
+            payerId: cdReceipt.payerId ?? UUID(),
+            title: cdReceipt.title,
+            totalAmount: cdReceipt.totalAmount,
+            createdAt: cdReceipt.createdAt ?? Date(),
+            items: items
+        )
+    }
+
+    // MARK: - Core Data Internal Methods
 
     private func upsertReceipt(_ dto: ReceiptDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
@@ -147,13 +244,59 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
 
         let existing = try context.fetch(fetchRequest).first
         let receipt = existing ?? CDReceipt(context: context)
-        // Ensure CDReceipt+DTO exists in DTOMappers
         receipt.update(from: dto)
+
+        let eventFetch: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
+        eventFetch.predicate = NSPredicate(format: "id == %@", dto.eventId as CVarArg)
+        eventFetch.fetchLimit = 1
+        receipt.event = try context.fetch(eventFetch).first
+
+        let existingItems = receipt.items as? Set<CDReceiptItem> ?? []
+        let dtoItemIds = Set(dto.items.map { $0.id })
+
+        for item in existingItems where !dtoItemIds.contains(item.id ?? UUID()) {
+            context.delete(item)
+        }
+
+        for itemDto in dto.items {
+            let item = existingItems.first { $0.id == itemDto.id } ?? CDReceiptItem(context: context)
+            item.update(from: itemDto)
+            item.receipt = receipt
+            try syncShareItems(itemDto.shareItems, for: item, in: context)
+        }
     }
 
-    private func upsertReceipts(_ dtos: [ReceiptDTO], in context: NSManagedObjectContext) throws {
+    private func syncReceipts(_ dtos: [ReceiptDTO], eventId: UUID, in context: NSManagedObjectContext) throws {
+        let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "eventId == %@", eventId as CVarArg)
+        let existingReceipts = try context.fetch(fetchRequest)
+        let dtoIds = Set(dtos.map(\.id))
+
+        for receipt in existingReceipts where !dtoIds.contains(receipt.id ?? UUID()) {
+            context.delete(receipt)
+        }
+
         for dto in dtos {
             try upsertReceipt(dto, in: context)
+        }
+    }
+
+    private func syncShareItems(
+        _ dtos: [ShareItemDTO],
+        for item: CDReceiptItem,
+        in context: NSManagedObjectContext
+    ) throws {
+        let existingShares = item.shareItems as? Set<CDShareItem> ?? []
+        let dtoIds = Set(dtos.map(\.id))
+
+        for share in existingShares where !dtoIds.contains(share.id ?? UUID()) {
+            context.delete(share)
+        }
+
+        for dto in dtos {
+            let share = existingShares.first { $0.id == dto.id } ?? CDShareItem(context: context)
+            share.update(from: dto)
+            share.receiptItem = item
         }
     }
 
