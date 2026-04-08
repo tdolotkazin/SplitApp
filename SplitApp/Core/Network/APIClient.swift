@@ -2,18 +2,12 @@ import Foundation
 
 final class APIClient {
 
-    // MARK: - Singleton
-
     static let shared = APIClient()
-
-    // MARK: - Properties
 
     private let baseURL = URL(string: "https://splitapp.tech")!
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
-
-    // MARK: - Init
 
     private init() {
         self.decoder = JSONDecoder()
@@ -38,8 +32,6 @@ final class APIClient {
 
         self.session = URLSession(configuration: .default)
     }
-
-    // MARK: - Public Methods
 
     /// Perform a request that returns a decoded response body.
     func request<T: Decodable>(
@@ -68,8 +60,6 @@ final class APIClient {
 
         try validateResponse(response, data: data)
     }
-
-    // MARK: - Private Helpers
 
     private func buildRequest(
         endpoint: Endpoint,
