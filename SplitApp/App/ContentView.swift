@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+
     private let dependencies: AppDependencies
     private let appState: AppState
 

@@ -6,13 +6,13 @@ struct CustomTextField: View {
     let placeholder: String
     var isSecure: Bool = false
     var keyboardType: UIKeyboardType = .default
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .foregroundColor(.gray)
                 .frame(width: 20)
-            
+
             if isSecure {
                 SecureField(placeholder, text: $text)
                     .font(.body)
@@ -40,14 +40,14 @@ struct CustomTextField_Previews: PreviewProvider {
                 icon: "person.fill",
                 placeholder: "Имя и фамилия"
             )
-            
+
             CustomTextField(
                 text: .constant(""),
                 icon: "envelope.fill",
                 placeholder: "Email",
                 keyboardType: .emailAddress
             )
-            
+
             CustomTextField(
                 text: .constant(""),
                 icon: "lock.fill",
