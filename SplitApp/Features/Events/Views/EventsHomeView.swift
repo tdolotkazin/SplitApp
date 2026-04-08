@@ -36,29 +36,19 @@ struct EventsHomeView: View {
                                     .foregroundStyle(AppTheme.textSecondary)
                                     .padding(.horizontal, 20)
 
-                                CurrentEventCardView(event: currentEvent)
-                                    .padding(.horizontal, 20)
-                                    .transition(.move(edge: .top).combined(with: .opacity))
-                            }
-                        }
+                        VStack(spacing: 0) {
+                            ForEach(
+                                Array(viewModel.latestEvents.enumerated()),
+                                id: \.element.id
+                            ) { index, event in
+                                Button(action: { onEventTap(event.id) }, label: {
+                                    EventRowView(event: event)
+                                })
 
-                        if !viewModel.currentEventBills.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("ЧЕКИ")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .tracking(1.2)
-                                    .foregroundStyle(AppTheme.textSecondary)
-                                    .padding(.horizontal, 20)
-
-                                VStack(spacing: 8) {
-                                    ForEach(viewModel.currentEventBills) { bill in
-                                        BillRowView(bill: bill, onDelete: {}, onTap: {
-                                            onBillTap?(bill.id)
-                                        })
-                                            .transition(.move(edge: .top).combined(with: .opacity))
-                                    }
+                                if index < viewModel.latestEvents.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 52)
                                 }
-                                .padding(.horizontal, 20)
                             }
                         }
                     }
@@ -186,7 +176,7 @@ private struct AddButton: View {
         viewModel: EventsHomeViewModel(service: EventManagementService()),
         onScanTap: {},
         onAddTap: {},
-        onBillTap: nil
-        onEventTap: { _ in }
+        onEventTap: { _ in
+        }
     )
 }

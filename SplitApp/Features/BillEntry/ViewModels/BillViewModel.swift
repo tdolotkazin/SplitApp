@@ -1,5 +1,5 @@
-import SwiftUI
 import Combine
+import SwiftUI
 
 @MainActor
 final class BillViewModel: ObservableObject {
@@ -92,7 +92,8 @@ final class BillViewModel: ObservableObject {
             return saveDisabledReason
         }
         if isUsingCachedData {
-            return "Показываем сохранённый чек. Для сохранения изменений нужен интернет."
+            return
+                "Показываем сохранённый чек. Для сохранения изменений нужен интернет."
         }
         return nil
     }
@@ -156,7 +157,10 @@ final class BillViewModel: ObservableObject {
 
         switch mode {
         case .create(let eventId, let scannedItems):
-            await loadCreateContext(eventId: eventId, scannedItems: scannedItems)
+            await loadCreateContext(
+                eventId: eventId,
+                scannedItems: scannedItems
+            )
         case .edit(let eventId, let receiptId):
             await loadEditContext(eventId: eventId, receiptId: receiptId)
         }
@@ -183,27 +187,34 @@ final class BillViewModel: ObservableObject {
         generator.impactOccurred()
     }
 
-    func updateItem(id: UUID, name: String? = nil, amount: Decimal? = nil) {
-        if let index = items.firstIndex(where: { $0.id == id }) {
-            if let name = name {
-                items[index].name = name
-            }
-            if let amount = amount {
-                items[index].amount = amount
-            }
+    func updateItem(
+        id: UUID,
+        name: String? = nil,
+        amount: Decimal? = nil,
+        assignedTo: Participant? = nil
+    ) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+
+        if let name {
+            items[index].name = name
+        }
+        if let amount {
+            items[index].amount = amount
+        }
+        if let assignedTo {
+            items[index].assignedTo = assignedTo
         }
     }
 
-    func toggleParticipant(to itemId: UUID, participant: Participant) {
-        if let index = items.firstIndex(where: { $0.id == itemId }) {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                if items[index].assignedTo.contains(where: { $0.id == participant.id }) {
-                    items[index].assignedTo.removeAll { $0.id == participant.id }
-                } else {
-                    items[index].assignedTo.append(participant)
-                }
-            }
-            selectedItemForAssignment = items[index]
+    func assignParticipant(to itemId: UUID, participant: Participant) {
+        guard let index = items.firstIndex(where: { $0.id == itemId }) else {
+            return
+        }
+
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+            items[index].assignedTo = participant
         }
 
         let generator = UIImpactFeedbackGenerator(style: .light)
@@ -214,7 +225,8 @@ final class BillViewModel: ObservableObject {
         saveErrorMessage = nil
 
         guard let eventId = mode.eventId else {
-            saveErrorMessage = "Нужно открыть счёт из события, чтобы сохранить его на сервер."
+            saveErrorMessage =
+                "Нужно открыть счёт из события, чтобы сохранить его на сервер."
             return false
         }
 
@@ -222,14 +234,21 @@ final class BillViewModel: ObservableObject {
             return false
         }
 
-        let validItems = items.filter { !$0.name.isEmpty && $0.amount > 0 && $0.assignedTo != nil }
+        let validItems = items.filter {
+            !$0.name.isEmpty && $0.amount > 0 && $0.assignedTo != nil
+        }
         guard !validItems.isEmpty else {
-            saveErrorMessage = "Добавь хотя бы одну заполненную позицию с назначенным участником."
+            saveErrorMessage =
+                "Добавь хотя бы одну заполненную позицию с назначенным участником."
             return false
         }
 
-        guard let payerId = payerId ?? loadedEvent?.creatorId ?? participants.first?.id else {
-            saveErrorMessage = "Не удалось определить плательщика для этого чека."
+        guard
+            let payerId = payerId ?? loadedEvent?.creatorId
+                ?? participants.first?.id
+        else {
+            saveErrorMessage =
+                "Не удалось определить плательщика для этого чека."
             return false
         }
 
@@ -239,20 +258,7 @@ final class BillViewModel: ObservableObject {
         defer { isSaving = false }
 
         do {
-            switch mode {
-            case .create:
-                _ = try await receiptsRepository.createReceipt(eventId: eventId, request)
-            case .edit(_, let receiptId):
-                _ = try await receiptsRepository.updateReceipt(
-                    id: receiptId,
-                    UpdateReceiptRequest(
-                        title: request.title,
-                        totalAmount: request.totalAmount,
-                        items: request.items
-                    )
-                )
-            }
-
+            try await persistReceipt(request, eventId: eventId)
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
             return true
@@ -261,8 +267,10 @@ final class BillViewModel: ObservableObject {
             return false
         }
     }
+}
 
-    private func loadCreateContext(eventId: UUID?, scannedItems: [BillItem]) async {
+private extension BillViewModel {
+    func loadCreateContext(eventId: UUID?, scannedItems: [BillItem]) async {
         if items.isEmpty {
             items = scannedItems
         }
@@ -389,13 +397,17 @@ final class BillViewModel: ObservableObject {
         print("📝 Загружено позиций: \(items.count), название: \(receiptTitle)")
         isLoading = participants.isEmpty
 
-        if let cachedEvent = try? await eventsRepository.getCachedEvent(id: eventId) {
+        if let cachedEvent = try? await eventsRepository.getCachedEvent(
+            id: eventId
+        ) {
             apply(event: cachedEvent)
             isLoading = false
         }
 
         do {
-            let refreshedEvent = try await eventsRepository.refreshEvent(id: eventId)
+            let refreshedEvent = try await eventsRepository.refreshEvent(
+                id: eventId
+            )
             apply(event: refreshedEvent)
         } catch {
             if loadedEvent == nil {
@@ -406,30 +418,39 @@ final class BillViewModel: ObservableObject {
         isLoading = false
     }
 
-    private func loadEditContext(eventId: UUID, receiptId: UUID) async {
+    func loadEditContext(eventId: UUID, receiptId: UUID) async {
         isLoading = items.isEmpty
         isUsingCachedData = false
 
-        if let cachedEvent = try? await eventsRepository.getCachedEvent(id: eventId) {
+        if let cachedEvent = try? await eventsRepository.getCachedEvent(
+            id: eventId
+        ) {
             apply(event: cachedEvent)
             isLoading = false
         }
 
-        if let cachedReceipt = try? await receiptsRepository.getCachedReceipt(id: receiptId) {
+        if let cachedReceipt = try? await receiptsRepository.getCachedReceipt(
+            id: receiptId
+        ) {
             apply(receipt: cachedReceipt)
             isUsingCachedData = true
             isLoading = false
         }
 
         do {
-            async let refreshedEvent = eventsRepository.refreshEvent(id: eventId)
-            async let refreshedReceipts = receiptsRepository.refreshReceipts(eventId: eventId)
+            async let refreshedEvent = eventsRepository.refreshEvent(
+                id: eventId
+            )
+            async let refreshedReceipts = receiptsRepository.refreshReceipts(
+                eventId: eventId
+            )
 
             let event = try await refreshedEvent
             let receipts = try await refreshedReceipts
             apply(event: event)
 
-            guard let receipt = receipts.first(where: { $0.id == receiptId }) else {
+            guard let receipt = receipts.first(where: { $0.id == receiptId })
+            else {
                 if loadedReceipt == nil {
                     loadErrorMessage = "Чек больше не доступен."
                 }
@@ -450,23 +471,51 @@ final class BillViewModel: ObservableObject {
         isLoading = false
     }
 
-    private func apply(event: Event) {
+    func persistReceipt(
+        _ request: CreateReceiptRequest,
+        eventId: UUID
+    ) async throws {
+        switch mode {
+        case .create:
+            _ = try await receiptsRepository.createReceipt(
+                eventId: eventId,
+                request
+            )
+        case .edit(_, let receiptId):
+            _ = try await receiptsRepository.updateReceipt(
+                id: receiptId,
+                UpdateReceiptRequest(
+                    title: request.title,
+                    totalAmount: request.totalAmount,
+                    items: request.items
+                )
+            )
+        }
+    }
+
+    func apply(event: Event) {
         loadedEvent = event
         payerId = loadedReceipt?.payerId ?? event.creatorId
         participants = event.participants.map(Self.makeParticipant)
 
         if let loadedReceipt {
-            items = mapReceiptToBillItems(loadedReceipt, participants: participants)
+            items = mapReceiptToBillItems(
+                loadedReceipt,
+                participants: participants
+            )
         }
     }
 
-    private func apply(receipt: Receipt) {
+    func apply(receipt: Receipt) {
         loadedReceipt = receipt
         payerId = receipt.payerId
         items = mapReceiptToBillItems(receipt, participants: participants)
     }
 
-    private func mapReceiptToBillItems(_ receipt: Receipt, participants: [Participant]) -> [BillItem] {
+    func mapReceiptToBillItems(
+        _ receipt: Receipt,
+        participants: [Participant]
+    ) -> [BillItem] {
         receipt.items.map { item in
             let assignedParticipant = item.shares.first.flatMap { share in
                 participants.first(where: { $0.id == share.userId })
@@ -481,7 +530,10 @@ final class BillViewModel: ObservableObject {
         }
     }
 
-    private func makeReceiptRequest(payerId: UUID, items: [BillItem]) -> CreateReceiptRequest {
+    func makeReceiptRequest(
+        payerId: UUID,
+        items: [BillItem]
+    ) -> CreateReceiptRequest {
         CreateReceiptRequest(
             payerId: payerId,
             title: nil,
@@ -493,14 +545,17 @@ final class BillViewModel: ObservableObject {
                     name: item.name.isEmpty ? nil : item.name,
                     cost: NSDecimalNumber(decimal: item.amount).doubleValue,
                     shareItems: [
-                        CreateShareItemRequest(userId: assignedTo.id, shareValue: 1)
+                        CreateShareItemRequest(
+                            userId: assignedTo.id,
+                            shareValue: 1
+                        )
                     ]
                 )
             }
         )
     }
 
-    private static func makeParticipant(from user: User) -> Participant {
+    static func makeParticipant(from user: User) -> Participant {
         Participant(
             id: user.id,
             name: user.name,

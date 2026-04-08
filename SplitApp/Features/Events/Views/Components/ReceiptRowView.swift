@@ -19,11 +19,19 @@ struct ReceiptRowView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(receipt.title ?? "Чек")
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .font(
+                            .system(
+                                size: 17,
+                                weight: .semibold,
+                                design: .rounded
+                            )
+                        )
                         .foregroundStyle(Color(.label))
 
                     Text(formatDate(receipt.createdAt))
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .font(
+                            .system(size: 14, weight: .medium, design: .rounded)
+                        )
                         .foregroundStyle(Color(.secondaryLabel))
                 }
 
@@ -40,7 +48,7 @@ struct ReceiptRowView: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
