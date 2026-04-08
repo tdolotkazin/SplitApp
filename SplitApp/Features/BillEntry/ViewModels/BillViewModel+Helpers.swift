@@ -1,6 +1,7 @@
 import Foundation
+import SwiftUI
 
-private extension BillViewModel {
+extension BillViewModel {
     func loadCreateContext(eventId: UUID?, scannedItems: [BillItem]) async {
         if items.isEmpty {
             items = scannedItems

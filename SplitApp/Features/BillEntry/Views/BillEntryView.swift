@@ -169,7 +169,9 @@ struct BillEntryView: View {
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .task(action: load)
+            .task {
+                await load()
+            }
             .sheet(isPresented: $showParticipantSheet) {
                 let selectedId = viewModel.selectedItemForAssignment?.id
                 let currentAssigned = selectedId.flatMap { id in
