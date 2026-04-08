@@ -135,17 +135,20 @@ class BillViewModel: ObservableObject {
         let payerId = participants.first?.id ?? UUID()
 
         let requestItems = items.compactMap { item -> CreateReceiptItemRequest? in
-            guard let assignedTo = item.assignedTo else { return nil }
+            guard !item.assignedTo.isEmpty else { return nil }
 
-            let shareItem = CreateShareItemRequest(
-                userId: assignedTo.id,
-                shareValue: NSDecimalNumber(decimal: item.amount).doubleValue
-            )
+            // Создаем shareItems для каждого участника позиции
+            let shareItems = item.assignedTo.map { participant in
+                CreateShareItemRequest(
+                    userId: participant.id,
+                    shareValue: NSDecimalNumber(decimal: item.amount).doubleValue / Double(item.assignedTo.count)
+                )
+            }
 
             return CreateReceiptItemRequest(
                 name: item.name,
                 cost: NSDecimalNumber(decimal: item.amount).doubleValue,
-                shareItems: [shareItem]
+                shareItems: shareItems
             )
         }
 
