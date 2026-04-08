@@ -1,5 +1,5 @@
-import SwiftUI
 import AuthenticationServices
+import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var appState: AppState
@@ -38,7 +38,6 @@ struct LoginView: View {
 
                 VStack(spacing: 16) {
 
-
                     LegalTextSection()
 
                     DividerSection()
@@ -48,7 +47,7 @@ struct LoginView: View {
                             backgroundColor: .black,
                             textColor: .white
                         ) {
-                            
+
                         }
 
                         SocialButton(
@@ -68,15 +67,14 @@ struct LoginView: View {
                             hasBorder: true
                         ) {
                             Task {
-                                    let success = await viewModel.login()
+                                let success = await viewModel.login()
 
-                                    if success {
-                                        appState.isLoggedIn = true
-                                    }
+                                if success {
+                                    appState.isLoggedIn = true
                                 }
+                            }
                         }
 
-                        
                     }
                 }
                 .padding(.horizontal, 20)
@@ -85,6 +83,3 @@ struct LoginView: View {
         }
     }
 }
-
-
-

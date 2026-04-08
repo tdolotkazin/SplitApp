@@ -1,7 +1,9 @@
 import Foundation
 import CoreData
 
+
 final class UsersDataRepository: UsersRepository {
+
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 
@@ -9,6 +11,7 @@ final class UsersDataRepository: UsersRepository {
         self.apiClient = apiClient
         self.coreDataStore = coreDataStore
     }
+
 
     func listUsers() async throws -> [User] {
         do {
