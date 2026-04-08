@@ -120,3 +120,13 @@ final class EventsHomeViewModel: ObservableObject {
         )
     }
 }
+
+extension EventsHomeViewModel {
+    @MainActor static func mock(
+        service: EventManagementServiceProtocol = EventManagementService()
+    ) -> EventsHomeViewModel {
+        let viewModel = EventsHomeViewModel(service: service)
+        Task { await viewModel.loadDataIfNeeded() }
+        return viewModel
+    }
+}
