@@ -24,7 +24,7 @@ struct ProfileStatsGridView: View {
         ProfileStatCardView(
             title: "События",
             value: eventsCountText,
-            valueColor: .black
+            valueColor: AppTheme.textPrimary
         )
     }
 
@@ -32,7 +32,7 @@ struct ProfileStatsGridView: View {
         ProfileStatCardView(
             title: "Друзья",
             value: friendsCountText,
-            valueColor: .black
+            valueColor: AppTheme.textPrimary
         )
     }
 
