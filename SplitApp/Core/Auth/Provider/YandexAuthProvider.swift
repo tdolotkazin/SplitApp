@@ -1,5 +1,5 @@
 import UIKit
 
 protocol YandexAuthProvider {
-    func login(from vc: UIViewController) async throws -> UserSessionToken
+    func login(from viewContollerProvider: UIViewController) async throws -> UserSessionToken
 }

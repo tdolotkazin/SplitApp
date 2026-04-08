@@ -18,11 +18,11 @@ final class AuthServicesImpl: AuthService {
         self.secureStorage = KeychainStorage()
     }
 
-    func login(provider: AuthProvider, vc: UIViewController) async throws
+    func login(provider: AuthProvider, viewContollerProvider: UIViewController) async throws
         -> AuthResponse
     {
 
-        let token = try await repository.login(provider: provider, vc: vc)
+        let token = try await repository.login(provider: provider, viewContollerProvider: viewContollerProvider)
         return try await serviceBackend.sendTokenToBackend(token: token.token)
 
     }
