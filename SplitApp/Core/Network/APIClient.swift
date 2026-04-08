@@ -1,11 +1,9 @@
 import Foundation
-import KeychainSwift
 
 final class APIClient {
     static let shared = APIClient()
 
     private let secureStorage: KeychainStorage
-
     private let baseURL = URL(string: "https://splitapp.tech")!
     private let session: URLSession
     private let decoder: JSONDecoder
@@ -48,36 +46,6 @@ final class APIClient {
             body: body,
             isRetry: false
         )
-    }
-
-    // MARK: - Core logic
-
-    private func performRequest<T: Decodable>(
-        endpoint: Endpoint,
-        body: (any Encodable)?,
-        isRetry: Bool
-    ) async throws -> T {
-        let request = try buildRequest(endpoint: endpoint, body: body)
-        let (data, response) = try await session.data(for: request)
-
-        do {
-            try validateResponse(response, data: data)
-            return try decoder.decode(T.self, from: data)
-
-        } catch NetworkError.unauthorized {
-            if isRetry {
-                throw NetworkError.unauthorized
-            }
-
-            try await refreshAccessTokenIfNeeded()
-
-            let retryRequest = try buildRequest(endpoint: endpoint, body: body)
-            let (retryData, retryResponse) = try await session.data(for: retryRequest)
-
-            try validateResponse(retryResponse, data: retryData)
-
-            return try decoder.decode(T.self, from: retryData)
-        }
     }
 
     func requestVoid(
@@ -127,41 +95,6 @@ final class APIClient {
         }
     }
 
-    private func buildRequest(
-        endpoint: Endpoint,
-        body: (any Encodable)?
-    ) throws -> URLRequest {
-        var components = URLComponents(
-            url: baseURL.appendingPathComponent(endpoint.path),
-            resolvingAgainstBaseURL: false
-        )
-
-        components?.queryItems = endpoint.queryItems
-
-        guard let url = components?.url else {
-            throw NetworkError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method.rawValue
-
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        if let token = TokenStore.shared.accessToken, !token.isEmpty {
-            request.setValue(
-                "Bearer \(token)",
-                forHTTPHeaderField: "Authorization"
-            )
-        }
-
-        if let body {
-            request.httpBody = try encoder.encode(body)
-        }
-
-        return request
-    }
-
     func refreshAccessTokenIfNeeded() async throws {
         if TokenStore.shared.accessToken != nil,
            TokenStore.shared.isValid {
@@ -181,14 +114,72 @@ final class APIClient {
         )
 
         TokenStore.shared.save(token: response.accessToken)
-
         secureStorage.save(response.refreshToken, for: "refresh_token")
     }
 
-    // MARK: - Validate
+    private func performRequest<T: Decodable>(
+        endpoint: Endpoint,
+        body: (any Encodable)?,
+        isRetry: Bool
+    ) async throws -> T {
+        let request = try buildRequest(endpoint: endpoint, body: body)
+        let (data, response) = try await session.data(for: request)
 
-    private func validateResponse(_ response: URLResponse, data _: Data) throws {
-        print(response)
+        do {
+            try validateResponse(response, data: data)
+            return try decoder.decode(T.self, from: data)
+        } catch NetworkError.unauthorized {
+            if isRetry {
+                throw NetworkError.unauthorized
+            }
+
+            try await refreshAccessTokenIfNeeded()
+
+            let retryRequest = try buildRequest(endpoint: endpoint, body: body)
+            let (retryData, retryResponse) = try await session.data(for: retryRequest)
+
+            try validateResponse(retryResponse, data: retryData)
+            return try decoder.decode(T.self, from: retryData)
+        } catch {
+            throw NetworkError.decodingError(error)
+        }
+    }
+
+    private func buildRequest(
+        endpoint: Endpoint,
+        body: (any Encodable)?
+    ) throws -> URLRequest {
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent(endpoint.path),
+            resolvingAgainstBaseURL: false
+        )
+
+        components?.queryItems = endpoint.queryItems
+
+        guard let url = components?.url else {
+            throw NetworkError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = endpoint.method.rawValue
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if let token = TokenStore.shared.accessToken, !token.isEmpty {
+            request.setValue(
+                "Bearer \(token)",
+                forHTTPHeaderField: "Authorization"
+            )
+        }
+
+        if let body {
+            request.httpBody = try encoder.encode(body)
+        }
+
+        return request
+    }
+
+    private func validateResponse(_ response: URLResponse, data: Data) throws {
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse
         }
@@ -201,9 +192,11 @@ final class APIClient {
         case 403:
             throw NetworkError.httpError(statusCode: 403, detail: "Forbidden")
         default:
+            let detail = (try? decoder.decode(ErrorResponseDTO.self, from: data).detail)
+                ?? response.debugDescription
             throw NetworkError.httpError(
                 statusCode: http.statusCode,
-                detail: response.debugDescription
+                detail: detail
             )
         }
     }
