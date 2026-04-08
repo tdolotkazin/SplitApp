@@ -6,10 +6,16 @@ struct BillEntryView: View {
     @State private var showParticipantSheet = false
     @Environment(\.dismiss) private var dismiss
 
-    init(eventId: UUID? = nil, onReceiptCreated: (() -> Void)? = nil) {
+    init(eventId: UUID? = nil, receipt: ReceiptDTO? = nil, onReceiptCreated: (() -> Void)? = nil) {
         let vm = BillViewModel()
         vm.currentEventId = eventId
         vm.onReceiptCreated = onReceiptCreated
+
+        // Загружаем данные чека если это редактирование
+        if let receipt = receipt {
+            vm.loadReceipt(receipt)
+        }
+
         _viewModel = StateObject(wrappedValue: vm)
     }
 
@@ -132,9 +138,28 @@ struct BillEntryView: View {
                     }
                 )
             }
-            .navigationTitle("Ввод чека")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 0) {
+                        TextField("Название чека", text: $viewModel.receiptTitle)
+                            .font(.system(size: 17, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .tint(AppTheme.accent)
+                            .multilineTextAlignment(.center)
+                            .frame(minWidth: 150, maxWidth: 250)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(.ultraThinMaterial)
+                            .background(AppTheme.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(AppTheme.cardBorder, lineWidth: 1)
+                            )
+                    }
+                }
+
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Отмена") {
                         dismiss()

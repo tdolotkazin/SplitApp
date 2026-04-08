@@ -3,8 +3,15 @@ import SwiftUI
 struct BillRowView: View {
     let bill: BillListItem
     let onDelete: () -> Void
+    let onTap: (() -> Void)?
 
     @State private var isDeleting: Bool = false
+
+    init(bill: BillListItem, onDelete: @escaping () -> Void, onTap: (() -> Void)? = nil) {
+        self.bill = bill
+        self.onDelete = onDelete
+        self.onTap = onTap
+    }
 
     var body: some View {
         GlassCard(padding: 12) {
@@ -29,6 +36,9 @@ struct BillRowView: View {
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(bill.tone == .neutral ? AnyShapeStyle(AppTheme.textSecondary) : AnyShapeStyle(AppTheme.accentGradient))
             }
+        }
+        .onTapGesture {
+            onTap?()
         }
         .deleteTransition(isDeleting: isDeleting)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {

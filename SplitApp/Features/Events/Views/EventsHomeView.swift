@@ -5,6 +5,7 @@ struct EventsHomeView: View {
 
     let onScanTap: () -> Void
     let onAddTap: () -> Void
+    let onBillTap: ((UUID) -> Void)?
 
     var body: some View {
         ZStack {
@@ -51,7 +52,9 @@ struct EventsHomeView: View {
 
                                 VStack(spacing: 8) {
                                     ForEach(viewModel.currentEventBills) { bill in
-                                        BillRowView(bill: bill, onDelete: {})
+                                        BillRowView(bill: bill, onDelete: {}, onTap: {
+                                            onBillTap?(bill.id)
+                                        })
                                             .transition(.move(edge: .top).combined(with: .opacity))
                                     }
                                 }
@@ -176,6 +179,7 @@ private struct AddButton: View {
     EventsHomeView(
         viewModel: EventsHomeViewModel(service: EventManagementService()),
         onScanTap: {},
-        onAddTap: {}
+        onAddTap: {},
+        onBillTap: nil
     )
 }

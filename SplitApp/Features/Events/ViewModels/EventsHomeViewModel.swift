@@ -34,6 +34,10 @@ final class EventsHomeViewModel: ObservableObject {
             if let firstEvent = homeData.events.first {
                 currentEventData = firstEvent
                 currentEvent = Self.mapEventToListItem(firstEvent)
+
+                // Сохраняем участников события в локальное хранилище
+                LocalEventStore.shared.setCurrentEvent(id: firstEvent.id, participants: firstEvent.users)
+
                 await loadReceipts(for: firstEvent.id)
             }
 
@@ -45,16 +49,20 @@ final class EventsHomeViewModel: ObservableObject {
 
     func loadReceipts(for eventId: UUID) async {
         do {
+            print("🔵 Загружаем чеки для события: \(eventId)")
             let receipts = try await service.fetchReceipts(eventId: eventId)
+            print("✅ Загружено чеков: \(receipts.count)")
             currentEventBills = receipts.map(Self.mapReceiptToBillListItem)
+            print("✅ Обновлен список чеков: \(currentEventBills.count)")
         } catch {
-            print("Ошибка загрузки чеков: \(error)")
+            print("❌ Ошибка загрузки чеков: \(error)")
             currentEventBills = []
         }
     }
 
     private static func mapEventToListItem(_ event: Event) -> EventListItem {
         EventListItem(
+            id: event.id,
             emoji: event.icon,
             title: event.name,
             subtitle: relativeDateText(from: event.date),
@@ -103,14 +111,18 @@ final class EventsHomeViewModel: ObservableObject {
     }
 
     private static func mapReceiptToBillListItem(_ receipt: ReceiptDTO) -> BillListItem {
+        print("🔄 Маппинг чека: \(receipt.id), title: \(receipt.title ?? "nil"), items count: \(receipt.items.count)")
+
         // Считаем количество уникальных участников
         let uniqueParticipants = Set(receipt.items.flatMap { $0.shareItems })
         let participantsCount = uniqueParticipants.count
 
+        print("🔄 Участников: \(participantsCount)")
+
         let timeText = formatTime(from: receipt.createdAt)
         let subtitle = "\(participantsCount) уч. · \(timeText)"
 
-        return BillListItem(
+        let billItem = BillListItem(
             id: receipt.id,
             emoji: "🧾",
             title: receipt.title ?? "Чек",
@@ -118,6 +130,10 @@ final class EventsHomeViewModel: ObservableObject {
             amount: receipt.totalAmount,
             tone: tone(for: receipt.totalAmount)
         )
+
+        print("🔄 Создан BillListItem: id=\(billItem.id), title=\(billItem.title), amount=\(billItem.amount)")
+
+        return billItem
     }
 }
 

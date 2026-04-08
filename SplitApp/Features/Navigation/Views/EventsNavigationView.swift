@@ -20,7 +20,17 @@ struct EventsNavigationView: View {
             EventsHomeView(
                 viewModel: viewModel.homeViewModel,
                 onScanTap: { viewModel.handle(.scanButtonTapped) },
-                onAddTap: { viewModel.handle(.addButtonTapped) }
+                onAddTap: { viewModel.handle(.addButtonTapped) },
+                onBillTap: { billId in
+                    // Находим чек по ID в LocalReceiptsStore
+                    if let eventId = LocalEventStore.shared.currentEventId {
+                        let receipt = LocalReceiptsStore.shared.getReceipts(for: eventId)
+                            .first(where: { $0.id == billId })
+                        if let receipt = receipt {
+                            viewModel.openReceiptForEdit(receipt)
+                        }
+                    }
+                }
             )
             .task {
                 await viewModel.loadInitialDataIfNeeded()
@@ -34,19 +44,27 @@ struct EventsNavigationView: View {
                     )
                     .navigationBarBackButtonHidden(true)
                 case .billEntry:
+                    // BillEntry отображается через fullScreenCover ниже
                     EmptyView()
                 }
             }
         }
         .fullScreenCover(isPresented: $viewModel.showBillEntry) {
             BillEntryView(
-                eventId: viewModel.homeViewModel.currentEvent?.id,
+                eventId: LocalEventStore.shared.currentEventId,
+                receipt: viewModel.editingReceipt,
                 onReceiptCreated: {
-                    viewModel.showBillEntry = false
-                    Task {
-                        if let eventId = viewModel.homeViewModel.currentEvent?.id {
+                    Task { @MainActor in
+                        // Сначала загружаем чеки
+                        if let eventId = LocalEventStore.shared.currentEventId {
+                            print("📱 Вызываем loadReceipts для события: \(eventId)")
                             await viewModel.homeViewModel.loadReceipts(for: eventId)
+                            print("📱 currentEventBills.count после loadReceipts: \(viewModel.homeViewModel.currentEventBills.count)")
                         }
+
+                        // Затем закрываем экран
+                        viewModel.editingReceipt = nil
+                        viewModel.showBillEntry = false
                     }
                 }
             )
