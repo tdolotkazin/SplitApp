@@ -137,7 +137,7 @@ private extension BillViewModel {
         participants: [Participant]
     ) -> [BillItem] {
         receipt.items.map { item in
-            let assignedParticipant = item.shares.first.flatMap { share in
+            let assignedParticipants = item.shares.compactMap { share in
                 participants.first(where: { $0.id == share.userId })
             }
 
@@ -145,7 +145,7 @@ private extension BillViewModel {
                 id: item.id,
                 name: item.name,
                 amount: Decimal(item.cost),
-                assignedTo: assignedParticipant
+                assignedTo: assignedParticipants
             )
         }
     }
@@ -159,17 +159,17 @@ private extension BillViewModel {
             title: nil,
             totalAmount: NSDecimalNumber(decimal: total).doubleValue,
             items: items.compactMap { item in
-                guard let assignedTo = item.assignedTo else { return nil }
+                guard !item.assignedTo.isEmpty else { return nil }
 
                 return CreateReceiptItemRequest(
                     name: item.name.isEmpty ? nil : item.name,
                     cost: NSDecimalNumber(decimal: item.amount).doubleValue,
-                    shareItems: [
+                    shareItems: item.assignedTo.map { assignedTo in
                         CreateShareItemRequest(
                             userId: assignedTo.id,
                             shareValue: 1
                         )
-                    ]
+                    }
                 )
             }
         )

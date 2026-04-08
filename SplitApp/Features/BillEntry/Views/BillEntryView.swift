@@ -36,17 +36,16 @@ struct BillEntryView: View {
                 if viewModel.isLoading && viewModel.items.isEmpty {
                     ProgressView("Загрузка чека...")
                         .font(.system(size: 17, weight: .medium, design: .rounded))
-                } else if let errorMessage = viewModel.loadErrorMessage, viewModel.items.isEmpty {
+                } else if let errorMessage = viewModel.loadErrorMessage,
+                          viewModel.items.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 44))
                             .foregroundStyle(.orange)
+
                         Text(errorMessage)
                             .font(.system(size: 17, weight: .medium, design: .rounded))
                             .multilineTextAlignment(.center)
-                        Button("Попробовать снова") {
-                            Task { await viewModel.reload() }
-                        }
 
                     ScrollViewReader { proxy in
                         List {
@@ -156,24 +155,13 @@ struct BillEntryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
-                        dismiss()
-                    }
+                    Button("Отмена", action: dismissView)
                     .foregroundStyle(AppTheme.textSecondary)
                     .font(.system(size: 17))
                 }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
-<<<<<<< HEAD
-                        triggerSave()
-=======
-                        Task {
-                            if await viewModel.save() {
-                                dismiss()
-                            }
-                        }
->>>>>>> 643b5e8 (refactor(billEntry): recomposition billEdit screen)
-                    }
+                    Button("Готово", action: saveAndDismiss)
                     .foregroundStyle(AppTheme.accent)
                     .font(.system(size: 17, weight: .semibold))
                     .disabled(!viewModel.canSave)
@@ -181,9 +169,7 @@ struct BillEntryView: View {
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .task {
-                await viewModel.load()
-            }
+            .task(action: load)
             .sheet(isPresented: $showParticipantSheet) {
                 let selectedId = viewModel.selectedItemForAssignment?.id
                 let currentAssigned = selectedId.flatMap { id in
