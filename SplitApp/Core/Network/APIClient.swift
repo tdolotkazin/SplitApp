@@ -3,8 +3,6 @@ import KeychainSwift
 
 final class APIClient {
 
-    // MARK: - Singleton
-
     static let shared = APIClient()
 
     private let secureStorage: KeychainStorage
@@ -15,8 +13,6 @@ final class APIClient {
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
-
-    // MARK: - Init
 
     private init() {
         self.decoder = JSONDecoder()
@@ -94,8 +90,6 @@ final class APIClient {
 
         try validateResponse(response, data: data)
     }
-
-    // MARK: - Private Helpers
 
     private func buildRequest(
         endpoint: Endpoint,

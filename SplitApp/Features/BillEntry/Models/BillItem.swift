@@ -5,7 +5,7 @@ struct BillItem: Identifiable {
     var name: String
     var amount: Decimal
     var currency: String
-    var assignedTo: Participant?
+    var assignedTo: [Participant]
     var isEditing: Bool
 
     init(
@@ -13,7 +13,7 @@ struct BillItem: Identifiable {
         name: String = "",
         amount: Decimal = 0,
         currency: String = "€",
-        assignedTo: Participant? = nil,
+        assignedTo: [Participant] = [],
         isEditing: Bool = false
     ) {
         self.id = id
