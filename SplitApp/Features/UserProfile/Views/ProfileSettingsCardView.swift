@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileSettingsCardView: View {
     @Binding var notificationsEnabled: Bool
+    @ObservedObject var viewModel: ProfileViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -30,15 +31,22 @@ struct ProfileSettingsCardView: View {
     }
 
     private var settings: some View {
-        ProfileSettingsRowView(
-            icon: "rectangle.portrait.and.arrow.right",
-            title: "Выйти",
-            titleColor: .black,
-            iconColor: .red,
-            iconBackgroundColor: Color.red.opacity(0.12)
-        ) {
-            Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
+        Button {
+                    viewModel.logout()
+                } label: {
+                    HStack {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .foregroundColor(.red)
+                            .frame(width: 32, height: 32)
+                            .background(Color.red.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        Text("Выйти")
+                            .foregroundColor(.black)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                }
         }
-    }
 }

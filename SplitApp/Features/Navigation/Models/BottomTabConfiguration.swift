@@ -39,8 +39,17 @@ struct BottomTabConfiguration {
 }
 
 extension BottomTabConfiguration {
-    static var `default`: BottomTabConfiguration {
-        BottomTabConfiguration(
+    static func `default`(appState: AppState) -> BottomTabConfiguration {
+        // создаём хранилище токенов
+        let storage = KeychainStorage()
+
+        // создаём useCase для выхода (удаляет токены и обновляет appState)
+        let logoutUseCase = LogoutUseCase(secureStorage: storage, appState: appState)
+
+        // создаём ViewModel для профиля
+        let profileVM = ProfileViewModel(logoutUseCase: logoutUseCase)
+
+        return BottomTabConfiguration(
             items: [
                 BottomTabItem(
                     id: .events,
@@ -66,14 +75,17 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    ProfileScreenView(model: ProfileScreenModel(
-                        initials: "ИВ",
-                        email: "ivan@example.com",
-                        name: "Иван Волков 🌸",
-                        eventsCountText: "12",
-                        friendsCountText: "8",
-                        closedBillsText: "€340",
-                        openBillsText: "€34")
+                    ProfileScreenView(
+                        model: ProfileScreenModel(
+                            initials: "ИВ",
+                            email: "ivan@example.com",
+                            name: "Иван Волков 🌸",
+                            eventsCountText: "12",
+                            friendsCountText: "8",
+                            closedBillsText: "€340",
+                            openBillsText: "€34"
+                        ),
+                        viewModel: profileVM
                     )
                 }
             ]

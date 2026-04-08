@@ -3,12 +3,15 @@ import SwiftUI
 struct ProfileScreenView: View {
     let model: ProfileScreenModel
     @State private var notificationsEnabled: Bool
+    @ObservedObject var viewModel: ProfileViewModel
 
     init(
         model: ProfileScreenModel,
+        viewModel: ProfileViewModel,
         notificationsEnabled: Bool = true
     ) {
         self.model = model
+        self.viewModel = viewModel
         _notificationsEnabled = State(initialValue: notificationsEnabled)
     }
 
@@ -55,7 +58,6 @@ struct ProfileScreenView: View {
 
     private var profileNotifications: some View {
         ProfileSettingsCardView(
-            notificationsEnabled: $notificationsEnabled
-        )
+            notificationsEnabled: $notificationsEnabled, viewModel: viewModel)
     }
 }

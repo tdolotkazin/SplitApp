@@ -1,16 +1,16 @@
 import Foundation
 
-struct User: Hashable {
-    let id: UUID
-    var name: String
+struct User : Codable, Hashable {
+    let id: String
+    let name: String
+    let phoneNumber: String
+    let email: String
 
-    init(id: UUID, name: String) {
-        self.id = id
-        self.name = name
+    enum CodingKeys: String, CodingKey {
+        case id = "id"
+        case name = "name"
+        case phoneNumber = "phone_number"
+        case email = "email"
     }
 
-    init(from authUser: AuthUser) {
-        self.id = authUser.id
-        self.name = authUser.name
-    }
 }
