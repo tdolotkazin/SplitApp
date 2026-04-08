@@ -10,6 +10,7 @@ struct BillItemRow: View {
     @State private var name: String
     @State private var amount: Decimal
     @State private var isDeleting: Bool = false
+    @State private var didAppear = false
     @FocusState private var isNameFocused: Bool
 
     init(
@@ -80,6 +81,17 @@ struct BillItemRow: View {
                 )
                 .frame(width: BillEntryColumns.participantWidth)
                 .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .opacity(item.isEditing ? (didAppear ? 1 : 0) : 1)
+        .onAppear {
+            guard item.isEditing else {
+                didAppear = true
+                return
+            }
+
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+                didAppear = true
             }
         }
         .deleteTransition(isDeleting: isDeleting)
