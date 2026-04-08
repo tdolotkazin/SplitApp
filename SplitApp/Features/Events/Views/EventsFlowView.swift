@@ -23,15 +23,17 @@ struct EventsFlowView: View {
                         .navigationBarBackButtonHidden(true)
                 }
             }
-            .sheet(isPresented: $viewModel.showCamera, onDismiss: {
-                viewModel.handlePendingImage()
-            }) {
-                CameraPickerSheet(
-                    onCapture: { image in viewModel.storeCapturedImage(image) },
-                    onCancel: { viewModel.showCamera = false }
-                )
-                .ignoresSafeArea()
-            }
+            .sheet(
+                isPresented: $viewModel.showCamera,
+                onDismiss: { viewModel.handlePendingImage() },
+                content: {
+                    CameraPickerSheet(
+                        onCapture: { image in viewModel.storeCapturedImage(image) },
+                        onCancel: { viewModel.showCamera = false }
+                    )
+                    .ignoresSafeArea()
+                }
+            )
             .photosPicker(isPresented: $viewModel.showPhotoPicker, selection: $selectedPhoto, matching: .images)
             .onChange(of: selectedPhoto) { photo in
                 guard let photo else { return }

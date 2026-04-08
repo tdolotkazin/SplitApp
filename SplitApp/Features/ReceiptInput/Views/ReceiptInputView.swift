@@ -12,7 +12,7 @@ struct ReceiptInputView: View {
             VStack(spacing: 0) {
                 // Navigation bar
                 HStack {
-                    Button(action: { dismiss() }) {
+                    Button(action: { dismiss() }, label: {
                         HStack(spacing: 4) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 17, weight: .semibold))
@@ -20,7 +20,7 @@ struct ReceiptInputView: View {
                                 .font(.system(size: 17))
                         }
                         .foregroundStyle(Color.accentColor)
-                    }
+                    })
 
                     Spacer()
 
@@ -29,11 +29,11 @@ struct ReceiptInputView: View {
 
                     Spacer()
 
-                    Button(action: { dismiss() }) {
+                    Button(action: { dismiss() }, label: {
                         Text("Готово")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(Color.accentColor)
-                    }
+                    })
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 12)
@@ -60,7 +60,7 @@ struct ReceiptInputView: View {
                     .padding(.horizontal, 18)
                     .padding(.top, 18)
 
-                    Button(action: { viewModel.addPosition() }) {
+                    Button(action: { viewModel.addPosition() }, label: {
                         HStack(spacing: 8) {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 20))
@@ -72,7 +72,7 @@ struct ReceiptInputView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color(.systemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    }
+                    })
                     .padding(.horizontal, 18)
                     .padding(.top, 12)
 
