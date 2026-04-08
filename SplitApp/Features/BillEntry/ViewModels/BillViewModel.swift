@@ -23,22 +23,22 @@ final class BillViewModel: ObservableObject {
     @Published var selectedItemForAssignment: BillItem?
     @Published var showParticipantPicker = false
     @Published var triggerAnimation = UUID()
-    @Published private(set) var isLoading = false
+    @Published var isLoading = false
     @Published private(set) var isSaving = false
-    @Published private(set) var isUsingCachedData = false
+    @Published var isUsingCachedData = false
     @Published private(set) var isNetworkAvailable: Bool
-    @Published private(set) var loadErrorMessage: String?
-    @Published private(set) var saveErrorMessage: String?
+    @Published var loadErrorMessage: String?
+    @Published var saveErrorMessage: String?
 
-    private let mode: Mode
-    private let eventsRepository: EventsRepositoryProtocol
-    private let receiptsRepository: ReceiptsRepositoryProtocol
+    let mode: Mode
+    let eventsRepository: EventsRepositoryProtocol
+    let receiptsRepository: ReceiptsRepositoryProtocol
     private let networkMonitor: NetworkMonitor
     private var cancellables: Set<AnyCancellable> = []
     private var hasLoaded = false
-    private var loadedEvent: Event?
-    private var loadedReceipt: Receipt?
-    private var payerId: UUID?
+    var loadedEvent: Event?
+    var loadedReceipt: Receipt?
+    var payerId: UUID?
 
     var total: Decimal {
         items.reduce(0) { $0 + $1.amount }
