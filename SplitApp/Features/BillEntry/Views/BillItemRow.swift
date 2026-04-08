@@ -5,7 +5,6 @@ struct BillItemRow: View {
     let onAssign: () -> Void
     let onDelete: () -> Void
     let onUpdate: (String, Decimal) -> Void
-    let onInsertAnimationCompleted: () -> Void
 
     @State private var name: String
     @State private var amount: Decimal
@@ -17,14 +16,12 @@ struct BillItemRow: View {
         item: BillItem,
         onAssign: @escaping () -> Void,
         onDelete: @escaping () -> Void,
-        onUpdate: @escaping (String, Decimal) -> Void,
-        onInsertAnimationCompleted: @escaping () -> Void = {}
+        onUpdate: @escaping (String, Decimal) -> Void
     ) {
         self.item = item
         self.onAssign = onAssign
         self.onDelete = onDelete
         self.onUpdate = onUpdate
-        self.onInsertAnimationCompleted = onInsertAnimationCompleted
         _name = State(initialValue: item.name)
         _amount = State(initialValue: item.amount)
     }
@@ -86,17 +83,7 @@ struct BillItemRow: View {
                 return
             }
 
-            withAnimation(
-                .spring(response: 0.45, dampingFraction: 0.8),
-                completionCriteria: .logicallyComplete
-            ) {
-                didAppear = true
-            } completion: {
-                onInsertAnimationCompleted()
-            }
-        }
-        .onChange(of: item.isEditing) { _, isEditing in
-            if !isEditing {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
                 didAppear = true
             }
         }

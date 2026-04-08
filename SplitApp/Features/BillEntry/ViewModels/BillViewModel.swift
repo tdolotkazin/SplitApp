@@ -109,9 +109,4 @@ class BillViewModel: ObservableObject {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
     }
-
-    func markInsertAnimationCompleted(for id: UUID) {
-        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
-        items[index].isEditing = false
-    }
 }
