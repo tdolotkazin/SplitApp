@@ -5,21 +5,16 @@ struct ParticipantAvatar: View {
     var size: CGFloat = 32
 
     var body: some View {
-        ZStack {
-            // Градиент фона
-            LinearGradient(
-                colors: [
-                    participant.color,
-                    participant.color.opacity(0.8)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            // Инициалы
-            Text(participant.initials)
-                .font(.system(size: size * 0.375, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+        AsyncImage(url: participant.avatarURL) { phase in
+            Group {
+                if case .success(let image) = phase {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    initialsAvatar
+                }
+            }
         }
         .frame(width: size, height: size)
         .clipShape(Circle())
@@ -27,5 +22,18 @@ struct ParticipantAvatar: View {
             Circle()
                 .stroke(AppTheme.avatarStroke, lineWidth: 1)
         )
+    }
+
+    private var initialsAvatar: some View {
+        ZStack {
+            LinearGradient(
+                colors: [participant.color, participant.color.opacity(0.8)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            Text(participant.initials)
+                .font(.system(size: size * 0.375, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+        }
     }
 }
