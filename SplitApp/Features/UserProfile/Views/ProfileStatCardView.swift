@@ -6,18 +6,17 @@ struct ProfileStatCardView: View {
     let valueColor: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.gray)
-            Text(value)
-                .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(valueColor)
-            Spacer(minLength: 0)
+        GlassCard(padding: 20) {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(AppTheme.textSecondary)
+                Text(value)
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(valueColor)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 }
