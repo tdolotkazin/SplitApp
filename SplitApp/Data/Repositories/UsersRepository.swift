@@ -2,15 +2,14 @@ import CoreData
 import Foundation
 
 protocol UsersRepositoryProtocol {
-    //func createUser(_ request: CreateUserRequest) async throws -> User
+    // func createUser(_ request: CreateUserRequest) async throws -> User
 }
 
 final class UsersRepository: UsersRepositoryProtocol {
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 
-    init(apiClient: APIClient = .shared, coreDataStore: CoreDataStore = .shared)
-    {
+    init(apiClient: APIClient = .shared, coreDataStore: CoreDataStore = .shared) {
         self.apiClient = apiClient
         self.coreDataStore = coreDataStore
     }
@@ -38,7 +37,7 @@ final class UsersRepository: UsersRepositoryProtocol {
         let existing = try context.fetch(fetchRequest).first
         let user = existing ?? CDUser(context: context)
         // Ensure CDUser+DTO exists in DTOMappers
-        //user.update(from: dto)
+        // user.update(from: dto)
     }
 
     private func upsertUsers(

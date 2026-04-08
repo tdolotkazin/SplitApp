@@ -14,12 +14,9 @@ struct SocialButton: View {
                     .font(.title2)
                     .foregroundColor(textColor)
 
-                //Text(title)
-                //.font(.headline)
-                //.foregroundColor(textColor)
             }
             .frame(width: 25)
-            .frame(height: 50)  // Фиксированная высота
+            .frame(height: 50)
             .padding(.horizontal, 20)
             .background(backgroundColor)
             .overlay(
