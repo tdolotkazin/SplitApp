@@ -1,31 +1,47 @@
-import  SwiftUI
+import SwiftUI
 
 struct ProfileCardView: View {
     let initials: String
     let name: String
     let email: String
 
+    private let avatarURL = CurrentUserStore.shared.user.avatarURL
+
     var body: some View {
-        HStack(spacing: 16) {
-            avatarCircleWithInitials
-            profileText
-            Spacer()
+        GlassCard(padding: 20) {
+            HStack(spacing: 16) {
+                avatarCircle
+                profileText
+                Spacer()
+            }
         }
-        .padding(20)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 
-    private var avatarCircleWithInitials: some View {
-        Circle()
-            .fill(.green.opacity(0.6))
-            .frame(width: 72, height: 72)
-            .overlay {
-                Text(initials)
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+    private var avatarCircle: some View {
+        AsyncImage(url: avatarURL) { phase in
+            Group {
+                if case .success(let image) = phase {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Circle()
+                        .fill(AppTheme.accent.opacity(0.6))
+                        .overlay {
+                            Text(initials)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                        }
+                }
             }
+        }
+        .frame(width: 72, height: 72)
+        .clipShape(Circle())
+        .overlay(
+            Circle()
+                .stroke(AppTheme.avatarStroke, lineWidth: 1)
+        )
     }
 
     private var profileText: some View {
@@ -33,9 +49,10 @@ struct ProfileCardView: View {
             Text(name)
                 .font(.title3)
                 .fontWeight(.semibold)
+                .foregroundStyle(AppTheme.textPrimary)
             Text(email)
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundStyle(AppTheme.textSecondary)
         }
     }
 }

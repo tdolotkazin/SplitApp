@@ -13,12 +13,16 @@ struct ProfileScreenView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Color(.systemGray6)
-                .ignoresSafeArea()
+        ZStack {
+            ZStack {
+                AppTheme.backgroundGradient
+                    .ignoresSafeArea()
+                AppTheme.backgroundRadialGlow
+                    .ignoresSafeArea()
+            }
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    profileText
+                    profileTitle
                     userCard
                     userGrid
                     profileNotifications
@@ -29,10 +33,10 @@ struct ProfileScreenView: View {
         }
     }
 
-    private var profileText: some View {
+    private var profileTitle: some View {
         Text("Профиль")
-            .font(.largeTitle)
-            .fontWeight(.bold)
+            .font(AppTheme.fontLargeTitle)
+            .foregroundStyle(AppTheme.textPrimary)
             .padding(.top, 16)
     }
 
@@ -54,8 +58,6 @@ struct ProfileScreenView: View {
     }
 
     private var profileNotifications: some View {
-        ProfileSettingsCardView(
-            notificationsEnabled: $notificationsEnabled
-        )
+        ProfileSettingsCardView(notificationsEnabled: $notificationsEnabled)
     }
 }
