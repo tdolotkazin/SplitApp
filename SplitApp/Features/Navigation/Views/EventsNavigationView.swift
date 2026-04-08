@@ -59,7 +59,8 @@ struct EventsNavigationView: View {
                         if let eventId = LocalEventStore.shared.currentEventId {
                             print("📱 Вызываем loadReceipts для события: \(eventId)")
                             await viewModel.homeViewModel.loadReceipts(for: eventId)
-                            print("📱 currentEventBills.count после loadReceipts: \(viewModel.homeViewModel.currentEventBills.count)")
+                            let billsCount = viewModel.homeViewModel.currentEventBills.count
+                            print("📱 currentEventBills.count после loadReceipts: \(billsCount)")
                         }
 
                         // Затем закрываем экран

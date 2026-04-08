@@ -34,7 +34,11 @@ struct BillRowView: View {
 
                 Text(amountLabel)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(bill.tone == .neutral ? AnyShapeStyle(AppTheme.textSecondary) : AnyShapeStyle(AppTheme.accentGradient))
+                    .foregroundStyle(
+                        bill.tone == .neutral
+                            ? AnyShapeStyle(AppTheme.textSecondary)
+                            : AnyShapeStyle(AppTheme.accentGradient)
+                    )
             }
         }
         .onTapGesture {

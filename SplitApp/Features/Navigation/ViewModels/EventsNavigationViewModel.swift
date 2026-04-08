@@ -5,7 +5,7 @@ import Combine
 final class EventsNavigationViewModel: ObservableObject {
     @Published var path: [EventsNavigationRoute] = []
     @Published var showBillEntry = false
-    @Published var editingReceipt: ReceiptDTO? = nil
+    @Published var editingReceipt: ReceiptDTO?
 
     let homeViewModel: EventsHomeViewModel
     let scannerViewModel: ReceiptViewModel

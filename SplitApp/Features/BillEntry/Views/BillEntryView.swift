@@ -7,16 +7,16 @@ struct BillEntryView: View {
     @Environment(\.dismiss) private var dismiss
 
     init(eventId: UUID? = nil, receipt: ReceiptDTO? = nil, onReceiptCreated: (() -> Void)? = nil) {
-        let vm = BillViewModel()
-        vm.currentEventId = eventId
-        vm.onReceiptCreated = onReceiptCreated
+        let viewModel = BillViewModel()
+        viewModel.currentEventId = eventId
+        viewModel.onReceiptCreated = onReceiptCreated
 
         // Загружаем данные чека если это редактирование
         if let receipt = receipt {
-            vm.loadReceipt(receipt)
+            viewModel.loadReceipt(receipt)
         }
 
-        _viewModel = StateObject(wrappedValue: vm)
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     var body: some View {
