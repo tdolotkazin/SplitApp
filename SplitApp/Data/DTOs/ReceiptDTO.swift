@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - Response Models
-
 struct ReceiptDTO: Codable, Identifiable {
     let id: UUID
     let eventId: UUID
@@ -49,8 +47,6 @@ struct ShareItemDTO: Codable, Identifiable {
         case shareValue = "share_value"
     }
 }
-
-// MARK: - Request Models
 
 struct CreateReceiptRequest: Codable {
     let payerId: UUID
