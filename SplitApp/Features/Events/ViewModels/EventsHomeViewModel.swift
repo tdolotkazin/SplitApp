@@ -34,7 +34,7 @@ final class EventsHomeViewModel: ObservableObject {
             if let firstEvent = homeData.events.first {
                 currentEventData = firstEvent
                 currentEvent = Self.mapEventToListItem(firstEvent)
-                currentEventBills = Self.mapEventBills(firstEvent)
+                await loadReceipts(for: firstEvent.id)
             }
 
             isLoaded = true
@@ -43,11 +43,21 @@ final class EventsHomeViewModel: ObservableObject {
         }
     }
 
+    func loadReceipts(for eventId: UUID) async {
+        do {
+            let receipts = try await service.fetchReceipts(eventId: eventId)
+            currentEventBills = receipts.map(Self.mapReceiptToBillListItem)
+        } catch {
+            print("Ошибка загрузки чеков: \(error)")
+            currentEventBills = []
+        }
+    }
+
     private static func mapEventToListItem(_ event: Event) -> EventListItem {
         EventListItem(
             emoji: event.icon,
             title: event.name,
-            subtitle: "\(event.participantsCount) уч. · \(relativeDateText(from: event.date))",
+            subtitle: relativeDateText(from: event.date),
             amount: event.balanceDelta,
             tone: tone(for: event.balanceDelta)
         )
@@ -90,5 +100,23 @@ final class EventsHomeViewModel: ObservableObject {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
+    }
+
+    private static func mapReceiptToBillListItem(_ receipt: ReceiptDTO) -> BillListItem {
+        // Считаем количество уникальных участников
+        let uniqueParticipants = Set(receipt.items.flatMap { $0.shareItems })
+        let participantsCount = uniqueParticipants.count
+
+        let timeText = formatTime(from: receipt.createdAt)
+        let subtitle = "\(participantsCount) уч. · \(timeText)"
+
+        return BillListItem(
+            id: receipt.id,
+            emoji: "🧾",
+            title: receipt.title ?? "Чек",
+            subtitle: subtitle,
+            amount: receipt.totalAmount,
+            tone: tone(for: receipt.totalAmount)
+        )
     }
 }

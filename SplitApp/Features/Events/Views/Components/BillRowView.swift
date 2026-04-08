@@ -27,7 +27,7 @@ struct BillRowView: View {
 
                 Text(amountLabel)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(amountColor)
+                    .foregroundStyle(bill.tone == .neutral ? AnyShapeStyle(AppTheme.textSecondary) : AnyShapeStyle(AppTheme.accentGradient))
             }
         }
         .deleteTransition(isDeleting: isDeleting)
@@ -63,17 +63,6 @@ struct BillRowView: View {
             return bill.amount.euroText(signed: true, minimumFractionDigits: 0)
         case .neutral:
             return "Закрыт"
-        }
-    }
-
-    private var amountColor: Color {
-        switch bill.tone {
-        case .positive:
-            return Color(red: 0.17, green: 0.76, blue: 0.32)
-        case .negative:
-            return Color(red: 0.92, green: 0.29, blue: 0.29)
-        case .neutral:
-            return AppTheme.textSecondary
         }
     }
 }

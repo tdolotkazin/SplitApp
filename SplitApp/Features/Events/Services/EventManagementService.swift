@@ -2,14 +2,21 @@ import Foundation
 
 protocol EventManagementServiceProtocol {
     func fetchHomeData() async throws -> EventsHomeData
+    func fetchReceipts(eventId: UUID) async throws -> [ReceiptDTO]
+    func createReceipt(eventId: UUID, request: CreateReceiptRequest) async throws -> ReceiptDTO
 }
 
 struct EventManagementService: EventManagementServiceProtocol {
 
     private let eventsRepository: EventsRepositoryProtocol
+    private let receiptsRepository: ReceiptsRepositoryProtocol
 
-    init(eventsRepository: EventsRepositoryProtocol = EventsRepository()) {
+    init(
+        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
+        receiptsRepository: ReceiptsRepositoryProtocol = ReceiptsRepository()
+    ) {
         self.eventsRepository = eventsRepository
+        self.receiptsRepository = receiptsRepository
     }
 
     // MARK: - Real Implementation
@@ -27,5 +34,13 @@ struct EventManagementService: EventManagementServiceProtocol {
             balanceSummary: balanceSummary,
             events: events
         )
+    }
+
+    func fetchReceipts(eventId: UUID) async throws -> [ReceiptDTO] {
+        return try await receiptsRepository.listReceipts(eventId: eventId)
+    }
+
+    func createReceipt(eventId: UUID, request: CreateReceiptRequest) async throws -> ReceiptDTO {
+        return try await receiptsRepository.createReceipt(eventId: eventId, request)
     }
 }

@@ -39,7 +39,17 @@ struct EventsNavigationView: View {
             }
         }
         .fullScreenCover(isPresented: $viewModel.showBillEntry) {
-            BillEntryView()
+            BillEntryView(
+                eventId: viewModel.homeViewModel.currentEvent?.id,
+                onReceiptCreated: {
+                    viewModel.showBillEntry = false
+                    Task {
+                        if let eventId = viewModel.homeViewModel.currentEvent?.id {
+                            await viewModel.homeViewModel.loadReceipts(for: eventId)
+                        }
+                    }
+                }
+            )
         }
     }
 }

@@ -19,6 +19,7 @@ struct BottomTabBarView: View {
                     .tag(item.id)
             }
         }
+        .tint(AppTheme.accent)
     }
 }
 

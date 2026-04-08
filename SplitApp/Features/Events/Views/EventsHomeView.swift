@@ -83,28 +83,20 @@ private struct BalanceCardView: View {
     let summary: EventBalanceSummary
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Общий баланс")
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.8))
-            Text(summary.totalBalance.euroText(signed: true, minimumFractionDigits: 2))
-                .font(.system(size: 48, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
+        GlassCard(padding: 24) {
+            VStack(alignment: .center, spacing: 8) {
+                Text("Общий баланс")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                Text(summary.totalBalance.euroText(signed: true, minimumFractionDigits: 2))
+                    .font(.system(size: 56, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.accentGradient)
+                    .shadow(color: AppTheme.accent.opacity(0.25), radius: 12, x: 0, y: 4)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .padding(18)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 0.17, green: 0.76, blue: 0.32),
-                    Color(red: 0.13, green: 0.65, blue: 0.27)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
     }
 }
 

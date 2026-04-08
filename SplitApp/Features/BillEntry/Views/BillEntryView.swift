@@ -1,10 +1,17 @@
 import SwiftUI
 
 struct BillEntryView: View {
-    @StateObject private var viewModel = BillViewModel()
+    @StateObject private var viewModel: BillViewModel
     @StateObject private var keyboardObserver = KeyboardObserver()
     @State private var showParticipantSheet = false
     @Environment(\.dismiss) private var dismiss
+
+    init(eventId: UUID? = nil, onReceiptCreated: (() -> Void)? = nil) {
+        let vm = BillViewModel()
+        vm.currentEventId = eventId
+        vm.onReceiptCreated = onReceiptCreated
+        _viewModel = StateObject(wrappedValue: vm)
+    }
 
     var body: some View {
         NavigationStack {

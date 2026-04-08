@@ -10,11 +10,16 @@ class BillViewModel: ObservableObject {
     @Published var showParticipantPicker: Bool = false
     @Published var triggerAnimation: UUID = UUID()
 
+    private let service: EventManagementServiceProtocol
+    var currentEventId: UUID?
+    var onReceiptCreated: (() -> Void)?
+
     var total: Decimal {
         items.reduce(0) { $0 + $1.amount }
     }
 
-    init() {
+    init(service: EventManagementServiceProtocol = EventManagementService()) {
+        self.service = service
         participants = [
             Participant(name: "Артём", initials: "АР", color: Color(hex: "#7C3AED")),
             Participant(name: "Маша", initials: "МС", color: Color(hex: "#06B6D4")),
@@ -85,11 +90,51 @@ class BillViewModel: ObservableObject {
             return
         }
 
-        // Здесь можно добавить сохранение в CoreData или другой persistence layer
-        print("Сохранено \(validItems.count) позиций. Итого: €\(total)")
+        guard let eventId = currentEventId else {
+            print("Нет текущего события")
+            return
+        }
 
         // Haptic feedback
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
+
+        Task {
+            do {
+                let request = createReceiptRequest(from: validItems)
+                _ = try await service.createReceipt(eventId: eventId, request: request)
+                print("Чек успешно создан!")
+                onReceiptCreated?()
+            } catch {
+                print("Ошибка создания чека: \(error)")
+            }
+        }
+    }
+
+    private func createReceiptRequest(from items: [BillItem]) -> CreateReceiptRequest {
+        // Используем первого участника как плательщика (payer)
+        let payerId = participants.first?.id ?? UUID()
+
+        let requestItems = items.compactMap { item -> CreateReceiptItemRequest? in
+            guard let assignedTo = item.assignedTo else { return nil }
+
+            let shareItem = CreateShareItemRequest(
+                userId: assignedTo.id,
+                shareValue: NSDecimalNumber(decimal: item.amount).doubleValue
+            )
+
+            return CreateReceiptItemRequest(
+                name: item.name,
+                cost: NSDecimalNumber(decimal: item.amount).doubleValue,
+                shareItems: [shareItem]
+            )
+        }
+
+        return CreateReceiptRequest(
+            payerId: payerId,
+            title: "Чек",
+            totalAmount: NSDecimalNumber(decimal: total).doubleValue,
+            items: requestItems
+        )
     }
 }
