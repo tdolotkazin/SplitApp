@@ -60,8 +60,8 @@ struct BillItemRow: View {
                         }
                     },
                     label: {
-                        if let participant = item.assignedTo {
-                            ParticipantAvatar(participant: participant)
+                        if !item.assignedTo.isEmpty {
+                            ParticipantAvatarStack(participants: item.assignedTo)
                                 .frame(maxWidth: .infinity)
                         } else {
                             HStack(spacing: 4) {
