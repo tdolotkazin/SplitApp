@@ -25,7 +25,17 @@ class BillViewModel: ObservableObject {
             Participant(name: "Никита", initials: "НК", color: Color(hex: "#8B5CF6")),
             Participant(name: "Оля", initials: "ОЛ", color: Color(hex: "#EC4899")),
             Participant(name: "Рома", initials: "РО", color: Color(hex: "#14B8A6")),
-            Participant(name: "Лена", initials: "ЛЕ", color: Color(hex: "#F97316"))
+            Participant(name: "Лена", initials: "ЛЕ", color: Color(hex: "#F97316")),
+            Participant(name: "Андрей", initials: "АН", color: Color(hex: "#6366F1")),
+            Participant(name: "Вика", initials: "ВИ", color: Color(hex: "#D946EF")),
+            Participant(name: "Серёжа", initials: "СЕ", color: Color(hex: "#0EA5E9")),
+            Participant(name: "Настя", initials: "НА", color: Color(hex: "#84CC16")),
+            Participant(name: "Гриша", initials: "ГР", color: Color(hex: "#F43F5E")),
+            Participant(name: "Юля", initials: "ЮЛ", color: Color(hex: "#A78BFA")),
+            Participant(name: "Тимур", initials: "ТИ", color: Color(hex: "#2DD4BF")),
+            Participant(name: "Даша", initials: "ДА", color: Color(hex: "#FB923C")),
+            Participant(name: "Костя", initials: "КО", color: Color(hex: "#4ADE80")),
+            Participant(name: "Ира", initials: "ИР", color: Color(hex: "#E879F9"))
         ]
 
         let scanned = ScannedReceiptStore.shared.consume()
