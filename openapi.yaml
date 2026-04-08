@@ -1,0 +1,830 @@
+openapi: 3.1.0
+info:
+  title: SplitApp Backend API
+  version: 1.0.0
+  description: |
+    **Object storage (server environment):** S3-compatible storage (e.g. Yandex Object Storage) uses
+    `S3_ENDPOINT_URL`, `S3_REGION`, optional `S3_BUCKET`, and static keys
+    `YC_OBJECT_STORAGE_ACCESS_KEY_ID` and `YC_OBJECT_STORAGE_SECRET_ACCESS_KEY`.
+servers:
+  - url: https://splitapp.tech
+    description: Production
+security:
+  - BearerAuth: [splitapp-production-token]
+tags:
+  - name: Auth
+  - name: Users
+  - name: Events
+  - name: Receipts
+  - name: Debts & Balances
+  - name: Payments
+paths:
+  /api/login:
+    post:
+      tags: [Auth]
+      summary: Exchange Yandex OAuth token for app tokens
+      operationId: loginWithYandex
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginYandexRequest"
+      responses:
+        "200":
+          description: Access and refresh tokens issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: phone_number conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Yandex API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh token and issue new access token
+      operationId: refreshTokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: New token pair
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/users:
+    get:
+      tags: [Users]
+      summary: List all users
+      operationId: listUsers
+      responses:
+        "200":
+          description: All registered users, sorted by name
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /api/events:
+    post:
+      tags: [Events]
+      summary: Create event
+      operationId: createEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEventRequest"
+      responses:
+        "201":
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    get:
+      tags: [Events]
+      summary: List events for the authenticated user
+      operationId: listEvents
+      description: Returns events where the caller is a participant or creator.
+      responses:
+        "200":
+          description: Event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/events/{id}:
+    get:
+      tags: [Events]
+      summary: Get event details
+      operationId: getEventById
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200":
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Events]
+      summary: Update event name or closed flag
+      operationId: updateEvent
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEventRequest"
+      responses:
+        "200":
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/events/{id}/participants:
+    post:
+      tags: [Events]
+      summary: Add participants to event
+      operationId: addEventParticipants
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddParticipantsRequest"
+      responses:
+        "201":
+          description: Participants added
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/events/{id}/participants/{user_id}:
+    delete:
+      tags: [Events]
+      summary: Remove participant from event
+      operationId: removeEventParticipant
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Participant removed
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/events/{id}/receipts:
+    post:
+      tags: [Receipts]
+      summary: Create receipt with items and shares
+      operationId: createReceipt
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReceiptRequest"
+      responses:
+        "201":
+          description: Receipt created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Receipt"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    get:
+      tags: [Receipts]
+      summary: List event receipts
+      operationId: listReceiptsByEvent
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200":
+          description: Receipt list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Receipt"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/receipts/{id}:
+    patch:
+      tags: [Receipts]
+      summary: Update receipt
+      operationId: updateReceipt
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReceiptRequest"
+      responses:
+        "200":
+          description: Receipt updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Receipt"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Receipts]
+      summary: Delete receipt
+      operationId: deleteReceipt
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "204":
+          description: Receipt deleted
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/receipts/{id}/image:
+    post:
+      tags: [Receipts]
+      summary: Upload receipt image (JPEG)
+      description: |
+        Accepts a JPEG file for the given receipt. The image is stored in S3-compatible object storage
+        (e.g. Yandex Object Storage; see `S3_ENDPOINT_URL`, `S3_REGION`, `S3_BUCKET`,
+        `YC_OBJECT_STORAGE_ACCESS_KEY_ID`, `YC_OBJECT_STORAGE_SECRET_ACCESS_KEY` in server configuration).
+        The receipt record is updated with `image_url` pointing at the object URL.
+      operationId: uploadReceiptImage
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              description: Send exactly one file using form field `file` or `image` (multipart/form-data, not JSON).
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: JPEG image (.jpg or .jpeg)
+                image:
+                  type: string
+                  format: binary
+                  description: Same as `file` if your client uses this field name instead.
+      responses:
+        "201":
+          description: Image stored; public URL of the file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReceiptImageUploadResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/events/{id}/balances:
+    get:
+      tags: [Debts & Balances]
+      summary: Calculate debts and balances for event
+      operationId: getEventBalances
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200":
+          description: Balance rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventBalance"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/events/{id}/payments:
+    post:
+      tags: [Payments]
+      summary: Create payment declaration
+      operationId: createPayment
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentRequest"
+      responses:
+        "201":
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    get:
+      tags: [Payments]
+      summary: List event payments
+      operationId: listPaymentsByEvent
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200":
+          description: Payment list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /api/payments/{id}:
+    patch:
+      tags: [Payments]
+      summary: Update payment
+      operationId: updatePayment
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePaymentRequest"
+      responses:
+        "200":
+          description: Payment updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: HS256 access token from /api/login or /api/refresh
+  parameters:
+    IdPathParam:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Authenticated user may not access this resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required: [detail]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone_number:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+      required: [id, name, phone_number]
+
+    LoginYandexRequest:
+      type: object
+      properties:
+        yandex_token:
+          type: string
+          description: OAuth token from Yandex Login SDK
+      required: [yandex_token]
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+        expires_in:
+          type: integer
+          description: Access token lifetime in seconds
+      required: [user, access_token, refresh_token, expires_in]
+
+    RefreshRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+      required: [refresh_token]
+
+    RefreshResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+        expires_in:
+          type: integer
+          description: Access token lifetime in seconds
+      required: [access_token, refresh_token, expires_in]
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        creator_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        is_closed:
+          type: boolean
+        users:
+          type: array
+          description: Participant user IDs for this event.
+          items:
+            type: string
+            format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        [id, creator_id, name, is_closed, users, created_at, updated_at]
+
+    CreateEventRequest:
+      type: object
+      properties:
+        creator_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required: [creator_id, name]
+
+    UpdateEventRequest:
+      type: object
+      properties:
+        is_closed:
+          type: boolean
+        name:
+          type: string
+      minProperties: 1
+
+    AddParticipantsRequest:
+      type: object
+      properties:
+        user_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+      required: [user_ids]
+
+    ShareItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        receipt_item_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        share_value:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+          maximum: 1
+          description: Relative share in interval (0, 1].
+      required: [id, receipt_item_id, user_id, share_value]
+
+    CreateShareItemRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        share_value:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+          maximum: 1
+          description: Relative share in interval (0, 1].
+      required: [user_id, share_value]
+
+    ReceiptItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        receipt_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        cost:
+          type: number
+          format: double
+        share_items:
+          type: array
+          description: IDs of ShareItem records linked to this receipt item.
+          items:
+            type: string
+            format: uuid
+      required: [id, receipt_id, cost, share_items]
+
+    CreateReceiptItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        cost:
+          type: number
+          format: double
+        share_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateShareItemRequest"
+      required: [cost, share_items]
+
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        payer_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        total_amount:
+          type: number
+          format: double
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReceiptItem"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          description: Absolute URL of the receipt image when one has been uploaded.
+      required:
+        [
+          id,
+          event_id,
+          payer_id,
+          total_amount,
+          created_at,
+          updated_at,
+          items
+        ]
+
+    ReceiptImageUploadResponse:
+      type: object
+      properties:
+        image_url:
+          type: string
+          format: uri
+          description: Absolute URL to fetch the uploaded image (same as Receipt.image_url after upload).
+      required: [image_url]
+
+    CreateReceiptRequest:
+      type: object
+      properties:
+        payer_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        total_amount:
+          type: number
+          format: double
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateReceiptItemRequest"
+          minItems: 1
+      required: [payer_id, total_amount, items]
+
+    UpdateReceiptRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        total_amount:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateReceiptItemRequest"
+          minItems: 1
+      minProperties: 1
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        sender_id:
+          type: string
+          format: uuid
+        receiver_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        confirmed:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      required: [id, event_id, sender_id, receiver_id, amount, confirmed, created_at]
+
+    CreatePaymentRequest:
+      type: object
+      properties:
+        sender_id:
+          type: string
+          format: uuid
+        receiver_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+      required: [sender_id, receiver_id, amount]
+
+    UpdatePaymentRequest:
+      type: object
+      properties:
+        confirmed:
+          type: boolean
+      required: [confirmed]
+
+    EventBalance:
+      type: object
+      description: One debt row for an event balance snapshot.
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        debitor_id:
+          type: string
+          format: uuid
+        creditor_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+      required: [event_id, debitor_id, creditor_id, amount]
