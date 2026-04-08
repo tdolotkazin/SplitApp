@@ -19,12 +19,12 @@ final class AuthViewModel: ObservableObject {
 
     func login() async -> Bool {
 
-        guard let vc = vcProvider.rootViewController else {
+        guard let viewContollerProvider = vcProvider.rootViewController else {
             return false
         }
 
         do {
-            _ = try await useCase.execute(provider: .yandex, vc: vc)
+            _ = try await useCase.execute(provider: .yandex, viewContollerProvider: viewContollerProvider)
             return true
         } catch {
             print(error)

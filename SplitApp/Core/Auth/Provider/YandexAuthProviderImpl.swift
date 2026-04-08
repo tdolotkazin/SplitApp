@@ -18,8 +18,8 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
         YandexLoginSDK.shared.remove(observer: self)
     }
 
-    func login(from vc: UIViewController) async throws -> UserSessionToken {
-        guard let vc = vcProvider.rootViewController else {
+    func login(from viewContollerProvider: UIViewController) async throws -> UserSessionToken {
+        guard let viewContollerProvider = vcProvider.rootViewController else {
             throw AuthError.invalidToken
         }
 
@@ -27,7 +27,7 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
             self.continuation = continuation
 
             do {
-                try YandexLoginSDK.shared.authorize(with: vc)
+                try YandexLoginSDK.shared.authorize(with: viewContollerProvider)
             } catch {
                 self.continuation?.resume(throwing: error)
                 self.continuation = nil
