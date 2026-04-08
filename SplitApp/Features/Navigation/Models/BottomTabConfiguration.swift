@@ -39,8 +39,11 @@ struct BottomTabConfiguration {
 }
 
 extension BottomTabConfiguration {
-    static func makeDefault(with dependencies: AppDependencies) -> BottomTabConfiguration {
-        BottomTabConfiguration(
+    static func makeDefault(with dependencies: AppDependencies, appState: AppState) -> BottomTabConfiguration {
+        let storage = KeychainStorage()
+        let logoutUseCase = LogoutUseCase(secureStorage: storage, appState: appState)
+        let profileVM = ProfileViewModel(logoutUseCase: logoutUseCase)
+        return BottomTabConfiguration(
             items: [
                 BottomTabItem(
                     id: .events,
@@ -66,14 +69,17 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    ProfileScreenView(model: ProfileScreenModel(
-                        initials: "ИВ",
-                        email: "ivan@example.com",
-                        name: "Иван Волков 🌸",
-                        eventsCountText: "12",
-                        friendsCountText: "8",
-                        closedBillsText: "€340",
-                        openBillsText: "€34")
+                    ProfileScreenView(
+                        model: ProfileScreenModel(
+                            initials: "ИВ",
+                            email: "ivan@example.com",
+                            name: "Иван Волков 🌸",
+                            eventsCountText: "12",
+                            friendsCountText: "8",
+                            closedBillsText: "€340",
+                            openBillsText: "€34"
+                        ),
+                        viewModel: profileVM
                     )
                 }
             ]
@@ -81,6 +87,6 @@ extension BottomTabConfiguration {
     }
 
     static var preview: BottomTabConfiguration {
-        makeDefault(with: .preview)
+        makeDefault(with: .preview, appState: AppState(isLoggedIn: true))
     }
 }

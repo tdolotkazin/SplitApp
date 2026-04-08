@@ -1,6 +1,6 @@
 import Foundation
 
-struct User: Hashable {
+struct User: Hashable, Decodable {
     let id: UUID
     var name: String
     let phoneNumber: String

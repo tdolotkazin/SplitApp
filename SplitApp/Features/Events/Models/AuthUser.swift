@@ -1,11 +1,13 @@
+
+
 import Foundation
 
 struct AuthUser {
-    let id: UUID
-    let name: String
+    var id: String
+    var name: String
 
-    init(name: String) {
-        self.id = UUID()
+    init(id: String, name: String) {
+        self.id = id
         self.name = name
     }
 }

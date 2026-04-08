@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BF5218AD2F853A4400877E75 /* YandexLoginSDK in Frameworks */ = {isa = PBXBuildFile; productRef = BF5218AC2F853A4400877E75 /* YandexLoginSDK */; };
+		BF5218B02F85423100877E75 /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = BF5218AF2F85423100877E75 /* KeychainSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BFD5EB6A2F7C10E100877F4C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +34,22 @@
 		BFD5EB732F7C10E100877F4C /* SplitAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SplitAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BF5217D22F852E5F00877E75 /* Exceptions for "SplitApp" folder in "SplitApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BFD5EB562F7C10DD00877F4C /* SplitApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BFD5EB592F7C10DD00877F4C /* SplitApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BF5217D22F852E5F00877E75 /* Exceptions for "SplitApp" folder in "SplitApp" target */,
+			);
 			path = SplitApp;
 			sourceTree = "<group>";
 		};
@@ -52,6 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF5218B02F85423100877E75 /* KeychainSwift in Frameworks */,
+				BF5218AD2F853A4400877E75 /* YandexLoginSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,12 +92,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BF5218AB2F853A4400877E75 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BFD5EB4E2F7C10DD00877F4C = {
 			isa = PBXGroup;
 			children = (
 				BFD5EB592F7C10DD00877F4C /* SplitApp */,
 				BFD5EB6C2F7C10E100877F4C /* SplitAppTests */,
 				BFD5EB762F7C10E100877F4C /* SplitAppUITests */,
+				BF5218AB2F853A4400877E75 /* Frameworks */,
 				BFD5EB582F7C10DD00877F4C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,6 +140,8 @@
 			);
 			name = SplitApp;
 			packageProductDependencies = (
+				BF5218AC2F853A4400877E75 /* YandexLoginSDK */,
+				BF5218AF2F85423100877E75 /* KeychainSwift */,
 			);
 			productName = SplitApp;
 			productReference = BFD5EB572F7C10DD00877F4C /* SplitApp.app */;
@@ -195,6 +225,10 @@
 			);
 			mainGroup = BFD5EB4E2F7C10DD00877F4C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BF5217D32F852F2100877E75 /* XCRemoteSwiftPackageReference "yandex-login-sdk-ios" */,
+				BF5218AE2F85423100877E75 /* XCRemoteSwiftPackageReference "keychain-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BFD5EB582F7C10DD00877F4C /* Products */;
 			projectDirPath = "";
@@ -395,6 +429,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
+				CODE_SIGN_ENTITLEMENTS = SplitApp/SplitApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
@@ -403,6 +439,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = S23K6FZZPL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SplitApp/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Используется для сканирования чеков";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Используется для выбора фото чека из галереи";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -435,6 +472,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
+				CODE_SIGN_ENTITLEMENTS = SplitApp/SplitApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
@@ -443,6 +482,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = S23K6FZZPL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SplitApp/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Используется для сканирования чеков";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Используется для выбора фото чека из галереи";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -590,6 +630,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BF5217D32F852F2100877E75 /* XCRemoteSwiftPackageReference "yandex-login-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/yandexmobile/yandex-login-sdk-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.0;
+			};
+		};
+		BF5218AE2F85423100877E75 /* XCRemoteSwiftPackageReference "keychain-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/evgenyneu/keychain-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BF5218AC2F853A4400877E75 /* YandexLoginSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF5217D32F852F2100877E75 /* XCRemoteSwiftPackageReference "yandex-login-sdk-ios" */;
+			productName = YandexLoginSDK;
+		};
+		BF5218AF2F85423100877E75 /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF5218AE2F85423100877E75 /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BFD5EB4F2F7C10DD00877F4C /* Project object */;
 }
