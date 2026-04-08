@@ -13,13 +13,3 @@ struct UserDTO: Codable, Identifiable {
         case avatarUrl = "avatar_url"
     }
 }
-
-struct CreateUserRequest: Codable {
-    let name: String
-    let phoneNumber: String
-
-    enum CodingKeys: String, CodingKey {
-        case name
-        case phoneNumber = "phone_number"
-    }
-}

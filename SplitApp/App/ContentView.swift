@@ -9,9 +9,6 @@ struct ContentView: View {
 
     var body: some View {
         BottomTabBarView(configuration: .makeDefault(with: dependencies))
-            .task {
-                await dependencies.appSyncCoordinator.syncOnLaunchIfNeeded()
-            }
     }
 }
 

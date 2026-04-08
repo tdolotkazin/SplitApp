@@ -8,10 +8,12 @@ final class AppDependencies {
     let eventsRepository: any EventsRepository
     let receiptsRepository: any ReceiptsRepository
     let usersRepository: any UsersRepository
+    let balancesRepository: any BalancesRepository
     let paymentsRepository: any PaymentsRepository
+    let activeEventRepository: any ActiveEventRepository
+    let friendsRepository: any FriendsRepository
 
     let eventManagementService: EventManagementServiceProtocol
-    let appSyncCoordinator: AppSyncCoordinator
 
     init(
         apiClient: APIClient = .shared,
@@ -20,6 +22,7 @@ final class AppDependencies {
         eventsRepository: (any EventsRepository)? = nil,
         receiptsRepository: (any ReceiptsRepository)? = nil,
         usersRepository: (any UsersRepository)? = nil,
+        balancesRepository: (any BalancesRepository)? = nil,
         paymentsRepository: (any PaymentsRepository)? = nil
     ) {
         self.apiClient = apiClient
@@ -29,10 +32,12 @@ final class AppDependencies {
         self.eventsRepository = eventsRepository ?? EventsDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
         self.receiptsRepository = receiptsRepository ?? ReceiptsDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
         self.usersRepository = usersRepository ?? UsersDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
+        self.balancesRepository = balancesRepository ?? BalancesDataRepository(apiClient: apiClient)
         self.paymentsRepository = paymentsRepository ?? PaymentsDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
+        self.activeEventRepository = ActiveEventSelectionDataRepository()
+        self.friendsRepository = FriendsDataRepository(usersRepository: self.usersRepository)
 
         self.eventManagementService = EventManagementService(eventsRepository: self.eventsRepository)
-        self.appSyncCoordinator = AppSyncCoordinator(eventsRepository: self.eventsRepository)
     }
 
     static let live = AppDependencies()
@@ -44,6 +49,7 @@ final class AppDependencies {
         eventsRepository: EventsDataRepository(),
         receiptsRepository: ReceiptsDataRepository(),
         usersRepository: UsersDataRepository(),
+        balancesRepository: BalancesDataRepository(),
         paymentsRepository: PaymentsDataRepository()
     )
 }

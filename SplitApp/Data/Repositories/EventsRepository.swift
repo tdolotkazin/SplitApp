@@ -60,7 +60,7 @@ final class EventsRepository: EventsRepositoryProtocol {
             let cachedEvents = try await getCachedEvents(userId: userId)
 
             if cachedEvents.isEmpty {
-                throw error
+                throw RepositoryError.offlineNoCache
             }
 
             return cachedEvents
@@ -85,7 +85,7 @@ final class EventsRepository: EventsRepositoryProtocol {
                 return event
             }
 
-            throw error
+            throw RepositoryError.offlineNoCache
         }
     }
 
