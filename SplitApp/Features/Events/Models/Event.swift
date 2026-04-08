@@ -2,11 +2,16 @@ import Foundation
 
 struct Event {
     let id: UUID
+    let creatorId: UUID
     let name: String
     let date: Date
     var positions: [Position]
     var bill: Bill
     let users: [User]
+    var items: [EventReceiptItem]
+    var receipts: [Receipt]
+    let participants: [User]
+    let participantIds: [UUID]
 
     let icon: String
     let participantsCount: Int
@@ -14,8 +19,12 @@ struct Event {
 
     init(
         id: UUID = UUID(),
+        creatorId: UUID = UUID(),
         name: String,
-        positions: [Position],
+        items: [EventReceiptItem] = [],
+        receipts: [Receipt] = [],
+        participants: [User] = [],
+        participantIds: [UUID] = [],
         date: Date = Date(),
         icon: String = "📌",
         participantsCount: Int = 0,
@@ -23,10 +32,13 @@ struct Event {
         users: [User] = []
     ) {
         self.id = id
+        self.creatorId = creatorId
         self.name = name
         self.date = date
-        self.positions = positions
-        self.bill = Bill(eventId: id, positions: positions)
+        self.items = items
+        self.receipts = receipts
+        self.participants = participants
+        self.participantIds = participantIds
         self.icon = icon
         self.participantsCount = participantsCount
         self.balanceDelta = balanceDelta

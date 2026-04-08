@@ -6,7 +6,7 @@ struct EventsHomeView: View {
     let onScanTap: () -> Void
     let onAddTap: () -> Void
     let onBillTap: ((UUID) -> Void)?
-    let onEventTap: (() -> Void)?
+    let onEventTap: (UUID) -> Void
 
     var body: some View {
         ZStack {
@@ -212,7 +212,7 @@ private struct AddButton: View {
         viewModel: EventsHomeViewModel(service: EventManagementService()),
         onScanTap: {},
         onAddTap: {},
-        onBillTap: nil,
-        onEventTap: nil
+        onBillTap: nil
+        onEventTap: { _ in }
     )
 }
