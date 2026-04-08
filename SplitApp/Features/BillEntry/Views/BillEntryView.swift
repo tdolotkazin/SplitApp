@@ -41,8 +41,7 @@ struct BillEntryView: View {
                                         viewModel.updateItem(
                                             id: item.id,
                                             name: name,
-                                            amount: amount,
-                                            assignedTo: nil
+                                            amount: amount
                                         )
                                     }
                                 )
@@ -147,16 +146,24 @@ struct BillEntryView: View {
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .sheet(isPresented: $showParticipantSheet) {
+                let selectedId = viewModel.selectedItemForAssignment?.id
+                let currentAssigned = selectedId.flatMap { id in
+                    viewModel.items.first(where: { $0.id == id })?.assignedTo
+                } ?? []
+
                 ParticipantPickerSheet(
                     participants: viewModel.participants,
-                    onSelect: { participant in
-                        if let itemId = viewModel.selectedItemForAssignment?.id {
-                            viewModel.assignParticipant(to: itemId, participant: participant)
+                    selectedParticipants: currentAssigned,
+                    onToggle: { participant in
+                        if let itemId = selectedId {
+                            viewModel.toggleParticipant(to: itemId, participant: participant)
                         }
+                    },
+                    onDone: {
                         showParticipantSheet = false
                     }
                 )
-                .presentationDetents([.medium, .fraction(0.5)])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
         }
