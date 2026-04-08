@@ -94,11 +94,14 @@ struct EventsNavigationView: View {
             }
         }
         .fullScreenCover(item: $viewModel.billEntryDestination) { destination in
-            BillEntryView(
+            let billViewModel = BillViewModel(
                 mode: destination.mode,
                 eventsRepository: eventsRepository,
                 receiptsRepository: receiptsRepository,
                 networkMonitor: networkMonitor
+            )
+            BillEntryView(
+                viewModel: billViewModel
             )
         }
     }
