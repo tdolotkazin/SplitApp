@@ -6,19 +6,25 @@ struct LegalTextSection: View {
             Text("Регистрируясь, вы соглашаетесь с")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             HStack(spacing: 4) {
-                Link("условиями использования", destination: URL(string: "https://example.com/terms")!)
-                    .font(.caption)
-                    .foregroundColor(.blue)
-                
+                Link(
+                    "условиями использования",
+                    destination: URL(string: "https://example.com/terms")!
+                )
+                .font(.caption)
+                .foregroundColor(.blue)
+
                 Text("и")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                
-                Link("политикой конфиденциальности", destination: URL(string: "https://example.com/privacy")!)
-                    .font(.caption)
-                    .foregroundColor(.blue)
+
+                Link(
+                    "политикой конфиденциальности",
+                    destination: URL(string: "https://example.com/privacy")!
+                )
+                .font(.caption)
+                .foregroundColor(.blue)
             }
         }
         .multilineTextAlignment(.center)
@@ -31,7 +37,7 @@ struct DividerSection: View {
             Rectangle()
                 .fill(Color.gray.opacity(0.3))
                 .frame(height: 1)
-            
+
             Text("или войти через")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -50,7 +56,7 @@ struct LoginPromptSection: View {
             Text("Уже есть аккаунт?")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             Button("Войти") {
                 // Handle login navigation
             }
