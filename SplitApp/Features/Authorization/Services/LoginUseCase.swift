@@ -11,11 +11,17 @@ final class LoginUseCase {
         self.secureStorage = secureStorage
     }
 
-    func execute(provider: AuthProvider, viewContollerProvider: UIViewController) async throws
+    func execute(
+        provider: AuthProvider,
+        viewContollerProvider: UIViewController
+    ) async throws
         -> AuthResponse
     {
 
-        let authResponse = try await service.login(provider: provider, viewContollerProvider: viewContollerProvider)
+        let authResponse = try await service.login(
+            provider: provider,
+            viewContollerProvider: viewContollerProvider
+        )
 
         TokenStore.shared.accessToken = authResponse.accessToken
         secureStorage.save(authResponse.refreshToken, for: "refresh_token")
