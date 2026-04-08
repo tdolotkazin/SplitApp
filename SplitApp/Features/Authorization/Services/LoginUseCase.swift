@@ -14,9 +14,7 @@ final class LoginUseCase {
     func execute(
         provider: AuthProvider,
         viewContollerProvider: UIViewController
-    ) async throws
-        -> AuthResponse
-    {
+    ) async throws -> AuthResponse {
 
         let authResponse = try await service.login(
             provider: provider,
@@ -27,7 +25,6 @@ final class LoginUseCase {
         secureStorage.save(authResponse.refreshToken, for: "refresh_token")
 
         return authResponse
-
     }
 
     func isLoggedIn() -> Bool {

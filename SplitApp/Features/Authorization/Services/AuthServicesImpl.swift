@@ -19,16 +19,13 @@ final class AuthServicesImpl: AuthService {
     }
 
     func login(provider: AuthProvider, viewContollerProvider: UIViewController)
-        async throws
-        -> AuthResponse
-    {
+    async throws
+    -> AuthResponse {
 
         let token = try await repository.login(
             provider: provider,
             viewContollerProvider: viewContollerProvider
         )
         return try await serviceBackend.sendTokenToBackend(token: token.token)
-
     }
-
 }

@@ -24,9 +24,7 @@ final class UsersRepository: UsersRepositoryProtocol {
 
     // MARK: - Core Data Internal Methods (Extracted from CoreDataStore+Users)
 
-    private func upsertUser(_ dto: UserDTO, in context: NSManagedObjectContext)
-        throws
-    {
+    private func upsertUser(_ dto: UserDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDUser> = CDUser.fetchRequest()
         fetchRequest.predicate = NSPredicate(
             format: "id == %@",
