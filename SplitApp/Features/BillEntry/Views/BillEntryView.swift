@@ -42,6 +42,9 @@ struct BillEntryView: View {
                                         amount: amount,
                                         assignedTo: nil
                                     )
+                                },
+                                onInsertAnimationCompleted: {
+                                    viewModel.markInsertAnimationCompleted(for: item.id)
                                 }
                             )
                             .listRowBackground(Color.clear)

@@ -33,11 +33,6 @@ class BillViewModel: ObservableObject {
             items.append(newItem)
         }
 
-        // Mark insertion animation as completed so it doesn't replay.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
-            self?.finishInsertAnimation(for: newItem.id)
-        }
-
         // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -96,7 +91,7 @@ class BillViewModel: ObservableObject {
         generator.notificationOccurred(.success)
     }
 
-    private func finishInsertAnimation(for id: UUID) {
+    func markInsertAnimationCompleted(for id: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].isEditing = false
     }
