@@ -3,6 +3,7 @@ import CoreData
 
 protocol UsersRepositoryProtocol {
     func createUser(_ request: CreateUserRequest) async throws -> User
+    func getUsers(ids: [UUID]) async throws -> [User]
 }
 
 final class UsersRepository: UsersRepositoryProtocol {
@@ -20,6 +21,15 @@ final class UsersRepository: UsersRepositoryProtocol {
             try self?.upsertUser(dto, in: context)
         }
         return UserMapper.mapToDomain(dto: dto)
+    }
+
+    func getUsers(ids: [UUID]) async throws -> [User] {
+        try await coreDataStore.performBackground { context in
+            let fetchRequest: NSFetchRequest<CDUser> = CDUser.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id IN %@", ids as NSArray)
+            let cdUsers = try context.fetch(fetchRequest)
+            return cdUsers.compactMap { UserMapper.mapToDomain(cdUser: $0) }
+        }
     }
 
     // MARK: - Core Data Internal Methods (Extracted from CoreDataStore+Users)
