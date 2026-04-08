@@ -29,15 +29,42 @@ final class AppDependencies {
         self.coreDataStore = coreDataStore
         self.networkMonitor = networkMonitor
 
-        self.eventsRepository = eventsRepository ?? EventsDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
-        self.receiptsRepository = receiptsRepository ?? ReceiptsDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
-        self.usersRepository = usersRepository ?? UsersDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
-        self.balancesRepository = balancesRepository ?? BalancesDataRepository(apiClient: apiClient)
-        self.paymentsRepository = paymentsRepository ?? PaymentsDataRepository(apiClient: apiClient, coreDataStore: coreDataStore)
-        self.activeEventRepository = ActiveEventSelectionDataRepository()
-        self.friendsRepository = FriendsDataRepository(usersRepository: self.usersRepository)
+        self.eventsRepository =
+            eventsRepository
+            ?? EventsDataRepository(
+                apiClient: apiClient,
+                coreDataStore: coreDataStore
+            )
 
-        self.eventManagementService = EventManagementService(eventsRepository: self.eventsRepository)
+        self.receiptsRepository =
+            receiptsRepository
+            ?? ReceiptsDataRepository(
+                apiClient: apiClient,
+                coreDataStore: coreDataStore
+            )
+
+        self.usersRepository =
+            usersRepository
+            ?? UsersDataRepository(
+                apiClient: apiClient,
+                coreDataStore: coreDataStore
+            )
+        self.balancesRepository =
+            balancesRepository ?? BalancesDataRepository(apiClient: apiClient)
+        self.paymentsRepository =
+            paymentsRepository
+            ?? PaymentsDataRepository(
+                apiClient: apiClient,
+                coreDataStore: coreDataStore
+            )
+        self.activeEventRepository = ActiveEventSelectionDataRepository()
+        self.friendsRepository = FriendsDataRepository(
+            usersRepository: self.usersRepository
+        )
+
+        self.eventManagementService = EventManagementService(
+            eventsRepository: self.eventsRepository
+        )
     }
 
     static let live = AppDependencies()
