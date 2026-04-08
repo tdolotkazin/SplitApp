@@ -1,5 +1,5 @@
-import Foundation
 import CoreData
+import Foundation
 
 protocol UsersRepositoryProtocol {
     //func createUser(_ request: CreateUserRequest) async throws -> User
@@ -9,7 +9,8 @@ final class UsersRepository: UsersRepositoryProtocol {
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 
-    init(apiClient: APIClient = .shared, coreDataStore: CoreDataStore = .shared) {
+    init(apiClient: APIClient = .shared, coreDataStore: CoreDataStore = .shared)
+    {
         self.apiClient = apiClient
         self.coreDataStore = coreDataStore
     }
@@ -24,9 +25,14 @@ final class UsersRepository: UsersRepositoryProtocol {
 
     // MARK: - Core Data Internal Methods (Extracted from CoreDataStore+Users)
 
-    private func upsertUser(_ dto: UserDTO, in context: NSManagedObjectContext) throws {
+    private func upsertUser(_ dto: UserDTO, in context: NSManagedObjectContext)
+        throws
+    {
         let fetchRequest: NSFetchRequest<CDUser> = CDUser.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", dto.id as CVarArg)
+        fetchRequest.predicate = NSPredicate(
+            format: "id == %@",
+            dto.id as CVarArg
+        )
         fetchRequest.fetchLimit = 1
 
         let existing = try context.fetch(fetchRequest).first
@@ -35,7 +41,10 @@ final class UsersRepository: UsersRepositoryProtocol {
         //user.update(from: dto)
     }
 
-    private func upsertUsers(_ dtos: [UserDTO], in context: NSManagedObjectContext) throws {
+    private func upsertUsers(
+        _ dtos: [UserDTO],
+        in context: NSManagedObjectContext
+    ) throws {
         for dto in dtos {
             try upsertUser(dto, in: context)
         }

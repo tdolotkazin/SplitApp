@@ -18,7 +18,9 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
         YandexLoginSDK.shared.remove(observer: self)
     }
 
-    func login(from viewContollerProvider: UIViewController) async throws -> UserSessionToken {
+    func login(from viewContollerProvider: UIViewController) async throws
+        -> UserSessionToken
+    {
         guard let viewContollerProvider = vcProvider.rootViewController else {
             throw AuthError.invalidToken
         }

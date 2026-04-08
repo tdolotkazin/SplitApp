@@ -15,16 +15,19 @@ struct SocialButton: View {
                     .foregroundColor(textColor)
 
                 //Text(title)
-                    //.font(.headline)
-                    //.foregroundColor(textColor)
+                //.font(.headline)
+                //.foregroundColor(textColor)
             }
             .frame(width: 25)
-            .frame(height: 50) // Фиксированная высота
+            .frame(height: 50)  // Фиксированная высота
             .padding(.horizontal, 20)
             .background(backgroundColor)
             .overlay(
                 RoundedRectangle(cornerRadius: 25)
-                    .stroke(hasBorder ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+                    .stroke(
+                        hasBorder ? Color.gray.opacity(0.3) : Color.clear,
+                        lineWidth: 1
+                    )
             )
             .cornerRadius(25)
         }
