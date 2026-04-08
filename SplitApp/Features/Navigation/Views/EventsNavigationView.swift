@@ -80,6 +80,9 @@ struct EventsNavigationView: View {
                     }
                 }
             )
+            BillEntryView(
+                viewModel: billViewModel
+            )
         }
     }
 }

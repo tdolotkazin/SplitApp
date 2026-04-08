@@ -246,10 +246,13 @@ private enum BillEntryLayout {
 }
 
 #Preview {
+    let deps = AppDependencies.preview
     BillEntryView(
-        mode: .create(eventId: nil, scannedItems: []),
-        eventsRepository: EventsDataRepository(),
-        receiptsRepository: ReceiptsDataRepository(),
-        networkMonitor: .shared
+        viewModel: BillViewModel(
+            mode: .create(eventId: nil, scannedItems: []),
+            eventsRepository: deps.eventsRepository,
+            receiptsRepository: deps.receiptsRepository,
+            networkMonitor: deps.networkMonitor
+        )
     )
 }
