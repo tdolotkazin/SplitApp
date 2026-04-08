@@ -264,8 +264,6 @@ final class APIClient {
         return request
     }
 
-    // MARK: - Refresh Token
-
     func refreshToken() async throws {
 
         guard let refreshToken = secureStorage.get("refresh_token") else {
