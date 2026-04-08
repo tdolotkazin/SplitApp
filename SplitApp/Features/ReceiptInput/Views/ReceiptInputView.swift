@@ -12,15 +12,18 @@ struct ReceiptInputView: View {
             VStack(spacing: 0) {
                 // Navigation bar
                 HStack {
-                    Button(action: { dismiss() }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 17, weight: .semibold))
-                            Text("Назад")
-                                .font(.system(size: 17))
+                    Button(
+                        action: { dismiss() },
+                        label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 17, weight: .semibold))
+                                Text("Назад")
+                                    .font(.system(size: 17))
+                            }
+                            .foregroundStyle(Color.accentColor)
                         }
-                        .foregroundStyle(Color.accentColor)
-                    }
+                    )
 
                     Spacer()
 
@@ -29,11 +32,14 @@ struct ReceiptInputView: View {
 
                     Spacer()
 
-                    Button(action: { dismiss() }) {
-                        Text("Готово")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
-                    }
+                    Button(
+                        action: { dismiss() },
+                        label: {
+                            Text("Готово")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    )
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 12)
@@ -60,19 +66,22 @@ struct ReceiptInputView: View {
                     .padding(.horizontal, 18)
                     .padding(.top, 18)
 
-                    Button(action: { viewModel.addPosition() }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 20))
-                            Text("Добавить позицию")
-                                .font(.system(size: 17, weight: .medium))
+                    Button(
+                        action: { viewModel.addPosition() },
+                        label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 20))
+                                Text("Добавить позицию")
+                                    .font(.system(size: 17, weight: .medium))
+                            }
+                            .foregroundStyle(Color.accentColor)
+                            .padding(.vertical, 14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.systemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         }
-                        .foregroundStyle(Color.accentColor)
-                        .padding(.vertical, 14)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(.systemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    }
+                    )
                     .padding(.horizontal, 18)
                     .padding(.top, 12)
 

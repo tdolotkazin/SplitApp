@@ -1,6 +1,6 @@
 import Foundation
 import SwiftUI
-import SwiftUI
+
 protocol EventManagementServiceProtocol {
     func fetchHomeData() async throws -> EventsHomeData
     func fetchReceiptDraft() async -> ReceiptDraft
