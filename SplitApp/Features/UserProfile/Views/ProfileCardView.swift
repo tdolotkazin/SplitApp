@@ -1,4 +1,4 @@
-import  SwiftUI
+import SwiftUI
 
 struct ProfileCardView: View {
     let initials: String
@@ -12,30 +12,35 @@ struct ProfileCardView: View {
             Spacer()
         }
         .padding(20)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .background(.ultraThinMaterial)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
+                .stroke(AppTheme.cardBorder, lineWidth: 1)
+        )
+        .shadow(color: AppTheme.cardShadow, radius: 10, x: 0, y: 5)
     }
 
     private var avatarCircleWithInitials: some View {
         Circle()
-            .fill(.green.opacity(0.6))
+            .fill(AppTheme.accent.opacity(0.2))
             .frame(width: 72, height: 72)
             .overlay {
                 Text(initials)
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.accent)
             }
     }
 
     private var profileText: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(name)
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.textPrimary)
             Text(email)
-                .font(.subheadline)
-                .foregroundColor(.gray)
+                .font(.system(size: 14, weight: .regular, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
         }
     }
 }

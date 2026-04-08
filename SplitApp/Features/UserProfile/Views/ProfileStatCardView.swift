@@ -8,16 +8,22 @@ struct ProfileStatCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.gray)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.textTertiary)
             Text(value)
-                .font(.system(size: 28, weight: .medium))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(valueColor)
             Spacer(minLength: 0)
         }
         .padding(20)
         .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .background(.ultraThinMaterial)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
+                .stroke(AppTheme.cardBorder, lineWidth: 1)
+        )
+        .shadow(color: AppTheme.cardShadow, radius: 10, x: 0, y: 5)
     }
 }

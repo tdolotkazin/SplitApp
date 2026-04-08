@@ -13,9 +13,13 @@ struct ProfileScreenView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Color(.systemGray6)
+        ZStack {
+            AppTheme.backgroundGradient
                 .ignoresSafeArea()
+
+            AppTheme.backgroundRadialGlow
+                .ignoresSafeArea()
+
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     profileText
@@ -31,8 +35,8 @@ struct ProfileScreenView: View {
 
     private var profileText: some View {
         Text("Профиль")
-            .font(.largeTitle)
-            .fontWeight(.bold)
+            .font(AppTheme.fontLargeTitle)
+            .foregroundStyle(AppTheme.textPrimary)
             .padding(.top, 16)
     }
 

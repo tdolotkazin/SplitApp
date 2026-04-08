@@ -8,23 +8,31 @@ struct ProfileSettingsCardView: View {
             notifications
             settings
         }
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .background(.ultraThinMaterial)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
+                .stroke(AppTheme.cardBorder, lineWidth: 1)
+        )
+        .shadow(color: AppTheme.cardShadow, radius: 10, x: 0, y: 5)
     }
 
     private var notifications: some View {
-        VStack {
+        VStack(spacing: 0) {
             ProfileSettingsRowView(
                 icon: "bell",
                 title: "Уведомления",
                 iconColor: .teal,
-                iconBackgroundColor: Color.teal.opacity(0.12)
+                iconBackgroundColor: Color.teal.opacity(0.15)
             ) {
                 Toggle("", isOn: $notificationsEnabled)
                     .labelsHidden()
-                    .tint(.green)
+                    .tint(AppTheme.accent)
             }
-            Divider()
+            Rectangle()
+                .fill(AppTheme.dividerHighlight)
+                .frame(height: 1)
                 .padding(.leading, 68)
         }
     }
@@ -33,12 +41,11 @@ struct ProfileSettingsCardView: View {
         ProfileSettingsRowView(
             icon: "rectangle.portrait.and.arrow.right",
             title: "Выйти",
-            titleColor: .black,
             iconColor: .red,
             iconBackgroundColor: Color.red.opacity(0.12)
         ) {
             Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
+                .foregroundStyle(AppTheme.textTertiary)
         }
     }
 }
