@@ -82,9 +82,16 @@ struct BillEntryView: View {
                             .onTapGesture(perform: hideKeyboard)
 
                         if let statusMessage = viewModel.statusMessage {
+                            let statusIcon = viewModel.isNetworkAvailable
+                                ? "info.circle.fill"
+                                : "wifi.slash"
+                            let statusColor: Color = viewModel.isNetworkAvailable
+                                ? AppTheme.accent
+                                : .orange
+
                             HStack(spacing: 10) {
-                                Image(systemName: viewModel.isNetworkAvailable ? "info.circle.fill" : "wifi.slash")
-                                    .foregroundStyle(viewModel.isNetworkAvailable ? AppTheme.accent : .orange)
+                                Image(systemName: statusIcon)
+                                    .foregroundStyle(statusColor)
 
                                 Text(statusMessage)
                                     .font(.system(size: 14, weight: .medium, design: .rounded))
