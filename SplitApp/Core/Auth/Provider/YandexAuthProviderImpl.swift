@@ -1,9 +1,8 @@
 import Foundation
-import YandexLoginSDK
 import UIKit
+import YandexLoginSDK
 
-
-enum AuthError : Error {
+enum AuthError: Error {
     case invalidToken
 }
 final class YandexAuthProviderImpl: YandexAuthProvider {
@@ -19,26 +18,24 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
         YandexLoginSDK.shared.remove(observer: self)
     }
 
-    func login(from vc: UIViewController) async throws -> UserSessionToken  {
+    func login(from vc: UIViewController) async throws -> UserSessionToken {
         guard let vc = vcProvider.rootViewController else {
-         throw AuthError.invalidToken
-         }
+            throw AuthError.invalidToken
+        }
 
         return try await withCheckedThrowingContinuation { continuation in
-                    self.continuation = continuation
+            self.continuation = continuation
 
-                    do {
-                        try YandexLoginSDK.shared.authorize(with: vc)
-                    } catch {
-                        self.continuation?.resume(throwing: error)
-                        self.continuation = nil
-                    }
-                }
-
+            do {
+                try YandexLoginSDK.shared.authorize(with: vc)
+            } catch {
+                self.continuation?.resume(throwing: error)
+                self.continuation = nil
+            }
+        }
 
     }
 }
-
 
 extension YandexAuthProviderImpl: YandexLoginSDKObserver {
     func didFinishLogin(with result: Result<LoginResult, any Error>) {
@@ -58,16 +55,6 @@ extension YandexAuthProviderImpl: YandexLoginSDKObserver {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
 /*
  return try await withCheckedThrowingContinuation { continuation in self.continuation = continuation
 
@@ -78,5 +65,3 @@ extension YandexAuthProviderImpl: YandexLoginSDKObserver {
  self.continuation = nil
  }
  }*/
-
-

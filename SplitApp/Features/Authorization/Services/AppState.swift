@@ -1,9 +1,10 @@
-import Foundation
 import Combine
+import Foundation
 
+@MainActor
 final class AppState: ObservableObject {
-    
-    @Published var isLoading = true
+
+    @Published var isLoading = false
     @Published var isLoggedIn = false
 
 }

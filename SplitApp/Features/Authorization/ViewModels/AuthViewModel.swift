@@ -1,6 +1,6 @@
+import Combine
 import SwiftUI
 import YandexLoginSDK
-import Combine
 
 @MainActor
 final class AuthViewModel: ObservableObject {
@@ -9,13 +9,13 @@ final class AuthViewModel: ObservableObject {
     private let useCase: LoginUseCase
 
     init(
-            vcProvider: ViewControllerProvider,
-            useCase: LoginUseCase
+        vcProvider: ViewControllerProvider,
+        useCase: LoginUseCase
 
-        ) {
-            self.vcProvider = vcProvider
-            self.useCase = useCase
-        }
+    ) {
+        self.vcProvider = vcProvider
+        self.useCase = useCase
+    }
 
     func login() async -> Bool {
 

@@ -13,7 +13,7 @@ final class KeychainStorage: SecureStorage {
     }
 
     func delete(_ key: String) {
-            keychain.delete(key)
-        }
+        keychain.delete(key)
+    }
 
 }

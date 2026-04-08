@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import KeychainSwift
+import UIKit
 
 final class AuthServicesImpl: AuthService {
 
@@ -8,19 +8,23 @@ final class AuthServicesImpl: AuthService {
     private let serviceBackend: AuthServiceBackend
     private let secureStorage: KeychainStorage
 
-    init(repository: AuthRepository, serviceBackend: AuthServiceBackend, secureStorage: KeychainStorage) {
-            self.repository = repository
+    init(
+        repository: AuthRepository,
+        serviceBackend: AuthServiceBackend,
+        secureStorage: KeychainStorage
+    ) {
+        self.repository = repository
         self.serviceBackend = serviceBackend
         self.secureStorage = KeychainStorage()
-        }
+    }
 
-    func login(provider: AuthProvider, vc: UIViewController) async throws -> AuthResponse {
+    func login(provider: AuthProvider, vc: UIViewController) async throws
+        -> AuthResponse
+    {
 
         let token = try await repository.login(provider: provider, vc: vc)
         return try await serviceBackend.sendTokenToBackend(token: token.token)
 
     }
-
-
 
 }

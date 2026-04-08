@@ -33,7 +33,10 @@ final class APIClient {
                 return date
             }
 
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date")
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Invalid date"
+            )
         }
 
         self.encoder = JSONEncoder()
@@ -44,7 +47,7 @@ final class APIClient {
     }
 
     // MARK: - Public Methods
-        /*
+    /*
     /// Perform a request that returns a decoded response body.
     func request<T: Decodable>(
         endpoint: Endpoint,
@@ -170,12 +173,15 @@ final class APIClient {
     }
 } */
 
-
     func request<T: Decodable>(
         endpoint: Endpoint,
         body: (any Encodable)? = nil
     ) async throws -> T {
-        return try await performRequest(endpoint: endpoint, body: body, isRetry: false)
+        return try await performRequest(
+            endpoint: endpoint,
+            body: body,
+            isRetry: false
+        )
     }
 
     // MARK: - Core logic
@@ -220,7 +226,6 @@ final class APIClient {
         try validateResponse(response, data: data)
     }
 
-
     // MARK: - Build Request
 
     private func buildRequest(
@@ -246,7 +251,10 @@ final class APIClient {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         if let token = TokenStore.shared.accessToken, !token.isEmpty {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.setValue(
+                "Bearer \(token)",
+                forHTTPHeaderField: "Authorization"
+            )
         }
 
         if let body {
@@ -299,7 +307,10 @@ final class APIClient {
         case 403:
             throw NetworkError.httpError(statusCode: 403, detail: "Forbidden")
         default:
-            throw NetworkError.httpError(statusCode: http.statusCode, detail: nil)
+            throw NetworkError.httpError(
+                statusCode: http.statusCode,
+                detail: nil
+            )
         }
     }
 }

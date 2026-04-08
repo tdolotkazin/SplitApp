@@ -14,13 +14,12 @@ final class LogoutUseCase {
         TokenStore.shared.accessToken = nil
         secureStorage.delete("refresh_token")
 
-        // Вытряхиваем сессию Yandex SDK
         do {
             try YandexLoginSDK.shared.logout()
         } catch {
             print("Ошибка logout SDK: \(error)")
         }
-        
+
         appState.isLoggedIn = false
     }
 }

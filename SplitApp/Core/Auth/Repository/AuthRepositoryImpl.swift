@@ -1,5 +1,5 @@
-import UIKit
 import Foundation
+import UIKit
 
 final class AuthRepositoryImpl: AuthRepository {
 
@@ -11,7 +11,9 @@ final class AuthRepositoryImpl: AuthRepository {
         self.yandex = yandex
     }
 
-    func login(provider: AuthProvider, vc: UIViewController) async throws -> UserSessionToken {
+    func login(provider: AuthProvider, vc: UIViewController) async throws
+        -> UserSessionToken
+    {
         switch provider {
         case .yandex:
             return try await yandex.login(from: vc)
