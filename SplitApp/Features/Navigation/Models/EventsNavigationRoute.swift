@@ -2,38 +2,48 @@ import Foundation
 
 enum EventsNavigationRoute: Hashable {
     case scanner
-    case billEntry
+    case eventDetail(UUID)
 }
 
-enum EventsNavigationAction {
+struct BillEntryDestination: Identifiable {
+    let id = UUID()
+    let mode: BillViewModel.Mode
+
+    static func create(eventId: UUID?, scannedItems: [BillItem] = []) -> BillEntryDestination {
+        BillEntryDestination(mode: .create(eventId: eventId, scannedItems: scannedItems))
+    }
+
+    static func edit(eventId: UUID, receiptId: UUID) -> BillEntryDestination {
+        BillEntryDestination(mode: .edit(eventId: eventId, receiptId: receiptId))
+    }
+}
+
+enum EventsNavigationAction: Equatable {
     case scanButtonTapped
     case addButtonTapped
     case scannerCaptureCompleted
+    case eventRowTapped(UUID)
+    case addReceiptTapped(UUID)
+    case receiptTapped(eventId: UUID, receiptId: UUID)
 }
 
 struct EventsNavigationRules {
     let scanButtonRoute: EventsNavigationRoute
-    let addButtonRoute: EventsNavigationRoute
-    let scannerCaptureRoute: EventsNavigationRoute
 
     init(
-        scanButtonRoute: EventsNavigationRoute = .scanner,
-        addButtonRoute: EventsNavigationRoute = .billEntry,
-        scannerCaptureRoute: EventsNavigationRoute = .billEntry
+        scanButtonRoute: EventsNavigationRoute = .scanner
     ) {
         self.scanButtonRoute = scanButtonRoute
-        self.addButtonRoute = addButtonRoute
-        self.scannerCaptureRoute = scannerCaptureRoute
     }
 
-    func route(for action: EventsNavigationAction) -> EventsNavigationRoute {
+    func route(for action: EventsNavigationAction) -> EventsNavigationRoute? {
         switch action {
         case .scanButtonTapped:
-            scanButtonRoute
-        case .addButtonTapped:
-            addButtonRoute
-        case .scannerCaptureCompleted:
-            scannerCaptureRoute
+            return scanButtonRoute
+        case .eventRowTapped(let id):
+            return .eventDetail(id)
+        case .addButtonTapped, .scannerCaptureCompleted, .addReceiptTapped, .receiptTapped:
+            return nil
         }
     }
 }
