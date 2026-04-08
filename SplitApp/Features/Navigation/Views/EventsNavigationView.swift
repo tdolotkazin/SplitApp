@@ -2,11 +2,20 @@ import SwiftUI
 
 struct EventsNavigationView: View {
     @StateObject private var viewModel: EventsNavigationViewModel
+    private let eventsRepository: any EventsRepository
+    private let receiptsRepository: any ReceiptsRepository
+    private let networkMonitor: NetworkMonitor
 
     init(
-        service: EventManagementServiceProtocol = EventManagementService(),
+        service: EventManagementServiceProtocol,
+        eventsRepository: any EventsRepository,
+        receiptsRepository: any ReceiptsRepository,
+        networkMonitor: NetworkMonitor,
         rules: EventsNavigationRules = .init()
     ) {
+        self.eventsRepository = eventsRepository
+        self.receiptsRepository = receiptsRepository
+        self.networkMonitor = networkMonitor
         _viewModel = StateObject(
             wrappedValue: EventsNavigationViewModel(
                 service: service,
@@ -76,5 +85,10 @@ struct EventsNavigationView: View {
 }
 
 #Preview {
-    EventsNavigationView()
+    EventsNavigationView(
+        service: EventManagementService(eventsRepository: EventsDataRepository()),
+        eventsRepository: EventsDataRepository(),
+        receiptsRepository: ReceiptsDataRepository(),
+        networkMonitor: .shared
+    )
 }

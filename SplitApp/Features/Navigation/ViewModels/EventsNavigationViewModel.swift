@@ -26,8 +26,8 @@ final class EventsNavigationViewModel: ObservableObject {
 
     @MainActor
     convenience init(
-        service: EventManagementServiceProtocol? = nil,
-        rules: EventsNavigationRules? = nil
+        service: EventManagementServiceProtocol,
+        rules: EventsNavigationRules
     ) {
         let resolvedService = service ?? EventManagementService()
         let resolvedRules = rules ?? EventsNavigationRules()

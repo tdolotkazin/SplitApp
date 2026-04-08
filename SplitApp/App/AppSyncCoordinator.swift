@@ -1,13 +1,11 @@
 import Foundation
 
 actor AppSyncCoordinator {
-    static let shared = AppSyncCoordinator()
-
-    private let eventsRepository: EventsRepositoryProtocol
+    private let eventsRepository: any EventsRepository
     private var hasCompletedInitialSync = false
     private var isSyncInProgress = false
 
-    init(eventsRepository: EventsRepositoryProtocol = EventsRepository()) {
+    init(eventsRepository: any EventsRepository) {
         self.eventsRepository = eventsRepository
     }
 

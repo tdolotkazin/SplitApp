@@ -1,22 +1,7 @@
 import Foundation
 import CoreData
 
-enum ReceiptFetchPolicy {
-    case localOnly
-    case refreshIfPossible
-}
-
-protocol ReceiptsRepositoryProtocol {
-    func getCachedReceipts(eventId: UUID) async throws -> [Receipt]
-    func refreshReceipts(eventId: UUID) async throws -> [Receipt]
-    func getCachedReceipt(id: UUID) async throws -> Receipt
-    func getReceipt(id: UUID, eventId: UUID, policy: ReceiptFetchPolicy) async throws -> Receipt
-    func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> Receipt
-    func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> Receipt
-    func deleteReceipt(id: UUID) async throws
-}
-
-final class ReceiptsRepository: ReceiptsRepositoryProtocol {
+final class ReceiptsDataRepository: ReceiptsRepository {
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 
@@ -137,7 +122,15 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
             LocalReceiptsStore.shared.updateReceipt(updatedDto)
             return updatedDto
         }
-    func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> Receipt {
+    }
+    
+    func createReceipt(eventId: UUID, _ command: CreateReceiptCommand) async throws -> Receipt {
+        let request = CreateReceiptRequest(
+            payerId: command.payerId,
+            title: command.title,
+            totalAmount: command.totalAmount,
+            items: command.items.map(mapCreateReceiptItemCommand)
+        )
         let dto: ReceiptDTO = try await apiClient.request(
             endpoint: CreateReceiptEndpoint(eventId: eventId),
             body: request
@@ -195,7 +188,12 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
         }
     }
 
-    func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> Receipt {
+    func updateReceipt(id: UUID, _ command: UpdateReceiptCommand) async throws -> Receipt {
+        let request = UpdateReceiptRequest(
+            title: command.title,
+            totalAmount: command.totalAmount,
+            items: command.items?.map(mapCreateReceiptItemCommand)
+        )
         let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertReceipt(dto, in: context)
@@ -210,18 +208,28 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
         }
     }
 
+    private func mapCreateReceiptItemCommand(_ command: CreateReceiptItemCommand) -> CreateReceiptItemRequest {
+        CreateReceiptItemRequest(
+            name: command.name,
+            cost: command.cost,
+            shareItems: command.shareItems.map { share in
+                CreateShareItemRequest(userId: share.userId, shareValue: share.shareValue)
+            }
+        )
+    }
+
     private func mapToDomain(_ cdReceipt: CDReceipt) -> Receipt {
         let cdItems = ((cdReceipt.items as? Set<CDReceiptItem>) ?? [])
             .sorted { ($0.name ?? "") < ($1.name ?? "") }
         let items: [EventReceiptItem] = cdItems.compactMap { item in
-            guard let iid = item.id else { return nil }
+            guard let itemId = item.id else { return nil }
             let cdShares = ((item.shareItems as? Set<CDShareItem>) ?? [])
                 .sorted { $0.shareValue > $1.shareValue }
             let shares: [Share] = cdShares.compactMap { share in
-                guard let sid = share.id, let uid = share.userId else { return nil }
-                return Share(id: sid, userId: uid, shareValue: share.shareValue)
+                guard let shareId = share.id, let userId = share.userId else { return nil }
+                return Share(id: shareId, userId: userId, shareValue: share.shareValue)
             }
-            return EventReceiptItem(id: iid, name: item.name ?? "", cost: item.cost, shares: shares)
+            return EventReceiptItem(id: itemId, name: item.name ?? "", cost: item.cost, shares: shares)
         }
 
         return Receipt(
@@ -234,8 +242,6 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
             items: items
         )
     }
-
-    // MARK: - Core Data Internal Methods
 
     private func upsertReceipt(_ dto: ReceiptDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()

@@ -14,12 +14,4 @@ struct User: Hashable {
         self.email = email
         self.avatarUrl = avatarUrl
     }
-
-    init(from authUser: AuthUser) {
-        self.id = authUser.id
-        self.name = authUser.name
-        self.phoneNumber = "" // AuthUser should probably include this or we fetch it
-        self.email = nil
-        self.avatarUrl = nil
-    }
 }

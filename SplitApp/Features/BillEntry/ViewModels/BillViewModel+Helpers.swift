@@ -93,22 +93,22 @@ extension BillViewModel {
     }
 
     func persistReceipt(
-        _ request: CreateReceiptRequest,
+        _ command: CreateReceiptCommand,
         eventId: UUID
     ) async throws {
         switch mode {
         case .create:
             _ = try await receiptsRepository.createReceipt(
                 eventId: eventId,
-                request
+                command
             )
         case .edit(_, let receiptId):
             _ = try await receiptsRepository.updateReceipt(
                 id: receiptId,
-                UpdateReceiptRequest(
-                    title: request.title,
-                    totalAmount: request.totalAmount,
-                    items: request.items
+                UpdateReceiptCommand(
+                    title: command.title,
+                    totalAmount: command.totalAmount,
+                    items: command.items
                 )
             )
         }
@@ -154,19 +154,19 @@ extension BillViewModel {
     func makeReceiptRequest(
         payerId: UUID,
         items: [BillItem]
-    ) -> CreateReceiptRequest {
-        CreateReceiptRequest(
+    ) -> CreateReceiptCommand {
+        CreateReceiptCommand(
             payerId: payerId,
             title: nil,
             totalAmount: NSDecimalNumber(decimal: total).doubleValue,
             items: items.compactMap { item in
                 guard !item.assignedTo.isEmpty else { return nil }
 
-                return CreateReceiptItemRequest(
+                return CreateReceiptItemCommand(
                     name: item.name.isEmpty ? nil : item.name,
                     cost: NSDecimalNumber(decimal: item.amount).doubleValue,
                     shareItems: item.assignedTo.map { assignedTo in
-                        CreateShareItemRequest(
+                        CreateShareItemCommand(
                             userId: assignedTo.id,
                             shareValue: 1
                         )

@@ -1,7 +1,7 @@
 import Foundation
 
 enum UserMapper {
-    nonisolated static func mapToDomain(dto: UserDTO) -> User {
+    static func mapToDomain(dto: UserDTO) -> User {
         User(
             id: dto.id,
             name: dto.name,
@@ -11,7 +11,7 @@ enum UserMapper {
         )
     }
 
-    nonisolated static func mapToDomain(cdUser: CDUser) -> User? {
+    static func mapToDomain(cdUser: CDUser) -> User? {
         guard let id = cdUser.id, let name = cdUser.name, let phoneNumber = cdUser.phoneNumber else {
             return nil
         }

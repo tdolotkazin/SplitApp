@@ -246,5 +246,10 @@ private enum BillEntryLayout {
 }
 
 #Preview {
-    BillEntryView()
+    BillEntryView(
+        mode: .create(eventId: nil, scannedItems: []),
+        eventsRepository: EventsDataRepository(),
+        receiptsRepository: ReceiptsDataRepository(),
+        networkMonitor: .shared
+    )
 }
