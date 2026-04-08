@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import SwiftUI
-
 protocol EventManagementServiceProtocol {
     func fetchHomeData() async throws -> EventsHomeData
     func fetchReceiptDraft() async -> ReceiptDraft
@@ -24,7 +23,6 @@ struct EventManagementService: EventManagementServiceProtocol {
         ]
         return ReceiptDraft(participants: participants, lineItems: [])
     }
-
     func fetchHomeData() async throws -> EventsHomeData {
         let events = try await eventsRepository.listEvents(userId: nil)
 
