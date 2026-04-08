@@ -1,22 +1,28 @@
 import SwiftUI
 
 struct BillEntryView: View {
+<<<<<<< HEAD
+    @StateObject private var viewModel = BillViewModel()
+=======
     @StateObject private var viewModel: BillViewModel
     @StateObject private var keyboardObserver = KeyboardObserver()
+>>>>>>> 503e700 (refactor(billEntry): recomposition billEdit screen)
     @State private var showParticipantSheet = false
     @Environment(\.dismiss) private var dismiss
 
-    init(eventId: UUID? = nil, receipt: ReceiptDTO? = nil, onReceiptCreated: (() -> Void)? = nil) {
-        let viewModel = BillViewModel()
-        viewModel.currentEventId = eventId
-        viewModel.onReceiptCreated = onReceiptCreated
+    init(mode: BillViewModel.Mode) {
+        _viewModel = StateObject(wrappedValue: BillViewModel(mode: mode))
+    }
 
-        // Загружаем данные чека если это редактирование
-        if let receipt = receipt {
-            viewModel.loadReceipt(receipt)
-        }
-
-        _viewModel = StateObject(wrappedValue: viewModel)
+    init(eventId: UUID? = nil) {
+        _viewModel = StateObject(
+            wrappedValue: BillViewModel(
+                mode: .create(
+                    eventId: eventId,
+                    scannedItems: ScannedReceiptStore.shared.consume()
+                )
+            )
+        )
     }
 
     var body: some View {
@@ -31,113 +37,145 @@ struct BillEntryView: View {
                 }
                 .dismissKeyboardOnTap()
 
-                VStack(spacing: 0) {
-                    HeaderRow()
-                        .padding(.top, 8)
-                        .onTapGesture {
-                            hideKeyboard()
+                if viewModel.isLoading && viewModel.items.isEmpty {
+                    ProgressView("Загрузка чека...")
+                        .font(.system(size: 17, weight: .medium, design: .rounded))
+                } else if let errorMessage = viewModel.loadErrorMessage, viewModel.items.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 44))
+                            .foregroundStyle(.orange)
+                        Text(errorMessage)
+                            .font(.system(size: 17, weight: .medium, design: .rounded))
+                            .multilineTextAlignment(.center)
+                        Button("Попробовать снова") {
+                            Task { await viewModel.reload() }
                         }
 
-                    ScrollViewReader { proxy in
-                        List {
-                            ForEach(viewModel.items) { item in
-                                BillItemRow(
-                                    item: item,
-                                    onAssign: {
-                                        viewModel.selectedItemForAssignment = item
-                                        showParticipantSheet = true
-                                    },
-                                    onDelete: {
-                                        viewModel.removeItem(id: item.id)
-                                    },
-                                    onUpdate: { name, amount in
-                                        viewModel.updateItem(
-                                            id: item.id,
-                                            name: name,
-                                            amount: amount
-                                        )
-                                    }
-                                )
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                                .id(item.id)
-                            }
-                            .onDelete { indexSet in
-                                indexSet.forEach { index in
-                                    let item = viewModel.items[index]
+                    List {
+                        ForEach(viewModel.items) { item in
+                            BillItemRow(
+                                item: item,
+                                onAssign: {
+                                    viewModel.selectedItemForAssignment = item
+                                    showParticipantSheet = true
+                                },
+                                onDelete: {
                                     viewModel.removeItem(id: item.id)
+                                },
+                                onUpdate: { name, amount in
+                                    viewModel.updateItem(
+                                        id: item.id,
+                                        name: name,
+                                        amount: amount
+                                    )
                                 }
-                            }
-                            .onChange(of: viewModel.items.count) { oldCount, newCount in
-                                if newCount > oldCount, let lastItem = viewModel.items.last {
-                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                        proxy.scrollTo(lastItem.id, anchor: .bottom)
-                                    }
-                                }
-                            }
-
-                            Color.clear
-                                .frame(height: 300)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    hideKeyboard()
-                                }
+                            )
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
                         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.items.count)
                     }
-
-                    Spacer()
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            hideKeyboard()
-                        }
-
-                    if !keyboardObserver.isVisible {
-                        AddItemButton {
-                            viewModel.addItem()
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-
-                        GlassCard {
-                            HStack {
-                                Text("Итого")
-                                    .font(.system(size: 24, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(AppTheme.textPrimary)
-                                Spacer()
-                                Text("€\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
-                                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                                    .foregroundStyle(AppTheme.accent)
-                                    .contentTransition(.numericText())
+                    .padding(24)
+                } else {
+                    VStack(spacing: 0) {
+                        HeaderRow()
+                            .padding(.top, 8)
+                            .onTapGesture {
+                                hideKeyboard()
                             }
-                        }
-                        .padding(.horizontal, 20)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
 
-                        GlassButton(title: "Разделить счёт") {
-                            viewModel.save()
+                        if let statusMessage = viewModel.statusMessage {
+                            HStack(spacing: 10) {
+                                Image(systemName: viewModel.isNetworkAvailable ? "info.circle.fill" : "wifi.slash")
+                                    .foregroundStyle(viewModel.isNetworkAvailable ? AppTheme.accent : .orange)
+                                Text(statusMessage)
+                                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.textSecondary)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 8)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                        .padding(.bottom, 8)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+
+                        ScrollViewReader { proxy in
+                            List {
+                                ForEach(viewModel.items) { item in
+                                    BillItemRow(
+                                        item: item,
+                                        onAssign: {
+                                            viewModel.selectedItemForAssignment = item
+                                            showParticipantSheet = true
+                                        },
+                                        onDelete: {
+                                            viewModel.removeItem(id: item.id)
+                                        },
+                                        onUpdate: { name, amount in
+                                            viewModel.updateItem(
+                                                id: item.id,
+                                                name: name,
+                                                amount: amount,
+                                                assignedTo: nil
+                                            )
+                                        }
+                                    )
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                                    .id(item.id)
+                                }
+                                .onDelete { indexSet in
+                                    indexSet.forEach { index in
+                                        let item = viewModel.items[index]
+                                        viewModel.removeItem(id: item.id)
+                                    }
+                                }
+                                .onChange(of: viewModel.items.count) { oldCount, newCount in
+                                    if newCount > oldCount, let lastItem = viewModel.items.last {
+                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                            proxy.scrollTo(lastItem.id, anchor: .bottom)
+                                        }
+                                    }
+                                }
+
+                                Color.clear
+                                    .frame(height: 300)
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        hideKeyboard()
+                                    }
+                            }
+                            .listStyle(.plain)
+                            .scrollContentBackground(.hidden)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.items.count)
+                        }
+
+                        Spacer()
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                hideKeyboard()
+                            }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .animation(nil, value: viewModel.items.count)
                 }
-                .animation(.spring(response: 0.35, dampingFraction: 0.8), value: keyboardObserver.isVisible)
-                .simultaneousGesture(
-                    TapGesture().onEnded { _ in
-                        if keyboardObserver.isVisible {
-                            hideKeyboard()
-                        }
-                    }
-                )
             }
+            .overlay(alignment: .bottom) {
+                bottomActionPanel
+                    .padding(.bottom, 8)
+            }
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+            .navigationTitle("Ввод чека")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -169,14 +207,22 @@ struct BillEntryView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Готово") {
-                        viewModel.save()
+                        Task {
+                            if await viewModel.save() {
+                                dismiss()
+                            }
+                        }
                     }
                     .foregroundStyle(AppTheme.accent)
                     .font(.system(size: 17, weight: .semibold))
+                    .disabled(!viewModel.canSave)
                 }
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .task {
+                await viewModel.load()
+            }
             .sheet(isPresented: $showParticipantSheet) {
                 let selectedId = viewModel.selectedItemForAssignment?.id
                 let currentAssigned = selectedId.flatMap { id in

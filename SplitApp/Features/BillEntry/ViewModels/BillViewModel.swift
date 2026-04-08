@@ -2,19 +2,43 @@ import SwiftUI
 import Combine
 
 @MainActor
-class BillViewModel: ObservableObject {
+final class BillViewModel: ObservableObject {
+    enum Mode {
+        case create(eventId: UUID?, scannedItems: [BillItem])
+        case edit(eventId: UUID, receiptId: UUID)
+
+        var eventId: UUID? {
+            switch self {
+            case .create(let eventId, _):
+                return eventId
+            case .edit(let eventId, _):
+                return eventId
+            }
+        }
+    }
+
     @Published var items: [BillItem] = []
     @Published var participants: [Participant] = []
-    @Published var isAddingItem: Bool = false
+    @Published var isAddingItem = false
     @Published var selectedItemForAssignment: BillItem?
-    @Published var showParticipantPicker: Bool = false
-    @Published var triggerAnimation: UUID = UUID()
-    @Published var receiptTitle: String = ""
+    @Published var showParticipantPicker = false
+    @Published var triggerAnimation = UUID()
+    @Published private(set) var isLoading = false
+    @Published private(set) var isSaving = false
+    @Published private(set) var isUsingCachedData = false
+    @Published private(set) var isNetworkAvailable: Bool
+    @Published private(set) var loadErrorMessage: String?
+    @Published private(set) var saveErrorMessage: String?
 
-    private let service: EventManagementServiceProtocol
-    var currentEventId: UUID?
-    var currentReceiptId: UUID? // ID редактируемого чека
-    var onReceiptCreated: (() -> Void)?
+    private let mode: Mode
+    private let eventsRepository: EventsRepositoryProtocol
+    private let receiptsRepository: ReceiptsRepositoryProtocol
+    private let networkMonitor: NetworkMonitor
+    private var cancellables: Set<AnyCancellable> = []
+    private var hasLoaded = false
+    private var loadedEvent: Event?
+    private var loadedReceipt: Receipt?
+    private var payerId: UUID?
 
     var total: Decimal {
         items.reduce(0) { $0 + $1.amount }
@@ -31,6 +55,7 @@ class BillViewModel: ObservableObject {
             "#0EA5E9", "#84CC16", "#F43F5E", "#A78BFA", "#2DD4BF", "#FB923C",
             "#4ADE80", "#E879F9"
         ]
+    }
 
         participants = users.enumerated().map { index, user in
             let colorHex = colors[index % colors.count]
@@ -47,6 +72,93 @@ class BillViewModel: ObservableObject {
         let scanned = ScannedReceiptStore.shared.consume()
         if !scanned.isEmpty {
             items = scanned
+    var title: String {
+        switch mode {
+        case .create:
+            return "Ввод чека"
+        case .edit:
+            return "Чек"
+        }
+    }
+
+    var statusMessage: String? {
+        if let saveErrorMessage {
+            return saveErrorMessage
+        }
+        if let loadErrorMessage, !items.isEmpty {
+            return loadErrorMessage
+        }
+        if let saveDisabledReason {
+            return saveDisabledReason
+        }
+        if isUsingCachedData {
+            return "Показываем сохранённый чек. Для сохранения изменений нужен интернет."
+        }
+        return nil
+    }
+
+    var canSave: Bool {
+        !isLoading && !isSaving && saveDisabledReason == nil
+    }
+
+    var saveButtonTitle: String {
+        isSaving ? "Сохраняем..." : "Разделить счёт"
+    }
+
+    private var saveDisabledReason: String? {
+        switch mode {
+        case .create(let eventId, _) where eventId == nil:
+            return "Сохранение доступно только внутри события."
+        default:
+            break
+        }
+
+        if !isNetworkAvailable {
+            return "Без интернета сохранение пока недоступно."
+        }
+
+        return nil
+    }
+
+    init(
+        mode: Mode,
+        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
+        receiptsRepository: ReceiptsRepositoryProtocol = ReceiptsRepository(),
+        networkMonitor: NetworkMonitor = .shared
+    ) {
+        self.mode = mode
+        self.eventsRepository = eventsRepository
+        self.receiptsRepository = receiptsRepository
+        self.networkMonitor = networkMonitor
+        self.isNetworkAvailable = networkMonitor.isConnected
+
+        if case .create(_, let scannedItems) = mode {
+            items = scannedItems
+        }
+
+        networkMonitor.$isConnected
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isConnected in
+                self?.isNetworkAvailable = isConnected
+            }
+            .store(in: &cancellables)
+    }
+
+    func load() async {
+        guard !hasLoaded else { return }
+        hasLoaded = true
+        await reload()
+    }
+
+    func reload() async {
+        loadErrorMessage = nil
+        saveErrorMessage = nil
+
+        switch mode {
+        case .create(let eventId, let scannedItems):
+            await loadCreateContext(eventId: eventId, scannedItems: scannedItems)
+        case .edit(let eventId, let receiptId):
+            await loadEditContext(eventId: eventId, receiptId: receiptId)
         }
     }
 
@@ -58,7 +170,6 @@ class BillViewModel: ObservableObject {
             triggerAnimation = UUID()
         }
 
-        // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
     }
@@ -68,7 +179,6 @@ class BillViewModel: ObservableObject {
             items.removeAll { $0.id == id }
         }
 
-        // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .heavy)
         generator.impactOccurred()
     }
@@ -96,17 +206,73 @@ class BillViewModel: ObservableObject {
             selectedItemForAssignment = items[index]
         }
 
-        // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
     }
 
-    func save() {
-        // Валидация
-        let validItems = items.filter { !$0.name.isEmpty && $0.amount > 0 && !$0.assignedTo.isEmpty }
+    func save() async -> Bool {
+        saveErrorMessage = nil
 
+        guard let eventId = mode.eventId else {
+            saveErrorMessage = "Нужно открыть счёт из события, чтобы сохранить его на сервер."
+            return false
+        }
+
+        guard canSave else {
+            return false
+        }
+
+        let validItems = items.filter { !$0.name.isEmpty && $0.amount > 0 && $0.assignedTo != nil }
         guard !validItems.isEmpty else {
-            print("Нет валидных позиций для сохранения")
+            saveErrorMessage = "Добавь хотя бы одну заполненную позицию с назначенным участником."
+            return false
+        }
+
+        guard let payerId = payerId ?? loadedEvent?.creatorId ?? participants.first?.id else {
+            saveErrorMessage = "Не удалось определить плательщика для этого чека."
+            return false
+        }
+
+        let request = makeReceiptRequest(payerId: payerId, items: validItems)
+
+        isSaving = true
+        defer { isSaving = false }
+
+        do {
+            switch mode {
+            case .create:
+                _ = try await receiptsRepository.createReceipt(eventId: eventId, request)
+            case .edit(_, let receiptId):
+                _ = try await receiptsRepository.updateReceipt(
+                    id: receiptId,
+                    UpdateReceiptRequest(
+                        title: request.title,
+                        totalAmount: request.totalAmount,
+                        items: request.items
+                    )
+                )
+            }
+
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            return true
+        } catch {
+            saveErrorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    private func loadCreateContext(eventId: UUID?, scannedItems: [BillItem]) async {
+        if items.isEmpty {
+            items = scannedItems
+        }
+
+        guard let eventId else {
+            participants = [
+                Participant(name: "Я", initials: "Я", color: .accentColor),
+                Participant(name: "Друг 1", initials: "Д1", color: .blue),
+                Participant(name: "Друг 2", initials: "Д2", color: .green)
+            ]
             return
         }
 
@@ -221,5 +387,125 @@ class BillViewModel: ObservableObject {
         }
 
         print("📝 Загружено позиций: \(items.count), название: \(receiptTitle)")
+        isLoading = participants.isEmpty
+
+        if let cachedEvent = try? await eventsRepository.getCachedEvent(id: eventId) {
+            apply(event: cachedEvent)
+            isLoading = false
+        }
+
+        do {
+            let refreshedEvent = try await eventsRepository.refreshEvent(id: eventId)
+            apply(event: refreshedEvent)
+        } catch {
+            if loadedEvent == nil {
+                loadErrorMessage = error.localizedDescription
+            }
+        }
+
+        isLoading = false
+    }
+
+    private func loadEditContext(eventId: UUID, receiptId: UUID) async {
+        isLoading = items.isEmpty
+        isUsingCachedData = false
+
+        if let cachedEvent = try? await eventsRepository.getCachedEvent(id: eventId) {
+            apply(event: cachedEvent)
+            isLoading = false
+        }
+
+        if let cachedReceipt = try? await receiptsRepository.getCachedReceipt(id: receiptId) {
+            apply(receipt: cachedReceipt)
+            isUsingCachedData = true
+            isLoading = false
+        }
+
+        do {
+            async let refreshedEvent = eventsRepository.refreshEvent(id: eventId)
+            async let refreshedReceipts = receiptsRepository.refreshReceipts(eventId: eventId)
+
+            let event = try await refreshedEvent
+            let receipts = try await refreshedReceipts
+            apply(event: event)
+
+            guard let receipt = receipts.first(where: { $0.id == receiptId }) else {
+                if loadedReceipt == nil {
+                    loadErrorMessage = "Чек больше не доступен."
+                }
+                isLoading = false
+                return
+            }
+
+            apply(receipt: receipt)
+            isUsingCachedData = false
+        } catch {
+            if loadedReceipt == nil {
+                loadErrorMessage = error.localizedDescription
+            } else {
+                isUsingCachedData = true
+            }
+        }
+
+        isLoading = false
+    }
+
+    private func apply(event: Event) {
+        loadedEvent = event
+        payerId = loadedReceipt?.payerId ?? event.creatorId
+        participants = event.participants.map(Self.makeParticipant)
+
+        if let loadedReceipt {
+            items = mapReceiptToBillItems(loadedReceipt, participants: participants)
+        }
+    }
+
+    private func apply(receipt: Receipt) {
+        loadedReceipt = receipt
+        payerId = receipt.payerId
+        items = mapReceiptToBillItems(receipt, participants: participants)
+    }
+
+    private func mapReceiptToBillItems(_ receipt: Receipt, participants: [Participant]) -> [BillItem] {
+        receipt.items.map { item in
+            let assignedParticipant = item.shares.first.flatMap { share in
+                participants.first(where: { $0.id == share.userId })
+            }
+
+            return BillItem(
+                id: item.id,
+                name: item.name,
+                amount: Decimal(item.cost),
+                assignedTo: assignedParticipant
+            )
+        }
+    }
+
+    private func makeReceiptRequest(payerId: UUID, items: [BillItem]) -> CreateReceiptRequest {
+        CreateReceiptRequest(
+            payerId: payerId,
+            title: nil,
+            totalAmount: NSDecimalNumber(decimal: total).doubleValue,
+            items: items.compactMap { item in
+                guard let assignedTo = item.assignedTo else { return nil }
+
+                return CreateReceiptItemRequest(
+                    name: item.name.isEmpty ? nil : item.name,
+                    cost: NSDecimalNumber(decimal: item.amount).doubleValue,
+                    shareItems: [
+                        CreateShareItemRequest(userId: assignedTo.id, shareValue: 1)
+                    ]
+                )
+            }
+        )
+    }
+
+    private static func makeParticipant(from user: User) -> Participant {
+        Participant(
+            id: user.id,
+            name: user.name,
+            initials: String(user.name.prefix(2)).uppercased(),
+            color: .accentColor
+        )
     }
 }
