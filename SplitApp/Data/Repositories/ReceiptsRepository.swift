@@ -164,7 +164,7 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
             fetchRequest.fetchLimit = 1
             guard let cdReceipt = try context.fetch(fetchRequest).first else {
-                throw NetworkError.invalidResponse
+                throw RepositoryError.notFound
             }
             return self.mapToDomain(cdReceipt)
         }
@@ -180,9 +180,13 @@ final class ReceiptsDataRepository: ReceiptsRepository {
                 if let receipt = receipts.first(where: { $0.id == id }) {
                     return receipt
                 }
-                throw NetworkError.noData
+                throw RepositoryError.notFound
             } catch {
-                return try await getCachedReceipt(id: id)
+                do {
+                    return try await getCachedReceipt(id: id)
+                } catch {
+                    throw RepositoryError.offlineNoCache
+                }
             }
         }
     }

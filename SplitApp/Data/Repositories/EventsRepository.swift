@@ -26,7 +26,7 @@ final class EventsDataRepository: EventsRepository {
             let cachedEvents = try await getCachedEvents(userId: userId)
 
             if cachedEvents.isEmpty {
-                throw error
+                throw RepositoryError.offlineNoCache
             }
 
             return cachedEvents
@@ -51,7 +51,7 @@ final class EventsDataRepository: EventsRepository {
                 return event
             }
 
-            throw error
+            throw RepositoryError.offlineNoCache
         }
     }
 
