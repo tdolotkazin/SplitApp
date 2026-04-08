@@ -47,32 +47,11 @@ struct BillEntryView: View {
                             .font(.system(size: 17, weight: .medium, design: .rounded))
                             .multilineTextAlignment(.center)
 
-                    List {
-                        ForEach(viewModel.items) { item in
-                            BillItemRow(
-                                item: item,
-                                onAssign: {
-                                    viewModel.selectedItemForAssignment = item
-                                    showParticipantSheet = true
-                                },
-                                onDelete: {
-                                    viewModel.removeItem(id: item.id)
-                                },
-                                onUpdate: { name, amount in
-                                    viewModel.updateItem(
-                                        id: item.id,
-                                        name: name,
-                                        amount: amount
-                                    )
-                                }
-                            )
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                        Button("Попробовать снова") {
+                            Task {
+                                await viewModel.reload()
+                            }
                         }
-                        .listStyle(.plain)
-                        .scrollContentBackground(.hidden)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.items.count)
                     }
                     .padding(24)
                 } else {
@@ -246,6 +225,57 @@ struct BillEntryView: View {
             }
         }
     }
+
+    private var bottomActionPanel: some View {
+        VStack(spacing: 0) {
+            AddItemButton {
+                viewModel.addItem()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+
+            GlassCard {
+                HStack {
+                    Text("Итого")
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Spacer()
+                    Text("€\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.accent)
+                        .contentTransition(.numericText())
+                }
+            }
+            .padding(.horizontal, 20)
+
+            GlassButton(title: "Разделить счёт") {
+                saveAndDismiss()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
+        }
+    }
+
+    private func load() async {
+        await viewModel.load()
+    }
+
+    private func saveAndDismiss() {
+        Task {
+            if await viewModel.save() {
+                dismiss()
+            }
+        }
+    }
+
+    private func dismissView() {
+        dismiss()
+    }
+}
+
+private enum BillEntryLayout {
+    static let bottomPanelReservedSpace: CGFloat = 228
 }
 
 #Preview {
