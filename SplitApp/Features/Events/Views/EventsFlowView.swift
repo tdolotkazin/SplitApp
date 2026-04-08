@@ -23,21 +23,24 @@ struct EventsFlowView: View {
                         .navigationBarBackButtonHidden(true)
                 }
             }
-            .sheet(isPresented: $viewModel.showCamera) {
-                CameraPickerSheet { image in
-                    viewModel.showCamera = false
-                    Task { await viewModel.didCaptureImage(image) }
-                }
+            .sheet(isPresented: $viewModel.showCamera, onDismiss: {
+                viewModel.handlePendingImage()
+            }) {
+                CameraPickerSheet(
+                    onCapture: { image in viewModel.storeCapturedImage(image) },
+                    onCancel: { viewModel.showCamera = false }
+                )
                 .ignoresSafeArea()
             }
             .photosPicker(isPresented: $viewModel.showPhotoPicker, selection: $selectedPhoto, matching: .images)
-            .onChange(of: selectedPhoto) { _, photo in
+            .onChange(of: selectedPhoto) { photo in
                 guard let photo else { return }
                 selectedPhoto = nil
                 Task {
                     guard let data = try? await photo.loadTransferable(type: Data.self),
                           let image = UIImage(data: data) else { return }
-                    await viewModel.didCaptureImage(image)
+                    viewModel.storeCapturedImage(image)
+                    viewModel.handlePendingImage()
                 }
             }
         }
@@ -48,6 +51,7 @@ struct EventsFlowView: View {
 
 private struct CameraPickerSheet: UIViewControllerRepresentable {
     let onCapture: (UIImage) -> Void
+    let onCancel: () -> Void
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
@@ -58,20 +62,24 @@ private struct CameraPickerSheet: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 
-    func makeCoordinator() -> Coordinator { Coordinator(onCapture: onCapture) }
+    func makeCoordinator() -> Coordinator { Coordinator(onCapture: onCapture, onCancel: onCancel) }
 
     final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onCapture: (UIImage) -> Void
-        init(onCapture: @escaping (UIImage) -> Void) { self.onCapture = onCapture }
+        let onCancel: () -> Void
+
+        init(onCapture: @escaping (UIImage) -> Void, onCancel: @escaping () -> Void) {
+            self.onCapture = onCapture
+            self.onCancel = onCancel
+        }
 
         func imagePickerController(_ picker: UIImagePickerController,
                                    didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-            picker.dismiss(animated: true)
             if let image = info[.originalImage] as? UIImage { onCapture(image) }
         }
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            picker.dismiss(animated: true)
+            onCancel()
         }
     }
 }

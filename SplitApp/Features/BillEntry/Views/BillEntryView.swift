@@ -163,7 +163,7 @@ struct BillEntryView: View {
                         showParticipantSheet = false
                     }
                 )
-                .presentationDetents([.medium, .fraction(0.5)])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
         }

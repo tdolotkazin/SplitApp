@@ -1,13 +1,16 @@
 import Foundation
 import Combine
+import UIKit
 
 @MainActor
 final class ReceiptInputViewModel: ObservableObject {
     @Published private(set) var lineItems: [ReceiptLineItem] = []
     @Published private(set) var participants: [ReceiptParticipant] = []
     @Published private(set) var isLoaded = false
+    @Published private(set) var isScanning = false
 
     private let service: EventManagementServiceProtocol
+    private let scanner = ReceiptViewModel()
     private var initialLineItems: [ReceiptLineItem] = []
     private var amountInputs: [UUID: String] = [:]
 
@@ -24,6 +27,13 @@ final class ReceiptInputViewModel: ObservableObject {
     func resetDraft() {
         lineItems = initialLineItems
         rebuildAmountInputs()
+    }
+
+    func processImage(_ image: UIImage) async {
+        isScanning = true
+        await scanner.process(image: image)
+        populate(from: scanner.items)
+        isScanning = false
     }
 
     func populate(from items: [ReceiptItem]) {

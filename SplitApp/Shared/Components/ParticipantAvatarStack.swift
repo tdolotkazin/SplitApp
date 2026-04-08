@@ -3,7 +3,7 @@ import SwiftUI
 struct ParticipantAvatarStack: View {
     let participants: [Participant]
     var avatarSize: CGFloat = 28
-    var maxVisible: Int = 3
+    var maxVisible: Int = 2
 
     private var overlap: CGFloat { avatarSize * 0.4 }
     private var visible: [Participant] { Array(participants.prefix(maxVisible)) }

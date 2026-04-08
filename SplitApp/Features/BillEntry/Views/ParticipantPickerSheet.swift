@@ -37,7 +37,7 @@ struct ParticipantPickerSheet: View {
 
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(Array(participants.enumerated()), id: \.element.id) { index, participant in
+                        ForEach(participants, id: \.id) { participant in
                             let selected = isSelected(participant)
                             Button(
                                 action: {
@@ -78,7 +78,6 @@ struct ParticipantPickerSheet: View {
                                 }
                             )
                             .buttonStyle(PlainButtonStyle())
-                            .staggeredAppear(index: index)
                         }
                     }
                     .padding(.horizontal, 20)
