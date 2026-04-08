@@ -89,14 +89,20 @@ private struct BalanceCardView: View {
         GlassCard(padding: 24) {
             VStack(alignment: .center, spacing: 8) {
                 Text("Общий баланс")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                Text(summary.totalBalance.euroText(signed: true, minimumFractionDigits: 2))
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.accentGradient)
-                    .shadow(color: AppTheme.accent.opacity(0.25), radius: 12, x: 0, y: 4)
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(1)
+                    .font(
+                        .system(size: 18, weight: .semibold, design: .rounded)
+                    )
+                    .foregroundStyle(.white.opacity(0.8))
+                Text(
+                    summary.totalBalance.euroText(
+                        signed: true,
+                        minimumFractionDigits: 2
+                    )
+                )
+                .font(.system(size: 48, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
         }
@@ -181,5 +187,6 @@ private struct AddButton: View {
         onScanTap: {},
         onAddTap: {},
         onBillTap: nil
+        onEventTap: { _ in }
     )
 }
