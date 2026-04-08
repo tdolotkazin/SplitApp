@@ -8,67 +8,73 @@ struct EventsHomeView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
-                .ignoresSafeArea()
+            ZStack {
+                AppTheme.backgroundGradient
+                    .ignoresSafeArea()
+
+                AppTheme.backgroundRadialGlow
+                    .ignoresSafeArea()
+            }
 
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 18) {
                         Text("События")
                             .font(.system(size: 38, weight: .semibold, design: .rounded))
-                            .foregroundStyle(Color(.label))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .padding(.horizontal, 20)
 
                         BalanceCardView(summary: viewModel.balanceSummary)
+                            .padding(.horizontal, 20)
 
-                        Text("ПОСЛЕДНИЕ СОБЫТИЯ")
-                            .font(.system(size: 17, weight: .semibold))
-                            .tracking(1.0)
-                            .foregroundStyle(Color(.secondaryLabel))
+                        if let currentEvent = viewModel.currentEvent {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("АКТУАЛЬНОЕ СОБЫТИЕ")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .tracking(1.2)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                                    .padding(.horizontal, 20)
 
-                        VStack(spacing: 0) {
-                            ForEach(Array(viewModel.latestEvents.enumerated()), id: \.element.id) { index, event in
-                                EventRowView(event: event)
-
-                                if index < viewModel.latestEvents.count - 1 {
-                                    Divider()
-                                        .padding(.leading, 52)
-                                }
+                                CurrentEventCardView(event: currentEvent)
+                                    .padding(.horizontal, 20)
+                                    .transition(.move(edge: .top).combined(with: .opacity))
                             }
                         }
-                        .background(Color(.systemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+                        if !viewModel.currentEventBills.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("ЧЕКИ")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .tracking(1.2)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                                    .padding(.horizontal, 20)
+
+                                VStack(spacing: 8) {
+                                    ForEach(viewModel.currentEventBills) { bill in
+                                        BillRowView(bill: bill, onDelete: {})
+                                            .transition(.move(edge: .top).combined(with: .opacity))
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                            }
+                        }
                     }
-                    .padding(.horizontal, 18)
                     .padding(.top, 12)
+                    .padding(.bottom, 120)
                 }
 
                 HStack(spacing: 12) {
-                    Button(action: onScanTap) {
-                        Text("Сканировать чек")
-                            .font(.system(size: 24, weight: .semibold, design: .rounded))
-                            .minimumScaleFactor(0.3)
-                            .lineLimit(1)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 76)
-                            .background(Color(.systemBackground))
-                            .foregroundStyle(Color.accentColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                    }
+                    ScanButton(action: onScanTap)
 
-                    Button(action: onAddTap) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 36, weight: .light))
-                            .frame(width: 90, height: 90)
-                            .background(Color.accentColor)
-                            .foregroundStyle(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                    }
+                    AddButton(action: onAddTap)
                 }
-                .padding(.horizontal, 18)
-                .padding(.top, 12)
-                .padding(.bottom, 18)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
             }
         }
+        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.currentEvent)
+        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.currentEventBills.count)
         .navigationBarHidden(true)
     }
 }
@@ -125,6 +131,78 @@ private struct BalanceMiniTile: View {
         .padding(14)
         .background(.white.opacity(0.13))
         .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
+    }
+}
+
+private struct ScanButton: View {
+    let action: () -> Void
+    @State private var isPressed = false
+
+    var body: some View {
+        Button(action: action) {
+            Text("Сканировать чек")
+                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(.ultraThinMaterial)
+                .background(AppTheme.cardBackground)
+                .foregroundStyle(AppTheme.accent)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
+                        .stroke(AppTheme.cardBorder, lineWidth: 1)
+                )
+                .shadow(color: AppTheme.cardShadow, radius: 10, x: 0, y: 5)
+                .scaleEffect(isPressed ? 0.95 : 1.0)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = true
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = false
+                    }
+                }
+        )
+    }
+}
+
+private struct AddButton: View {
+    let action: () -> Void
+    @State private var isPressed = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "plus")
+                .font(.system(size: 28, weight: .medium))
+                .frame(width: 56, height: 56)
+                .foregroundStyle(AppTheme.accentForeground)
+                .background(AppTheme.accentGradient)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge))
+                .shadow(color: AppTheme.accent.opacity(0.25), radius: 12, x: 0, y: 4)
+                .scaleEffect(isPressed ? 0.95 : 1.0)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = true
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = false
+                    }
+                }
+        )
     }
 }
 
