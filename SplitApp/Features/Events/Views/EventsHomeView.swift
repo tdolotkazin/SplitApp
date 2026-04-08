@@ -83,54 +83,28 @@ private struct BalanceCardView: View {
     let summary: EventBalanceSummary
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Общий баланс")
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.8))
-                Text(summary.totalBalance.euroText(signed: true, minimumFractionDigits: 2))
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(1)
-            }
-
-            HStack(spacing: 12) {
-                BalanceMiniTile(
-                    title: "Вам должны",
-                    amount: summary.owedToYou.euroText(minimumFractionDigits: 2)
-                )
-                BalanceMiniTile(
-                    title: "Вы должны",
-                    amount: summary.youOwe.euroText(minimumFractionDigits: 2)
-                )
-            }
-        }
-        .padding(18)
-        .background(Color.accentColor)
-        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-    }
-}
-
-private struct BalanceMiniTile: View {
-    let title: String
-    let amount: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.62))
-            Text(amount)
-                .font(.system(size: 33, weight: .bold, design: .rounded))
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Общий баланс")
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.8))
+            Text(summary.totalBalance.euroText(signed: true, minimumFractionDigits: 2))
+                .font(.system(size: 48, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
-                .minimumScaleFactor(0.5)
+                .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.white.opacity(0.13))
-        .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
+        .padding(18)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.17, green: 0.76, blue: 0.32),
+                    Color(red: 0.13, green: 0.65, blue: 0.27)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
     }
 }
 

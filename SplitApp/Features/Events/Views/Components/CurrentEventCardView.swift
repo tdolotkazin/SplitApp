@@ -4,40 +4,20 @@ struct CurrentEventCardView: View {
     let event: EventListItem
 
     var body: some View {
-        GlassCard(padding: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 12) {
-                    Text(event.emoji)
-                        .font(.system(size: 40))
+        GlassCard(padding: 14) {
+            HStack(spacing: 12) {
+                Text(event.emoji)
+                    .font(.system(size: 28))
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(event.title)
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.textPrimary)
+                Text(event.title)
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.textPrimary)
 
-                        Text(event.subtitle)
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.textSecondary)
-                    }
+                Spacer()
 
-                    Spacer()
-                }
-
-                Divider()
-                    .background(AppTheme.dividerHighlight)
-
-                HStack {
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("Ваш баланс")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.textTertiary)
-                        Text(formattedAmount)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(amountColor)
-                    }
-                }
+                Text(formattedAmount)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(amountColor)
             }
         }
         .overlay(
