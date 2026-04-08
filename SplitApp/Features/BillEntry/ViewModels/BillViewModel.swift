@@ -31,8 +31,8 @@ final class BillViewModel: ObservableObject {
     @Published var saveErrorMessage: String?
 
     let mode: Mode
-    let eventsRepository: EventsRepositoryProtocol
-    let receiptsRepository: ReceiptsRepositoryProtocol
+    let eventsRepository: any EventsRepository
+    let receiptsRepository: any ReceiptsRepository
     private let networkMonitor: NetworkMonitor
     private var cancellables: Set<AnyCancellable> = []
     private var hasLoaded = false
@@ -123,9 +123,9 @@ final class BillViewModel: ObservableObject {
 
     init(
         mode: Mode,
-        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
-        receiptsRepository: ReceiptsRepositoryProtocol = ReceiptsRepository(),
-        networkMonitor: NetworkMonitor = .shared
+        eventsRepository: any EventsRepository,
+        receiptsRepository: any ReceiptsRepository,
+        networkMonitor: NetworkMonitor
     ) {
         self.mode = mode
         self.eventsRepository = eventsRepository

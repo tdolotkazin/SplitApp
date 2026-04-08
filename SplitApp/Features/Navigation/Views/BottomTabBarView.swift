@@ -4,7 +4,7 @@ struct BottomTabBarView: View {
     private let configuration: BottomTabConfiguration
     @State private var selectedTab: BottomTabID
 
-    init(configuration: BottomTabConfiguration = .default) {
+    init(configuration: BottomTabConfiguration) {
         self.configuration = configuration
         _selectedTab = State(initialValue: configuration.initialTab)
     }
@@ -24,5 +24,5 @@ struct BottomTabBarView: View {
 }
 
 #Preview {
-    BottomTabBarView()
+    BottomTabBarView(configuration: .preview)
 }

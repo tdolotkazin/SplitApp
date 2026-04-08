@@ -173,7 +173,9 @@ private struct AddButton: View {
 
 #Preview {
     EventsHomeView(
-        viewModel: EventsHomeViewModel(service: EventManagementService()),
+        viewModel: EventsHomeViewModel(
+            service: EventManagementService(eventsRepository: EventsDataRepository())
+        ),
         onScanTap: {},
         onAddTap: {},
         onEventTap: { _ in

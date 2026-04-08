@@ -39,7 +39,7 @@ struct BottomTabConfiguration {
 }
 
 extension BottomTabConfiguration {
-    static var `default`: BottomTabConfiguration {
+    static func makeDefault(with dependencies: AppDependencies) -> BottomTabConfiguration {
         BottomTabConfiguration(
             items: [
                 BottomTabItem(
@@ -47,7 +47,12 @@ extension BottomTabConfiguration {
                     title: "События",
                     systemImage: "square.grid.2x2"
                 ) {
-                    EventsNavigationView()
+                    EventsNavigationView(
+                        service: dependencies.eventManagementService,
+                        eventsRepository: dependencies.eventsRepository,
+                        receiptsRepository: dependencies.receiptsRepository,
+                        networkMonitor: dependencies.networkMonitor
+                    )
                 },
                 BottomTabItem(
                     id: .friends,
@@ -73,5 +78,9 @@ extension BottomTabConfiguration {
                 }
             ]
         )
+    }
+
+    static var preview: BottomTabConfiguration {
+        makeDefault(with: .preview)
     }
 }

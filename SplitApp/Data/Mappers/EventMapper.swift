@@ -3,7 +3,7 @@ import Foundation
 enum EventMapper {
 
     /// Maps network/cache DTO to the domain model used by Services and UI.
-    nonisolated static func mapToDomain(dto: EventDTO) -> Event {
+    static func mapToDomain(dto: EventDTO) -> Event {
         let participants = dto.participants?.map(UserMapper.mapToDomain(dto:)) ?? []
         let participantIds = participants.isEmpty ? dto.users : participants.map(\.id)
 
@@ -23,7 +23,7 @@ enum EventMapper {
     }
 
     /// Maps CoreData entity directly to the domain model (avoids intermediate DTO).
-    nonisolated static func mapToDomain(cdEvent: CDEvent) -> Event? {
+    static func mapToDomain(cdEvent: CDEvent) -> Event? {
         guard let id = cdEvent.id,
               let name = cdEvent.name,
               let createdAt = cdEvent.createdAt else {

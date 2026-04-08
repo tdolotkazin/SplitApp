@@ -1,19 +1,7 @@
 import Foundation
 import CoreData
 
-protocol EventsRepositoryProtocol {
-    func listEvents(userId: UUID?) async throws -> [Event]
-    func refreshEvents(userId: UUID?) async throws -> [Event]
-    func createEvent(_ request: CreateEventRequest) async throws -> Event
-    func getEvent(id: UUID) async throws -> Event
-    func getCachedEvent(id: UUID) async throws -> Event?
-    func refreshEvent(id: UUID) async throws -> Event
-    func updateEvent(id: UUID, _ request: UpdateEventRequest) async throws -> Event
-    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User]
-    func removeParticipant(eventId: UUID, userId: UUID) async throws
-}
-
-final class EventsRepository: EventsRepositoryProtocol {
+final class EventsDataRepository: EventsRepository {
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 
@@ -22,9 +10,8 @@ final class EventsRepository: EventsRepositoryProtocol {
         self.coreDataStore = coreDataStore
     }
 
-    // MARK: - Networking + Database Operations
-
-    func createEvent(_ request: CreateEventRequest) async throws -> Event {
+    func createEvent(_ command: CreateEventCommand) async throws -> Event {
+        let request = CreateEventRequest(creatorId: command.creatorId, name: command.name)
         let dto: EventDTO = try await apiClient.request(endpoint: CreateEventEndpoint(), body: request)
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertEvent(dto, in: context)
@@ -91,7 +78,8 @@ final class EventsRepository: EventsRepositoryProtocol {
         return EventMapper.mapToDomain(dto: dto)
     }
 
-    func updateEvent(id: UUID, _ request: UpdateEventRequest) async throws -> Event {
+    func updateEvent(id: UUID, _ command: UpdateEventCommand) async throws -> Event {
+        let request = UpdateEventRequest(isClosed: command.isClosed, name: command.name)
         let dto: EventDTO = try await apiClient.request(endpoint: UpdateEventEndpoint(id: id), body: request)
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertEvent(dto, in: context)
@@ -99,7 +87,8 @@ final class EventsRepository: EventsRepositoryProtocol {
         return try await refreshEvent(id: dto.id)
     }
 
-    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User] {
+    func addParticipants(eventId: UUID, _ command: AddParticipantsCommand) async throws -> [User] {
+        let request = AddParticipantsRequest(userIds: command.userIds)
         let dtos: [UserDTO] = try await apiClient.request(
             endpoint: AddParticipantsEndpoint(eventId: eventId),
             body: request
@@ -127,8 +116,6 @@ final class EventsRepository: EventsRepositoryProtocol {
     func removeParticipant(eventId: UUID, userId: UUID) async throws {
         try await apiClient.requestVoid(endpoint: RemoveParticipantEndpoint(eventId: eventId, userId: userId))
     }
-
-    // MARK: - Core Data Internal Methods (Extracted from CoreDataStore+Events)
 
     private func upsertEvent(_ dto: EventDTO, in context: NSManagedObjectContext) throws {
         let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()

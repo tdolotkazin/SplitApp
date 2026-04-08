@@ -11,12 +11,12 @@ final class EventDetailViewModel: ObservableObject {
 
     private let eventId: UUID
     private let service: EventManagementServiceProtocol
-    private let receiptsRepository: ReceiptsRepositoryProtocol
+    private let receiptsRepository: any ReceiptsRepository
 
     init(
         eventId: UUID,
         service: EventManagementServiceProtocol,
-        receiptsRepository: ReceiptsRepositoryProtocol = ReceiptsRepository()
+        receiptsRepository: any ReceiptsRepository
     ) {
         self.eventId = eventId
         self.service = service

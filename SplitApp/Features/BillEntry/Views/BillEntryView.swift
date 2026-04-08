@@ -1,22 +1,23 @@
 import SwiftUI
 
 struct BillEntryView: View {
-    @StateObject private var viewModel = BillViewModel()
+    @StateObject private var viewModel: BillViewModel
     @StateObject private var keyboardObserver = KeyboardObserver()
     @State private var showParticipantSheet = false
     @Environment(\.dismiss) private var dismiss
 
-    init(mode: BillViewModel.Mode) {
-        _viewModel = StateObject(wrappedValue: BillViewModel(mode: mode))
-    }
-
-    init(eventId: UUID? = nil) {
+    init(
+        mode: BillViewModel.Mode,
+        eventsRepository: any EventsRepository,
+        receiptsRepository: any ReceiptsRepository,
+        networkMonitor: NetworkMonitor
+    ) {
         _viewModel = StateObject(
             wrappedValue: BillViewModel(
-                mode: .create(
-                    eventId: eventId,
-                    scannedItems: ScannedReceiptStore.shared.consume()
-                )
+                mode: mode,
+                eventsRepository: eventsRepository,
+                receiptsRepository: receiptsRepository,
+                networkMonitor: networkMonitor
             )
         )
     }
@@ -279,5 +280,10 @@ private enum BillEntryLayout {
 }
 
 #Preview {
-    BillEntryView()
+    BillEntryView(
+        mode: .create(eventId: nil, scannedItems: []),
+        eventsRepository: EventsDataRepository(),
+        receiptsRepository: ReceiptsDataRepository(),
+        networkMonitor: .shared
+    )
 }

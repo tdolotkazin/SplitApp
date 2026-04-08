@@ -1,7 +1,7 @@
 import Foundation
 
 enum ReceiptMapper {
-    nonisolated static func mapToDomain(dto: ReceiptDTO, items: [EventReceiptItem]) -> Receipt {
+    static func mapToDomain(dto: ReceiptDTO, items: [EventReceiptItem]) -> Receipt {
         Receipt(
             id: dto.id,
             eventId: dto.eventId,
@@ -13,7 +13,7 @@ enum ReceiptMapper {
         )
     }
 
-    nonisolated static func mapItemToDomain(dto: ReceiptItemDTO, shares: [Share]) -> EventReceiptItem {
+    static func mapItemToDomain(dto: ReceiptItemDTO, shares: [Share]) -> EventReceiptItem {
         EventReceiptItem(
             id: dto.id,
             name: dto.name ?? "",
@@ -22,7 +22,7 @@ enum ReceiptMapper {
         )
     }
 
-    nonisolated static func mapShareToDomain(dto: ShareItemDTO) -> Share {
+    static func mapShareToDomain(dto: ShareItemDTO) -> Share {
         Share(
             id: dto.id,
             userId: dto.userId,

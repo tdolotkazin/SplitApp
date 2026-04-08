@@ -26,8 +26,8 @@ final class EventsNavigationViewModel: ObservableObject {
     }
 
     convenience init(
-        service: EventManagementServiceProtocol = EventManagementService(),
-        rules: EventsNavigationRules = .init()
+        service: EventManagementServiceProtocol,
+        rules: EventsNavigationRules
     ) {
         self.init(
             homeViewModel: EventsHomeViewModel(service: service),
