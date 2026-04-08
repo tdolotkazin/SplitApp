@@ -1,12 +1,8 @@
 import SwiftUI
 
 struct BillEntryView: View {
-<<<<<<< HEAD
     @StateObject private var viewModel = BillViewModel()
-=======
-    @StateObject private var viewModel: BillViewModel
     @StateObject private var keyboardObserver = KeyboardObserver()
->>>>>>> 503e700 (refactor(billEntry): recomposition billEdit screen)
     @State private var showParticipantSheet = false
     @Environment(\.dismiss) private var dismiss
 
@@ -40,17 +36,16 @@ struct BillEntryView: View {
                 if viewModel.isLoading && viewModel.items.isEmpty {
                     ProgressView("Загрузка чека...")
                         .font(.system(size: 17, weight: .medium, design: .rounded))
-                } else if let errorMessage = viewModel.loadErrorMessage, viewModel.items.isEmpty {
+                } else if let errorMessage = viewModel.loadErrorMessage,
+                          viewModel.items.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 44))
                             .foregroundStyle(.orange)
+
                         Text(errorMessage)
                             .font(.system(size: 17, weight: .medium, design: .rounded))
                             .multilineTextAlignment(.center)
-                        Button("Попробовать снова") {
-                            Task { await viewModel.reload() }
-                        }
 
                     List {
                         ForEach(viewModel.items) { item in
@@ -84,17 +79,17 @@ struct BillEntryView: View {
                     VStack(spacing: 0) {
                         HeaderRow()
                             .padding(.top, 8)
-                            .onTapGesture {
-                                hideKeyboard()
-                            }
+                            .onTapGesture(perform: hideKeyboard)
 
                         if let statusMessage = viewModel.statusMessage {
                             HStack(spacing: 10) {
                                 Image(systemName: viewModel.isNetworkAvailable ? "info.circle.fill" : "wifi.slash")
                                     .foregroundStyle(viewModel.isNetworkAvailable ? AppTheme.accent : .orange)
+
                                 Text(statusMessage)
                                     .font(.system(size: 14, weight: .medium, design: .rounded))
                                     .foregroundStyle(AppTheme.textSecondary)
+
                                 Spacer()
                             }
                             .padding(.horizontal, 20)
@@ -121,14 +116,15 @@ struct BillEntryView: View {
                                             viewModel.updateItem(
                                                 id: item.id,
                                                 name: name,
-                                                amount: amount,
-                                                assignedTo: nil
+                                                amount: amount
                                             )
                                         }
                                     )
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
-                                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                                    .listRowInsets(
+                                        EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0)
+                                    )
                                     .id(item.id)
                                 }
                                 .onDelete { indexSet in
@@ -137,26 +133,30 @@ struct BillEntryView: View {
                                         viewModel.removeItem(id: item.id)
                                     }
                                 }
-                                .onChange(of: viewModel.items.count) { oldCount, newCount in
-                                    if newCount > oldCount, let lastItem = viewModel.items.last {
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                            proxy.scrollTo(lastItem.id, anchor: .bottom)
-                                        }
-                                    }
-                                }
 
                                 Color.clear
                                     .frame(height: 300)
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
                                     .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        hideKeyboard()
-                                    }
+                                    .onTapGesture(perform: hideKeyboard)
                             }
                             .listStyle(.plain)
                             .scrollContentBackground(.hidden)
-                            .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.items.count)
+                            .animation(
+                                .spring(response: 0.5, dampingFraction: 0.75),
+                                value: viewModel.items.count
+                            )
+                            .onChange(of: viewModel.items.count) { oldCount, newCount in
+                                guard newCount > oldCount,
+                                      let lastItem = viewModel.items.last else {
+                                    return
+                                }
+
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                    proxy.scrollTo(lastItem.id, anchor: .bottom)
+                                }
+                            }
                         }
 
                         Spacer()
@@ -199,20 +199,13 @@ struct BillEntryView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
-                        dismiss()
-                    }
+                    Button("Отмена", action: dismissView)
                     .foregroundStyle(AppTheme.textSecondary)
                     .font(.system(size: 17))
                 }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
-                        Task {
-                            if await viewModel.save() {
-                                dismiss()
-                            }
-                        }
-                    }
+                    Button("Готово", action: saveAndDismiss)
                     .foregroundStyle(AppTheme.accent)
                     .font(.system(size: 17, weight: .semibold))
                     .disabled(!viewModel.canSave)
@@ -220,9 +213,7 @@ struct BillEntryView: View {
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .task {
-                await viewModel.load()
-            }
+            .task(action: load)
             .sheet(isPresented: $showParticipantSheet) {
                 let selectedId = viewModel.selectedItemForAssignment?.id
                 let currentAssigned = selectedId.flatMap { id in

@@ -191,7 +191,7 @@ final class BillViewModel: ObservableObject {
         id: UUID,
         name: String? = nil,
         amount: Decimal? = nil,
-        assignedTo: Participant? = nil
+        assignedTo: [Participant]? = nil
     ) {
         guard let index = items.firstIndex(where: { $0.id == id }) else {
             return
@@ -214,7 +214,24 @@ final class BillViewModel: ObservableObject {
         }
 
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-            items[index].assignedTo = participant
+            items[index].assignedTo = [participant]
+        }
+
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+    }
+
+    func toggleParticipant(to itemId: UUID, participant: Participant) {
+        guard let index = items.firstIndex(where: { $0.id == itemId }) else {
+            return
+        }
+
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+            if items[index].assignedTo.contains(where: { $0.id == participant.id }) {
+                items[index].assignedTo.removeAll { $0.id == participant.id }
+            } else {
+                items[index].assignedTo.append(participant)
+            }
         }
 
         let generator = UIImpactFeedbackGenerator(style: .light)
@@ -235,7 +252,7 @@ final class BillViewModel: ObservableObject {
         }
 
         let validItems = items.filter {
-            !$0.name.isEmpty && $0.amount > 0 && $0.assignedTo != nil
+            !$0.name.isEmpty && $0.amount > 0 && !$0.assignedTo.isEmpty
         }
         guard !validItems.isEmpty else {
             saveErrorMessage =
