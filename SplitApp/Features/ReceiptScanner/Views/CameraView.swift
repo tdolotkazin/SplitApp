@@ -8,6 +8,7 @@ struct CameraView: View {
 
     @State private var cameraBox = CameraBox()
     @State private var showPhotoPicker = false
+    @State private var isDismissing = false
     @Environment(\.dismiss) private var dismiss
 
     private var camera: CameraManager { cameraBox.manager }
@@ -18,6 +19,11 @@ struct CameraView: View {
 
             CameraPreviewView(session: camera.session)
                 .ignoresSafeArea()
+
+            // Covers preview before navigation animation starts — prevents GPU competition
+            if isDismissing {
+                Color.black.ignoresSafeArea()
+            }
 
             // Processing overlay
             if viewModel.isScanning {
@@ -36,7 +42,7 @@ struct CameraView: View {
             VStack {
                 // Close button (top-left)
                 HStack {
-                    Button { dismiss() } label: {
+                    Button { startDismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(.white)
@@ -55,7 +61,7 @@ struct CameraView: View {
                     Spacer()
 
                     // Left: back button
-                    Button { dismiss() } label: {
+                    Button { startDismiss() } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(.white)
@@ -115,6 +121,14 @@ struct CameraView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+    }
+
+    private func startDismiss() {
+        guard !isDismissing else { return }
+        isDismissing = true
+        camera.stop()
+        // Dismiss after one run loop cycle so the black overlay renders first
+        DispatchQueue.main.async { dismiss() }
     }
 }
 
