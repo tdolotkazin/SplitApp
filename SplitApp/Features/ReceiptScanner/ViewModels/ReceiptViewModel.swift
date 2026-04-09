@@ -1,10 +1,9 @@
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 @MainActor
 @Observable
 final class ReceiptViewModel {
-
     var items: [ScannedReceiptItem] = []
     var scannedReceiptImageJPEGData: Data?
     var isScanning = false
@@ -20,7 +19,7 @@ final class ReceiptViewModel {
         items.reduce(0) { $0 + $1.amount }
     }
 
-    // Called by ScannerView when a captured image is ready
+    /// Called by ScannerView when a captured image is ready
     func process(image: UIImage) async {
         isScanning = true
         errorMessage = nil

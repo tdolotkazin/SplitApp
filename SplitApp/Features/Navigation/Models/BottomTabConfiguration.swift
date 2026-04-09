@@ -12,11 +12,11 @@ struct BottomTabItem: Identifiable {
     let systemImage: String
     let makeView: () -> AnyView
 
-    init<Content: View>(
+    init(
         id: BottomTabID,
         title: String,
         systemImage: String,
-        @ViewBuilder makeView: @escaping () -> Content
+        @ViewBuilder makeView: @escaping () -> some View
     ) {
         self.id = id
         self.title = title

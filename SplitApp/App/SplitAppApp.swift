@@ -33,7 +33,7 @@ struct SplitAppApp: App {
             secureStorage: storage
         )
 
-        self.viewModel = AuthViewModel(
+        viewModel = AuthViewModel(
             vcProvider: vcProvider,
             useCase: useCase
         )
@@ -49,7 +49,6 @@ struct SplitAppApp: App {
                 } else {
                     LoginView(viewModel: viewModel)
                         .onOpenURL { url in
-
                             do {
                                 try YandexLoginSDK.shared.handleOpenURL(url)
                                 print("URL успешно передан в SDK")

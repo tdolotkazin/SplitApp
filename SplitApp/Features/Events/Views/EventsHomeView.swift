@@ -70,7 +70,7 @@ struct EventsHomeView: View {
                                         BillRowView(bill: bill, onDelete: {}, onTap: {
                                             onBillTap?(bill.id)
                                         })
-                                            .transition(.move(edge: .top).combined(with: .opacity))
+                                        .transition(.move(edge: .top).combined(with: .opacity))
                                     }
                                 }
                                 .padding(.horizontal, 20)

@@ -113,7 +113,7 @@ extension BillViewModel {
                 eventId: eventId,
                 command
             )
-        case .edit(_, let receiptId):
+        case let .edit(_, receiptId):
             _ = try await receiptsRepository.updateReceipt(
                 id: receiptId,
                 UpdateReceiptCommand(

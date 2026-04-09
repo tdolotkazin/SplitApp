@@ -1,5 +1,5 @@
-import Foundation
 import CoreData
+import Foundation
 
 final class PaymentsDataRepository: PaymentsRepository {
     private let apiClient: APIClient

@@ -6,5 +6,7 @@ struct EmojiPredictModel: Codable, Identifiable, Hashable {
     let version: String
     let codePoints: [String]
 
-    var id: String { emoji + name }
+    var id: String {
+        emoji + name
+    }
 }

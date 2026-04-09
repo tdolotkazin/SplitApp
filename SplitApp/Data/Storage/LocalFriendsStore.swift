@@ -36,7 +36,7 @@ final class LocalFriendsStore {
         try encode(debts, forKey: Keys.localDebts)
     }
 
-    private func encode<T: Encodable>(_ value: T, forKey key: String) throws {
+    private func encode(_ value: some Encodable, forKey key: String) throws {
         let data = try encoder.encode(value)
         userDefaults.set(data, forKey: key)
     }

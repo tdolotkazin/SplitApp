@@ -41,7 +41,7 @@ final class EventsNavigationViewModel: ObservableObject {
         switch action {
         case .addButtonTapped:
             billEntryDestination = .create(eventId: homeViewModel.currentEvent?.id)
-        case .receiptTapped(let eventId, let receiptId):
+        case let .receiptTapped(eventId, receiptId):
             billEntryDestination = .edit(eventId: eventId, receiptId: receiptId)
         case .scannerCaptureCompleted:
             let billItems = scannerViewModel.items.map {

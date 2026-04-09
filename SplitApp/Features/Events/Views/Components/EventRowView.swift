@@ -34,22 +34,22 @@ struct EventRowView: View {
     private var amountLabel: String {
         switch event.tone {
         case .positive:
-            return event.amount.euroText(signed: true, minimumFractionDigits: 0)
+            event.amount.euroText(signed: true, minimumFractionDigits: 0)
         case .negative:
-            return event.amount.euroText(signed: true, minimumFractionDigits: 0)
+            event.amount.euroText(signed: true, minimumFractionDigits: 0)
         case .neutral:
-            return "Закрыт"
+            "Закрыт"
         }
     }
 
     private var amountColor: Color {
         switch event.tone {
         case .positive:
-            return Color(red: 0.17, green: 0.76, blue: 0.32)
+            Color(red: 0.17, green: 0.76, blue: 0.32)
         case .negative:
-            return Color(red: 0.92, green: 0.29, blue: 0.29)
+            Color(red: 0.92, green: 0.29, blue: 0.29)
         case .neutral:
-            return Color(.secondaryLabel)
+            Color(.secondaryLabel)
         }
     }
 }

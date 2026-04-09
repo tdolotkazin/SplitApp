@@ -43,9 +43,9 @@ private extension FriendsView {
 
     var header: some View {
         FriendsNavigationHeader()
-        .onTapGesture {
-            hideKeyboard()
-        }
+            .onTapGesture {
+                hideKeyboard()
+            }
     }
 
     var searchBar: some View {
@@ -130,7 +130,7 @@ private extension FriendsView {
 
     @ViewBuilder
     var emptyState: some View {
-        if viewModel.filteredFriends.isEmpty && !viewModel.searchText.isEmpty {
+        if viewModel.filteredFriends.isEmpty, !viewModel.searchText.isEmpty {
             EmptySearchState()
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }

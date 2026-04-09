@@ -12,8 +12,8 @@ struct AllFriendsSection: View {
             VStack(spacing: 8) {
                 ForEach(Array(friends.enumerated()), id: \.element.id) { index, friend in
                     FriendRowView(friend: friend)
-                    .padding(.horizontal, 20)
-                    .staggeredAppear(index: startIndex + index)
+                        .padding(.horizontal, 20)
+                        .staggeredAppear(index: startIndex + index)
                 }
             }
         }

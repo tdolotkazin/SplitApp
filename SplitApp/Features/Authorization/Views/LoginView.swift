@@ -14,9 +14,7 @@ struct LoginView: View {
                 HeaderView()
                     .padding(.horizontal, 16)
                 VStack(spacing: 16) {
-
                     HStack(spacing: 12) {
-
                         SocialButton(
                             icon: "yandex",
                             backgroundColor: .white,
@@ -31,11 +29,9 @@ struct LoginView: View {
                                 }
                             }
                         }
-
                     }
                 }
                 .padding(.horizontal, 20)
-
             }
         }
     }

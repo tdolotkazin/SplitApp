@@ -7,7 +7,7 @@ struct HeaderView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(AppTheme.dividerHighlight)
                     .frame(width: 80, height: 80)
-                }
+            }
 
             Text("SplitApp")
                 .font(.largeTitle)

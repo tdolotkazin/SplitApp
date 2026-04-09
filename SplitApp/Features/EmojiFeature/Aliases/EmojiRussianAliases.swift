@@ -2,8 +2,8 @@ import Foundation
 
 enum EmojiRussianAliases {
     static let map: [String: String] = [
-
         // MARK: - Общие / досуг
+
         "еда": "fork and knife",
         "напиток": "cup with straw",
         "напитки": "cup with straw",
@@ -26,6 +26,7 @@ enum EmojiRussianAliases {
         "прогулка": "footprints",
 
         // MARK: - Встречи / прогулки / тусовки
+
         "встреча": "confetti ball",
         "встретиться": "confetti ball",
         "сбор": "confetti ball",
@@ -58,6 +59,7 @@ enum EmojiRussianAliases {
         "романтический вечер": "candle",
 
         // MARK: - Еда
+
         "пицца": "pizza",
         "бургер": "hamburger",
         "гамбургер": "hamburger",
@@ -100,6 +102,7 @@ enum EmojiRussianAliases {
         "устрица": "oyster",
 
         // MARK: - Завтрак / выпечка
+
         "завтрак": "pancakes",
         "блины": "pancakes",
         "панкейки": "pancakes",
@@ -117,6 +120,7 @@ enum EmojiRussianAliases {
         "десертик": "shortcake",
 
         // MARK: - Сладкое / снеки
+
         "мороженое": "ice cream",
         "рожок": "soft ice cream",
         "джелато": "ice cream",
@@ -128,6 +132,7 @@ enum EmojiRussianAliases {
         "орехи": "peanuts",
 
         // MARK: - Фрукты / овощи
+
         "яблоко": "red apple",
         "зеленое яблоко": "green apple",
         "груша": "pear",
@@ -162,6 +167,7 @@ enum EmojiRussianAliases {
         "гриб": "mushroom",
 
         // MARK: - Напитки
+
         "кофе": "hot beverage",
         "чай": "teacup without handle",
         "матча": "teacup without handle",
@@ -190,6 +196,7 @@ enum EmojiRussianAliases {
         "бабл ти": "bubble tea",
 
         // MARK: - Посуда / сервировка
+
         "тарелка": "plate with cutlery",
         "вилка": "fork and knife",
         "нож": "kitchen knife",
@@ -203,6 +210,7 @@ enum EmojiRussianAliases {
         "бутылка": "bottle with popping cork",
 
         // MARK: - Кафе / ресторан / сервис
+
         "официант": "bellhop bell",
         "официантка": "bellhop bell",
         "бронь": "bookmark tabs",
@@ -219,6 +227,7 @@ enum EmojiRussianAliases {
         "наличные": "money bag",
 
         // MARK: - Кино / развлечения
+
         "билет": "ticket",
         "тикет": "ticket",
         "кинотеатр": "clapper board",
@@ -238,6 +247,7 @@ enum EmojiRussianAliases {
         "фестиваль": "confetti ball",
 
         // MARK: - Быстрые универсальные слова
+
         "вкусно": "face savoring food",
         "голод": "fork and knife",
         "голодный": "fork and knife",

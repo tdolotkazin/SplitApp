@@ -2,7 +2,6 @@ import Foundation
 import UIKit
 
 final class LoginUseCase {
-
     private let service: AuthService
     private let secureStorage: KeychainStorage
 
@@ -15,7 +14,6 @@ final class LoginUseCase {
         provider: AuthProvider,
         viewContollerProvider: UIViewController
     ) async throws -> AuthResponse {
-
         let authResponse = try await service.login(
             provider: provider,
             viewContollerProvider: viewContollerProvider
@@ -28,7 +26,6 @@ final class LoginUseCase {
     }
 
     func isLoggedIn() -> Bool {
-        return secureStorage.get("refresh_token") != nil
+        secureStorage.get("refresh_token") != nil
     }
-
 }

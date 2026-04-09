@@ -29,7 +29,7 @@ final class LocalReceiptsStore {
 
     /// Возвращает чек по ID
     func getReceipt(id: UUID) -> ReceiptDTO? {
-        return receipts.first { $0.id == id }
+        receipts.first { $0.id == id }
     }
 
     /// Обновляет существующий чек
