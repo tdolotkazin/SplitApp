@@ -19,6 +19,7 @@ struct FriendsView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
+            print("👀 FriendsView appeared")
             Task {
                 await viewModel.loadFriends()
             }

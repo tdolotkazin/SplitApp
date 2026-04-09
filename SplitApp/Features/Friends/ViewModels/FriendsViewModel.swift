@@ -39,8 +39,12 @@ class FriendsViewModel: ObservableObject {
     }
 
     func loadFriends() async {
-        guard !isLoading else { return }
+        guard !isLoading else {
+            print("⚠️ Загрузка уже идёт, пропускаем")
+            return
+        }
 
+        print("📱 Начинаем загрузку друзей...")
         isLoading = true
         errorMessage = nil
 
@@ -49,6 +53,13 @@ class FriendsViewModel: ObservableObject {
             async let localFriends = try friendsRepository.listLocalFriends()
 
             let (remoteUsers, locals) = try await (remoteFriends, localFriends)
+
+            print("🔍 Загружено с сервера: \(remoteUsers.count) друзей")
+            print("🔍 Загружено локально: \(locals.count) друзей")
+
+            for friend in locals {
+                print("  - \(friend.name) (id: \(friend.id))")
+            }
 
             let remoteFriendsList = remoteUsers.map { Friend.from(user: $0) }
             let localFriendsList = locals.map { Friend.from(localFriend: $0) }
@@ -59,6 +70,8 @@ class FriendsViewModel: ObservableObject {
 
             self.friends = allFriends
             self.debts = calculatedDebts
+
+            print("✅ Всего друзей после загрузки: \(self.friends.count)")
 
         } catch {
             errorMessage = error.localizedDescription
@@ -73,7 +86,8 @@ class FriendsViewModel: ObservableObject {
             let localFriend = try await friendsRepository.addLocalFriend(name: name)
             let friend = Friend.from(localFriend: localFriend)
             self.friends.append(friend)
-            print("✅ Добавлен локальный друг: \(name)")
+            print("✅ Добавлен локальный друг: \(name) (id: \(localFriend.id))")
+            print("✅ Текущее количество друзей: \(self.friends.count)")
         } catch {
             errorMessage = error.localizedDescription
             print("❌ Ошибка добавления друга: \(error)")

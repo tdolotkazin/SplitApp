@@ -12,6 +12,10 @@ extension BillViewModel {
             if let friendsRepository {
                 do {
                     let localFriends = try await friendsRepository.listLocalFriends()
+                    print("🔍 BillViewModel загрузил \(localFriends.count) локальных друзей")
+                    for friend in localFriends {
+                        print("  - \(friend.name) (id: \(friend.id))")
+                    }
                     participants = localFriends.map { friend in
                         let initials = friend.name.split(separator: " ")
                             .prefix(2)
@@ -26,11 +30,13 @@ extension BillViewModel {
                             color: .accentColor
                         )
                     }
+                    print("✅ BillViewModel создал \(participants.count) участников")
                 } catch {
-                    print("❌ Ошибка загрузки локальных друзей: \(error)")
+                    print("❌ Ошибка загрузки локальных друзей в BillViewModel: \(error)")
                     participants = []
                 }
             } else {
+                print("⚠️ BillViewModel: friendsRepository отсутствует")
                 participants = []
             }
             return
