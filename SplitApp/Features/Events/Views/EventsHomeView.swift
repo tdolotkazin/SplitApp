@@ -6,7 +6,7 @@ struct EventsHomeView: View {
     let onScanTap: () -> Void
     let onAddTap: () -> Void
     let onBillTap: ((UUID) -> Void)?
-    let onEventTap: (() -> Void)?
+    let onEventTap: (UUID) -> Void
 
     var body: some View {
         ZStack {
@@ -38,7 +38,7 @@ struct EventsHomeView: View {
 
                             if let currentEvent = viewModel.currentEvent {
                                 Button(
-                                    action: { onEventTap?() },
+                                    action: { onEventTap(currentEvent.id) },
                                     label: { CurrentEventCardView(event: currentEvent) }
                                 )
                                 .buttonStyle(PlainButtonStyle())
@@ -46,7 +46,7 @@ struct EventsHomeView: View {
                                 .transition(.move(edge: .top).combined(with: .opacity))
                             } else {
                                 Button(
-                                    action: { onEventTap?() },
+                                    action: onAddTap,
                                     label: { emptyEventCard }
                                 )
                                 .buttonStyle(PlainButtonStyle())
@@ -209,10 +209,12 @@ private struct AddButton: View {
 
 #Preview {
     EventsHomeView(
-        viewModel: EventsHomeViewModel(service: EventManagementService()),
+        viewModel: EventsHomeViewModel(
+            service: EventManagementService(eventsRepository: EventsDataRepository())
+        ),
         onScanTap: {},
         onAddTap: {},
         onBillTap: nil,
-        onEventTap: nil
+        onEventTap: { _ in }
     )
 }

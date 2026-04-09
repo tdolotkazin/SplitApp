@@ -25,7 +25,7 @@ struct ReceiptItemDTO: Codable, Identifiable {
     let receiptId: UUID
     let name: String?
     let cost: Double
-    let shareItems: [UUID]
+    let shareItems: [ShareItemDTO]
 
     enum CodingKeys: String, CodingKey {
         case id, name, cost

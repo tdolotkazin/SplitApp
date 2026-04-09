@@ -268,12 +268,12 @@ extension ReceiptParserService {
 
 extension ReceiptParserService {
 
-    func makeItem(nameParts: [String], amount: Decimal) -> ReceiptItem? {
+    func makeItem(nameParts: [String], amount: Decimal) -> ScannedReceiptItem? {
         let raw = nameParts.joined(separator: " ")
         let name = extractMeaningfulWords(from: raw)
         let letterCount = name.unicodeScalars.filter { CharacterSet.letters.contains($0) }.count
         guard letterCount >= minLettersInName else { return nil }
-        return ReceiptItem(name: name, amount: amount)
+        return ScannedReceiptItem(name: name, amount: amount)
     }
 
     func extractMeaningfulWords(from text: String) -> String {
