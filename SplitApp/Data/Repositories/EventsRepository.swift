@@ -4,6 +4,7 @@ import CoreData
 protocol EventsRepositoryProtocol {
     func listEvents(userId: UUID?) async throws -> [Event]
     func createEvent(_ request: CreateEventRequest) async throws -> Event
+    func deleteEvent(id: UUID) async throws
     func getEvent(id: UUID) async throws -> Event
     func updateEvent(id: UUID, _ request: UpdateEventRequest) async throws -> Event
     func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User]
@@ -22,11 +23,30 @@ final class EventsRepository: EventsRepositoryProtocol {
     // MARK: - Networking + Database Operations
 
     func createEvent(_ request: CreateEventRequest) async throws -> Event {
-        let dto: EventDTO = try await apiClient.request(endpoint: CreateEventEndpoint(), body: request)
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.upsertEvent(dto, in: context)
+        do {
+            let dto: EventDTO = try await apiClient.request(endpoint: CreateEventEndpoint(), body: request)
+            try await coreDataStore.performBackground { [weak self] context in
+                try self?.upsertEvent(dto, in: context)
+            }
+            return EventMapper.mapToDomain(dto: dto)
+        } catch {
+            // Локальный fallback: создаём событие в CoreData
+            let now = Date()
+            let localId = UUID()
+            let dto = EventDTO(
+                id: localId,
+                creatorId: request.creatorId,
+                name: request.name,
+                isClosed: false,
+                users: [request.creatorId],
+                createdAt: now,
+                updatedAt: now
+            )
+            try await coreDataStore.performBackground { [weak self] context in
+                try self?.upsertEvent(dto, in: context)
+            }
+            return EventMapper.mapToDomain(dto: dto)
         }
-        return EventMapper.mapToDomain(dto: dto)
     }
 
     func listEvents(userId: UUID? = nil) async throws -> [Event] {
@@ -39,10 +59,10 @@ final class EventsRepository: EventsRepositoryProtocol {
 
             return dtos.map(EventMapper.mapToDomain)
         } catch {
-            let cachedEvents: [Event] = try await coreDataStore.performBackground { context in
+            let cachedEvents: [Event] = await MainActor.run {
                 let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
                 fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CDEvent.createdAt, ascending: false)]
-                let cdEvents = try context.fetch(fetchRequest)
+                let cdEvents = (try? coreDataStore.viewContext.fetch(fetchRequest)) ?? []
                 return cdEvents.compactMap(EventMapper.mapToDomain)
             }
 
@@ -68,6 +88,18 @@ final class EventsRepository: EventsRepositoryProtocol {
             try self?.upsertEvent(dto, in: context)
         }
         return EventMapper.mapToDomain(dto: dto)
+    }
+
+    func deleteEvent(id: UUID) async throws {
+        try await apiClient.requestVoid(endpoint: DeleteEventEndpoint(id: id))
+        try await coreDataStore.performBackground { [weak self] context in
+            guard let self else { return }
+            let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            if let event = try context.fetch(fetchRequest).first {
+                context.delete(event)
+            }
+        }
     }
 
     func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User] {

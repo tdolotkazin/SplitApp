@@ -22,7 +22,6 @@ struct EventsNavigationView: View {
                 onScanTap: { viewModel.handle(.scanButtonTapped) },
                 onAddTap: { viewModel.handle(.addButtonTapped) },
                 onBillTap: { billId in
-                    // Находим чек по ID в LocalReceiptsStore
                     if let eventId = LocalEventStore.shared.currentEventId {
                         let receipt = LocalReceiptsStore.shared.getReceipts(for: eventId)
                             .first(where: { $0.id == billId })
@@ -30,7 +29,8 @@ struct EventsNavigationView: View {
                             viewModel.openReceiptForEdit(receipt)
                         }
                     }
-                }
+                },
+                onEventTap: { viewModel.handle(.eventCardTapped) }
             )
             .task {
                 await viewModel.loadInitialDataIfNeeded()
@@ -44,8 +44,9 @@ struct EventsNavigationView: View {
                     )
                     .navigationBarBackButtonHidden(true)
                 case .billEntry:
-                    // BillEntry отображается через fullScreenCover ниже
                     EmptyView()
+                case .eventPicker:
+                    EventPickerView(viewModel: viewModel.homeViewModel)
                 }
             }
         }

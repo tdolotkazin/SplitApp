@@ -4,6 +4,9 @@ struct BillEntryView: View {
     @StateObject private var viewModel: BillViewModel
     @StateObject private var keyboardObserver = KeyboardObserver()
     @State private var showParticipantSheet = false
+    @State private var showSavingAnimation = false
+    @State private var savingTextOffset: CGFloat = 0
+    @State private var savingTextOpacity: Double = 0
     @Environment(\.dismiss) private var dismiss
 
     init(eventId: UUID? = nil, receipt: ReceiptDTO? = nil, onReceiptCreated: (() -> Void)? = nil) {
@@ -11,7 +14,6 @@ struct BillEntryView: View {
         viewModel.currentEventId = eventId
         viewModel.onReceiptCreated = onReceiptCreated
 
-        // Загружаем данные чека если это редактирование
         if let receipt = receipt {
             viewModel.loadReceipt(receipt)
         }
@@ -32,8 +34,12 @@ struct BillEntryView: View {
                 .dismissKeyboardOnTap()
 
                 VStack(spacing: 0) {
-                    HeaderRow()
+                    receiptNameField
+                        .padding(.horizontal, 20)
                         .padding(.top, 8)
+                        .padding(.bottom, 4)
+
+                    HeaderRow()
                         .onTapGesture {
                             hideKeyboard()
                         }
@@ -121,7 +127,7 @@ struct BillEntryView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
 
                         GlassButton(title: "Разделить счёт") {
-                            viewModel.save()
+                            triggerSave()
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
@@ -137,29 +143,14 @@ struct BillEntryView: View {
                         }
                     }
                 )
+
+                if showSavingAnimation {
+                    savingOverlay
+                }
             }
+            .navigationTitle("Ввод чека")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 0) {
-                        TextField("Название чека", text: $viewModel.receiptTitle)
-                            .font(.system(size: 17, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.textPrimary)
-                            .tint(AppTheme.accent)
-                            .multilineTextAlignment(.center)
-                            .frame(minWidth: 150, maxWidth: 250)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(.ultraThinMaterial)
-                            .background(AppTheme.cardBackground)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(AppTheme.cardBorder, lineWidth: 1)
-                            )
-                    }
-                }
-
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Отмена") {
                         dismiss()
@@ -169,7 +160,7 @@ struct BillEntryView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Готово") {
-                        viewModel.save()
+                        triggerSave()
                     }
                     .foregroundStyle(AppTheme.accent)
                     .font(.system(size: 17, weight: .semibold))
@@ -198,6 +189,60 @@ struct BillEntryView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
+        }
+    }
+
+    private var receiptNameField: some View {
+        TextField("Название чека", text: $viewModel.receiptTitle)
+            .font(.system(size: 20, weight: .semibold, design: .rounded))
+            .foregroundStyle(AppTheme.textPrimary)
+            .tint(AppTheme.accent)
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(AppTheme.accent.opacity(0.25), lineWidth: 1)
+            )
+    }
+
+    private var savingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.01)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+
+            Text(viewModel.receiptTitle.isEmpty ? "Чек" : viewModel.receiptTitle)
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.accent)
+                .shadow(color: AppTheme.accent.opacity(0.6), radius: 16, y: 4)
+                .offset(y: savingTextOffset)
+                .opacity(savingTextOpacity)
+                .allowsHitTesting(false)
+        }
+    }
+
+    private func triggerSave() {
+        hideKeyboard()
+        viewModel.save()
+
+        showSavingAnimation = true
+        savingTextOffset = 0
+        savingTextOpacity = 0
+
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            savingTextOpacity = 1
+        }
+
+        withAnimation(.spring(response: 0.7, dampingFraction: 0.65).delay(0.15)) {
+            savingTextOffset = -160
+            savingTextOpacity = 0
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            showSavingAnimation = false
+            savingTextOffset = 0
         }
     }
 }
