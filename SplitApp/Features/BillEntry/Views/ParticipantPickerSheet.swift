@@ -108,28 +108,6 @@ struct ParticipantPickerSheet: View {
                         }
                     )
                     .buttonStyle(PlainButtonStyle())
-
-                    Button(
-                        action: {},
-                        label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 20))
-                                Text("Добавить участника")
-                                    .font(AppTheme.fontBodyBold)
-                            }
-                            .foregroundStyle(AppTheme.accent)
-                            .padding(.vertical, 16)
-                            .frame(maxWidth: .infinity)
-                            .background(AppTheme.surfaceOverlay)
-                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                                    .stroke(AppTheme.accent.opacity(0.3), lineWidth: 1)
-                            )
-                        }
-                    )
-                    .buttonStyle(PlainButtonStyle())
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
