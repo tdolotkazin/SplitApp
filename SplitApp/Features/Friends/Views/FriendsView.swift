@@ -112,6 +112,11 @@ private extension FriendsView {
                 startIndex: viewModel.activeDebts.count,
                 onFriendTap: { friend in
                     print("Tapped on friend: \(friend.name)")
+                },
+                onDelete: { friend in
+                    Task {
+                        await viewModel.deleteFriend(friend)
+                    }
                 }
             )
         }

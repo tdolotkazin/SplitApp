@@ -109,6 +109,25 @@ class FriendsViewModel: ObservableObject {
         debts.removeAll { $0.id == debt.id }
     }
 
+    func deleteFriend(_ friend: Friend) async {
+        // Удаляем из UI сразу
+        self.friends.removeAll { $0.id == friend.id }
+
+        // Если это локальный друг, удаляем из LocalFriendsStore
+        if let friendId = friend.userId {
+            print("⚠️ Удаление удалённых друзей пока не поддерживается")
+        } else {
+            // Это локальный друг, удаляем из UserDefaults через repository
+            do {
+                try await friendsRepository.deleteLocalFriend(id: friend.id)
+                print("✅ Друг \(friend.name) удалён")
+            } catch {
+                print("❌ Ошибка при удалении друга: \(error)")
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
     private func calculateDebts(friends: [Friend]) async throws -> [FriendDebt] {
         let events = try await eventsRepository.listEvents(userId: currentUserId)
 

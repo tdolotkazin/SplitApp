@@ -26,6 +26,12 @@ final class LocalFriendsStore {
         return friend
     }
 
+    func deleteLocalFriend(id: UUID) throws {
+        var friends = try listLocalFriends()
+        friends.removeAll { $0.id == id }
+        try encode(friends, forKey: Keys.localFriends)
+    }
+
     func listLocalDebts() throws -> [LocalFriendDebt] {
         try decode([LocalFriendDebt].self, forKey: Keys.localDebts) ?? []
     }

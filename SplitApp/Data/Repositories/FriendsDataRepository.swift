@@ -24,6 +24,10 @@ final class FriendsDataRepository: FriendsRepository {
         try localStore.addLocalFriend(name: name)
     }
 
+    func deleteLocalFriend(id: UUID) async throws {
+        try localStore.deleteLocalFriend(id: id)
+    }
+
     func listLocalDebts() async throws -> [LocalFriendDebt] {
         try localStore.listLocalDebts()
     }
