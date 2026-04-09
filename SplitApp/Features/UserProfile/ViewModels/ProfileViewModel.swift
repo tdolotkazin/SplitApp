@@ -84,7 +84,9 @@ final class ProfileViewModel: ObservableObject {
         )
     }
 
-    private func createProfileModel(from user: CurrentUser, friendsCount: Int?, eventsCount: Int?) -> ProfileScreenModel {
+    private func createProfileModel(
+        from user: CurrentUser, friendsCount: Int?, eventsCount: Int?
+    ) -> ProfileScreenModel {
         ProfileScreenModel(
             initials: user.initials,
             email: user.email ?? "Не указан",
