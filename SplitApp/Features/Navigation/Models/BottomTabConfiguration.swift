@@ -39,6 +39,7 @@ struct BottomTabConfiguration {
 }
 
 extension BottomTabConfiguration {
+    @MainActor
     static func makeDefault(with dependencies: AppDependencies, appState: AppState) -> BottomTabConfiguration {
         let storage = KeychainStorage()
         let logoutUseCase = LogoutUseCase(secureStorage: storage, appState: appState)
@@ -86,6 +87,7 @@ extension BottomTabConfiguration {
         )
     }
 
+    @MainActor
     static var preview: BottomTabConfiguration {
         makeDefault(with: .preview, appState: AppState(isLoggedIn: true))
     }

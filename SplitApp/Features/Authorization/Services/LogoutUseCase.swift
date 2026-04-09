@@ -10,6 +10,7 @@ final class LogoutUseCase {
         self.appState = appState
     }
 
+    @MainActor
     func execute() {
         TokenStore.shared.accessToken = nil
         secureStorage.delete("refresh_token")
