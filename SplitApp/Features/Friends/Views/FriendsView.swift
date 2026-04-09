@@ -1,8 +1,16 @@
 import SwiftUI
 
 struct FriendsView: View {
-    @StateObject private var viewModel = FriendsViewModel()
+    @StateObject private var viewModel: FriendsViewModel
     @State private var showAddFriend = false
+
+    init(dependencies: AppDependencies = .live) {
+        _viewModel = StateObject(wrappedValue: FriendsViewModel(
+            friendsRepository: dependencies.friendsRepository,
+            eventsRepository: dependencies.eventsRepository,
+            balancesRepository: dependencies.balancesRepository
+        ))
+    }
 
     var body: some View {
         ZStack {
@@ -10,6 +18,9 @@ struct FriendsView: View {
             content
         }
         .navigationBarHidden(true)
+        .task {
+            await viewModel.loadFriends()
+        }
     }
 }
 
@@ -113,6 +124,6 @@ private extension FriendsView {
 
 #Preview {
     NavigationStack {
-        FriendsView()
+        FriendsView(dependencies: .preview)
     }
 }
