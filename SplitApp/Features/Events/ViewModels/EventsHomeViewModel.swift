@@ -57,7 +57,15 @@ final class EventsHomeViewModel: ObservableObject {
         do {
             let newItem = try await service.createEvent(name: name)
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                let newEvent = Event(id: newItem.id, name: newItem.title, positions: [], date: Date(), icon: "📌", participantsCount: 0, balanceDelta: 0)
+                let newEvent = Event(
+                    id: newItem.id,
+                    name: newItem.title,
+                    positions: [],
+                    date: Date(),
+                    icon: "📌",
+                    participantsCount: 0,
+                    balanceDelta: 0
+                )
                 latestEvents.append(newItem)
                 allEvents.append(newEvent)
             }

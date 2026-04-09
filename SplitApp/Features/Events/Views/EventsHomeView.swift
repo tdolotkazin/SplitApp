@@ -37,16 +37,18 @@ struct EventsHomeView: View {
                                 .padding(.horizontal, 20)
 
                             if let currentEvent = viewModel.currentEvent {
-                                Button(action: { onEventTap?() }) {
-                                    CurrentEventCardView(event: currentEvent)
-                                }
+                                Button(
+                                    action: { onEventTap?() },
+                                    label: { CurrentEventCardView(event: currentEvent) }
+                                )
                                 .buttonStyle(PlainButtonStyle())
                                 .padding(.horizontal, 20)
                                 .transition(.move(edge: .top).combined(with: .opacity))
                             } else {
-                                Button(action: { onEventTap?() }) {
-                                    emptyEventCard
-                                }
+                                Button(
+                                    action: { onEventTap?() },
+                                    label: { emptyEventCard }
+                                )
                                 .buttonStyle(PlainButtonStyle())
                                 .padding(.horizontal, 20)
                             }

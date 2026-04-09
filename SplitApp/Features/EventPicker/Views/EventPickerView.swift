@@ -108,56 +108,6 @@ struct EventPickerView: View {
         }
     }
 
-    // MARK: - Event Card
-
-    private func eventCard(_ event: EventListItem) -> some View {
-        let isSelected = event.id == viewModel.currentEvent?.id
-
-        return Button {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-                viewModel.selectEvent(event)
-            }
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { dismiss() }
-        } label: {
-            GlassCard(padding: 14) {
-                HStack(spacing: 12) {
-                    Text(event.emoji)
-                        .font(.system(size: 26))
-                        .frame(width: 40, height: 40)
-
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(event.title)
-                            .font(.system(size: 17, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text(event.subtitle)
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.textSecondary)
-                    }
-
-                    Spacer()
-
-                    if isSelected {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 22))
-                            .foregroundStyle(AppTheme.accent)
-                            .transition(.scale.combined(with: .opacity))
-                    } else {
-                        Text(event.amount.euroText(signed: true, minimumFractionDigits: 0))
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundStyle(amountColor(for: event.tone))
-                    }
-                }
-            }
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                    .stroke(isSelected ? AppTheme.accent : Color.clear, lineWidth: 2)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelected)
-    }
-
     private func eventRow(_ event: EventListItem) -> some View {
         SwipeableEventRow(
             event: event,

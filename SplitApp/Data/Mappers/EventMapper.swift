@@ -6,8 +6,18 @@ enum EventMapper {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
         let subtitle = formatter.localizedString(for: event.date, relativeTo: Date())
-        let tone: EventAmountTone = event.balanceDelta > 0 ? .positive : event.balanceDelta < 0 ? .negative : .neutral
-        return EventListItem(id: event.id, emoji: event.icon, title: event.name, subtitle: subtitle, amount: event.balanceDelta, tone: tone)
+        let tone: EventAmountTone = event.balanceDelta > 0
+            ? .positive
+            : event.balanceDelta < 0 ? .negative : .neutral
+
+        return EventListItem(
+            id: event.id,
+            emoji: event.icon,
+            title: event.name,
+            subtitle: subtitle,
+            amount: event.balanceDelta,
+            tone: tone
+        )
     }
 
     /// Maps network/cache DTO to the domain model used by Services and UI.
