@@ -34,6 +34,12 @@ struct AddParticipantsEndpoint: Endpoint {
     let method: HTTPMethod = .POST
 }
 
+struct DeleteEventEndpoint: Endpoint {
+    let id: UUID
+    var path: String { "/api/events/\(id.uuidString)" }
+    let method: HTTPMethod = .DELETE
+}
+
 struct RemoveParticipantEndpoint: Endpoint {
     let eventId: UUID
     let userId: UUID

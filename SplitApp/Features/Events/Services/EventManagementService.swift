@@ -6,6 +6,8 @@ protocol EventManagementServiceProtocol {
     func fetchReceipts(eventId: UUID) async throws -> [ReceiptDTO]
     func createReceipt(eventId: UUID, request: CreateReceiptRequest) async throws -> ReceiptDTO
     func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO
+    func createEvent(name: String) async throws -> EventListItem
+    func deleteEvent(id: UUID) async throws
 }
 
 struct EventManagementService: EventManagementServiceProtocol {
@@ -46,5 +48,16 @@ struct EventManagementService: EventManagementServiceProtocol {
 
     func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO {
         return try await receiptsRepository.updateReceipt(id: id, request)
+    }
+
+    func createEvent(name: String) async throws -> EventListItem {
+        let creatorId = CurrentUserStore.shared.user.id
+        let request = CreateEventRequest(creatorId: creatorId, name: name)
+        let event = try await eventsRepository.createEvent(request)
+        return EventMapper.mapToListItem(event)
+    }
+
+    func deleteEvent(id: UUID) async throws {
+        try await eventsRepository.deleteEvent(id: id)
     }
 }
