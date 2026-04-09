@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>yandex-login-sdk-ios</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>yxdfb7a885631f4941bbdc5eb706196fa3</string>
+			</array>
+		</dict>
+	</array>
+	<key>Information Property List</key>
+	<array>
+		<string>secondaryyandexloginsdk</string>
+		<string>primaryyandexloginsdk</string>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>yandexauth2</string>
+		<string>yandexauthv2</string>
+		<string>yandexauth</string>
+		<string>primaryyandexloginsdk</string>
+		<string>secondaryyandexloginsdk</string>
+	</array>
+</dict>
+</plist>

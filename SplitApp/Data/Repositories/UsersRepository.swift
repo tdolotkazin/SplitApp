@@ -1,7 +1,8 @@
-import Foundation
 import CoreData
+import Foundation
 
 final class UsersDataRepository: UsersRepository {
+
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 
@@ -35,7 +36,10 @@ final class UsersDataRepository: UsersRepository {
         }
     }
 
-    private func upsertUsers(_ dtos: [UserDTO], in context: NSManagedObjectContext) throws {
+    private func upsertUsers(
+        _ dtos: [UserDTO],
+        in context: NSManagedObjectContext
+    ) throws {
         for dto in dtos {
             let fetchRequest: NSFetchRequest<CDUser> = CDUser.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "id == %@", dto.id as CVarArg)
