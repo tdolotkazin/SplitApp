@@ -117,16 +117,21 @@ struct EventsHomeView: View {
     }
 
     private var emptyBillsCard: some View {
-        GlassCard(padding: 14) {
-            HStack(spacing: 12) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 28))
-                Text("Чеков пока нет")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                Spacer()
-            }
+        HStack(spacing: 10) {
+            Image(systemName: "xmark.circle")
+                .font(.system(size: 22, weight: .regular))
+                .foregroundStyle(AppTheme.textSecondary.opacity(0.75))
+            Text("Пока нет прикрепленных чеков")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary.opacity(0.82))
+            Spacer()
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
+                .stroke(AppTheme.textSecondary.opacity(0.16), lineWidth: 1)
+        )
     }
 }
 
