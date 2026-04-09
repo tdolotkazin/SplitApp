@@ -6,6 +6,7 @@ struct EventsHomeView: View {
     let onScanTap: () -> Void
     let onAddTap: () -> Void
     let onBillTap: ((UUID) -> Void)?
+    let onEventTap: (() -> Void)?
 
     var body: some View {
         ZStack {
@@ -28,17 +29,28 @@ struct EventsHomeView: View {
                         BalanceCardView(summary: viewModel.balanceSummary)
                             .padding(.horizontal, 20)
 
-                        if let currentEvent = viewModel.currentEvent {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("АКТУАЛЬНОЕ СОБЫТИЕ")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .tracking(1.2)
-                                    .foregroundStyle(AppTheme.textSecondary)
-                                    .padding(.horizontal, 20)
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("АКТУАЛЬНОЕ СОБЫТИЕ")
+                                .font(.system(size: 13, weight: .semibold))
+                                .tracking(1.2)
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .padding(.horizontal, 20)
 
-                                CurrentEventCardView(event: currentEvent)
-                                    .padding(.horizontal, 20)
-                                    .transition(.move(edge: .top).combined(with: .opacity))
+                            if let currentEvent = viewModel.currentEvent {
+                                Button(
+                                    action: { onEventTap?() },
+                                    label: { CurrentEventCardView(event: currentEvent) }
+                                )
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal, 20)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                            } else {
+                                Button(
+                                    action: { onEventTap?() },
+                                    label: { emptyEventCard }
+                                )
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal, 20)
                             }
                         }
 
@@ -79,6 +91,26 @@ struct EventsHomeView: View {
         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.currentEvent)
         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: viewModel.currentEventBills.count)
         .navigationBarHidden(true)
+    }
+
+    private var emptyEventCard: some View {
+        GlassCard(padding: 14) {
+            HStack(spacing: 12) {
+                Text("➕")
+                    .font(.system(size: 28))
+                Text("Выбрать событие")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.accent)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
+                .stroke(AppTheme.accent.opacity(0.4), lineWidth: 1.5)
+        )
     }
 }
 
@@ -180,6 +212,7 @@ private struct AddButton: View {
         viewModel: EventsHomeViewModel(service: EventManagementService()),
         onScanTap: {},
         onAddTap: {},
-        onBillTap: nil
+        onBillTap: nil,
+        onEventTap: nil
     )
 }

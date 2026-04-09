@@ -20,8 +20,9 @@ class BillViewModel: ObservableObject {
         items.reduce(0) { $0 + $1.amount }
     }
 
-    init(service: EventManagementServiceProtocol = EventManagementService()) {
-        self.service = service
+    @MainActor
+    init(service: EventManagementServiceProtocol? = nil) {
+        self.service = service ?? EventManagementService()
 
         // Получаем участников из локального хранилища и преобразуем в Participant
         let users = LocalEventStore.shared.getCurrentParticipants()

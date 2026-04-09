@@ -22,14 +22,17 @@ final class EventsNavigationViewModel: ObservableObject {
         self.rules = rules
     }
 
+    @MainActor
     convenience init(
-        service: EventManagementServiceProtocol = EventManagementService(),
-        rules: EventsNavigationRules = .init()
+        service: EventManagementServiceProtocol? = nil,
+        rules: EventsNavigationRules? = nil
     ) {
+        let resolvedService = service ?? EventManagementService()
+        let resolvedRules = rules ?? EventsNavigationRules()
         self.init(
-            homeViewModel: EventsHomeViewModel(service: service),
+            homeViewModel: EventsHomeViewModel(service: resolvedService),
             scannerViewModel: ReceiptViewModel(),
-            rules: rules
+            rules: resolvedRules
         )
     }
 
@@ -61,6 +64,8 @@ final class EventsNavigationViewModel: ObservableObject {
             path.removeAll()
             editingReceipt = nil
             showBillEntry = true
+        case .eventPicker:
+            path.append(.eventPicker)
         }
     }
 
