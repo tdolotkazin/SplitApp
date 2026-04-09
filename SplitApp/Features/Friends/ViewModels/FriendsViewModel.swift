@@ -1,15 +1,14 @@
 import Foundation
 import SwiftUI
 import Combine
+import CoreData
 
 @MainActor
 class FriendsViewModel: ObservableObject {
     @Published var friends: [Friend] = []
     @Published var debts: [FriendDebt] = []
     @Published var searchText: String = ""
-
-    private let defaults: UserDefaults
-    private let settledDebtIDsKey = "friends.settledDebtIDs.v1"
+    private let debtPersistenceService: FriendsDebtPersistenceServiceProtocol
 
     var activeDebts: [FriendDebt] {
         debts.filter { $0.amount > 0 }
@@ -22,15 +21,21 @@ class FriendsViewModel: ObservableObject {
         return friends.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
+    init(
+        debtPersistenceService: FriendsDebtPersistenceServiceProtocol = FriendsDebtPersistenceService()
+    ) {
+        self.debtPersistenceService = debtPersistenceService
         loadMockData()
         applySettledDebts()
     }
 
     func settleDebt(_ debt: FriendDebt) {
         debts.removeAll { $0.id == debt.id }
-        saveSettledDebtID(debt.id)
+        do {
+            try debtPersistenceService.saveSettledDebtID(debt.id)
+        } catch {
+            print("Failed to save settled debt: \(error)")
+        }
     }
 }
 
@@ -80,18 +85,12 @@ private extension FriendsViewModel {
     }
 
     func applySettledDebts() {
-        let settledIDs = loadSettledDebtIDs()
-        debts.removeAll { settledIDs.contains($0.id.uuidString) }
-    }
-
-    func saveSettledDebtID(_ id: UUID) {
-        var settledIDs = loadSettledDebtIDs()
-        settledIDs.insert(id.uuidString)
-        defaults.set(Array(settledIDs), forKey: settledDebtIDsKey)
-    }
-
-    func loadSettledDebtIDs() -> Set<String> {
-        Set(defaults.stringArray(forKey: settledDebtIDsKey) ?? [])
+        do {
+            let settledIDs = try debtPersistenceService.loadSettledDebtIDs()
+            debts.removeAll { settledIDs.contains($0.id) }
+        } catch {
+            print("Failed to load settled debts: \(error)")
+        }
     }
 
     func uuid(_ value: String) -> UUID {
@@ -99,5 +98,42 @@ private extension FriendsViewModel {
             preconditionFailure("Invalid static UUID: \(value)")
         }
         return uuid
+    }
+}
+
+protocol FriendsDebtPersistenceServiceProtocol {
+    func loadSettledDebtIDs() throws -> Set<UUID>
+    func saveSettledDebtID(_ id: UUID) throws
+}
+
+final class FriendsDebtPersistenceService: FriendsDebtPersistenceServiceProtocol {
+    private let coreDataStore: CoreDataStore
+
+    init(coreDataStore: CoreDataStore = .shared) {
+        self.coreDataStore = coreDataStore
+    }
+
+    func loadSettledDebtIDs() throws -> Set<UUID> {
+        let request = NSFetchRequest<NSManagedObject>(entityName: "CDSettledDebt")
+        let objects = try coreDataStore.viewContext.fetch(request)
+        return Set(objects.compactMap { $0.value(forKey: "debtId") as? UUID })
+    }
+
+    func saveSettledDebtID(_ id: UUID) throws {
+        let context = coreDataStore.viewContext
+
+        let request = NSFetchRequest<NSManagedObject>(entityName: "CDSettledDebt")
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "debtId == %@", id as CVarArg)
+
+        if try context.fetch(request).isEmpty {
+            let managedObject = NSEntityDescription.insertNewObject(
+                forEntityName: "CDSettledDebt",
+                into: context
+            )
+            managedObject.setValue(id, forKey: "debtId")
+            managedObject.setValue(Date(), forKey: "settledAt")
+            try coreDataStore.save(context: context)
+        }
     }
 }

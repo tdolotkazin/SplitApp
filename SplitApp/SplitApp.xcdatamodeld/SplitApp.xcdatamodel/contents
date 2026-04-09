@@ -53,6 +53,10 @@
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDEvent" inverseName="payments" inverseEntity="CDEvent"/>
     </entity>
+    <entity name="CDSettledDebt" representedClassName="CDSettledDebt" syncable="YES" codeGenerationType="class">
+        <attribute name="debtId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="settledAt" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
     <elements>
         <element name="CDUser" positionX="-63" positionY="-18" width="128" height="104"/>
         <element name="CDEvent" positionX="160" positionY="-18" width="128" height="178"/>
@@ -60,5 +64,6 @@
         <element name="CDReceiptItem" positionX="384" positionY="200" width="128" height="133"/>
         <element name="CDShareItem" positionX="384" positionY="380" width="128" height="118"/>
         <element name="CDPayment" positionX="160" positionY="200" width="128" height="163"/>
+        <element name="CDSettledDebt" positionX="-63" positionY="200" width="128" height="103"/>
     </elements>
 </model>
