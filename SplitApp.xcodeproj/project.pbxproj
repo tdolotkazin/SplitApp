@@ -127,6 +127,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BFD5EB7D2F7C10E100877F4C /* Build configuration list for PBXNativeTarget "SplitApp" */;
 			buildPhases = (
+				492CBB0B2F884B2F00F78E1D /* SwiftFormat */,
 				BFD5EB532F7C10DD00877F4C /* Sources */,
 				BFD5EB542F7C10DD00877F4C /* Frameworks */,
 				BFD5EB552F7C10DD00877F4C /* Resources */,
@@ -264,6 +265,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		492CBB0B2F884B2F00F78E1D /* SwiftFormat */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftFormat;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif which swiftformat > /dev/null; then\n  swiftformat .\nelse\n  echo \"warning: SwiftFormat not installed. Run 'brew install swiftformat'\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BFD5EB532F7C10DD00877F4C /* Sources */ = {
