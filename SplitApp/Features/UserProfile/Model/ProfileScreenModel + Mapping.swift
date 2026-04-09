@@ -17,8 +17,8 @@ extension ProfileScreenModel {
         name = response.name
         eventsCountText = String(response.eventsCount)
         friendsCountText = String(response.friendsCount)
-        closedBillsText = "€\(response.closedBillsAmount)"
-        openBillsText = "€\(response.openBillsAmount)"
+        closedBillsText = "₽\(response.closedBillsAmount)"
+        openBillsText = "₽\(response.openBillsAmount)"
     }
 }
 
@@ -29,7 +29,7 @@ extension ProfileScreenModel {
         name: "Иван Волков",
         eventsCountText: "12",
         friendsCountText: "8",
-        closedBillsText: "€340",
-        openBillsText: "€34"
+        closedBillsText: "₽340",
+        openBillsText: "₽34"
     )
 }

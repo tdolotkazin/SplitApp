@@ -1,7 +1,7 @@
 import Foundation
 
 extension Double {
-    func euroText(signed: Bool = false, minimumFractionDigits: Int = 0, maximumFractionDigits: Int = 2) -> String {
+    func rubleText(signed: Bool = false, minimumFractionDigits: Int = 0, maximumFractionDigits: Int = 2) -> String {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "ru_RU")
         formatter.numberStyle = .decimal
@@ -14,13 +14,13 @@ extension Double {
 
         if signed {
             if self > 0 {
-                return "+€\(amount)"
+                return "+₽\(amount)"
             }
             if self < 0 {
-                return "-€\(amount)"
+                return "-₽\(amount)"
             }
         }
 
-        return "€\(amount)"
+        return "₽\(amount)"
     }
 }

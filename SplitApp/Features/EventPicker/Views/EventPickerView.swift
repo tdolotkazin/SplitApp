@@ -281,7 +281,7 @@ private struct SwipeableEventRow: View {
                             .foregroundStyle(AppTheme.accent)
                             .transition(.scale.combined(with: .opacity))
                     } else {
-                        Text(event.amount.euroText(signed: true, minimumFractionDigits: 0))
+                        Text(event.amount.rubleText(signed: true, minimumFractionDigits: 0))
                             .font(.system(size: 15, weight: .bold, design: .rounded))
                             .foregroundStyle(amountColor)
                     }
