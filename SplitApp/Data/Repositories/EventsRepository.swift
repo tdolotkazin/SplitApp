@@ -127,8 +127,7 @@ final class EventsDataRepository: EventsRepository, EventsRepositoryProtocol {
 
     func deleteEvent(id: UUID) async throws {
         try await apiClient.requestVoid(endpoint: DeleteEventEndpoint(id: id))
-        try await coreDataStore.performBackground { [weak self] context in
-            guard self != nil else { return }
+        try await coreDataStore.performBackground { context in
             let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
             if let event = try context.fetch(fetchRequest).first {
