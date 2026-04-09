@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 
+// swiftlint:disable file_length
 extension BillViewModel {
     func loadCreateContext(
         eventId: UUID?,
@@ -403,3 +404,4 @@ extension BillViewModel {
             .map(Self.makeParticipant)
     }
 }
+// swiftlint:enable file_length

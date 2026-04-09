@@ -169,7 +169,10 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             }
         } catch {
             // Backend create/upload already succeeded — don't block user flow on local cache write failure.
-            print("[ReceiptsRepo] op=create mode=cache_write_failed receiptId=\(dto.id) error=\(error.localizedDescription)")
+            print(
+                "[ReceiptsRepo] op=create mode=cache_write_failed " +
+                "receiptId=\(dto.id) error=\(error.localizedDescription)"
+            )
         }
 
         return mapToDomain(dto)

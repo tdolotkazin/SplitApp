@@ -71,17 +71,18 @@ struct EventsNavigationView: View {
                     }
                     viewModel.didFinishBillEntry()
                 }
+            },
+            content: { destination in
+                let billViewModel = BillViewModel(
+                    mode: destination.mode,
+                    eventsRepository: eventsRepository,
+                    receiptsRepository: receiptsRepository,
+                    usersRepository: usersRepository,
+                    networkMonitor: networkMonitor
+                )
+                BillEntryView(viewModel: billViewModel)
             }
-        ) { destination in
-            let billViewModel = BillViewModel(
-                mode: destination.mode,
-                eventsRepository: eventsRepository,
-                receiptsRepository: receiptsRepository,
-                usersRepository: usersRepository,
-                networkMonitor: networkMonitor
-            )
-            BillEntryView(viewModel: billViewModel)
-        }
+        )
     }
 }
 

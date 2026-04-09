@@ -230,7 +230,8 @@ extension ReceiptsDataRepository {
                 mimeType: "image/jpeg",
                 fileData: imageJPEGData
             )
-        } catch NetworkError.httpError(let statusCode, _) where statusCode == 400 || statusCode == 415 || statusCode == 422 {
+        } catch NetworkError.httpError(let statusCode, _)
+            where statusCode == 400 || statusCode == 415 || statusCode == 422 {
             return try await apiClient.requestMultipart(
                 endpoint: UploadReceiptImageEndpoint(id: receiptId),
                 fileFieldName: "image",

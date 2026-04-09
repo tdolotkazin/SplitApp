@@ -120,22 +120,30 @@ final class APIClient {
         mimeType: String,
         fileData: Data
     ) async throws -> T {
-        return try await performMultipartRequest(
-            endpoint: endpoint,
+        let payload = MultipartPayload(
             fileFieldName: fileFieldName,
             fileName: fileName,
             mimeType: mimeType,
-            fileData: fileData,
+            fileData: fileData
+        )
+
+        return try await performMultipartRequest(
+            endpoint: endpoint,
+            payload: payload,
             isRetry: false
         )
     }
 
+    private struct MultipartPayload {
+        let fileFieldName: String
+        let fileName: String
+        let mimeType: String
+        let fileData: Data
+    }
+
     private func performMultipartRequest<T: Decodable>(
         endpoint: Endpoint,
-        fileFieldName: String,
-        fileName: String,
-        mimeType: String,
-        fileData: Data,
+        payload: MultipartPayload,
         isRetry: Bool
     ) async throws -> T {
         let boundary = "Boundary-\(UUID().uuidString)"
@@ -149,12 +157,13 @@ final class APIClient {
         body.append(Data("--\(boundary)\r\n".utf8))
         body.append(
             Data(
-                "Content-Disposition: form-data; name=\"\(fileFieldName)\"; filename=\"\(fileName)\"\r\n"
+                "Content-Disposition: form-data; name=\"\(payload.fileFieldName)\"; " +
+                "filename=\"\(payload.fileName)\"\r\n"
                     .utf8
             )
         )
-        body.append(Data("Content-Type: \(mimeType)\r\n\r\n".utf8))
-        body.append(fileData)
+        body.append(Data("Content-Type: \(payload.mimeType)\r\n\r\n".utf8))
+        body.append(payload.fileData)
         body.append(Data("\r\n--\(boundary)--\r\n".utf8))
         request.httpBody = body
 
@@ -172,10 +181,7 @@ final class APIClient {
 
             return try await performMultipartRequest(
                 endpoint: endpoint,
-                fileFieldName: fileFieldName,
-                fileName: fileName,
-                mimeType: mimeType,
-                fileData: fileData,
+                payload: payload,
                 isRetry: true
             )
         } catch {

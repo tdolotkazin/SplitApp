@@ -1,5 +1,6 @@
 import SwiftUI
 
+// swiftlint:disable type_body_length
 struct BillEntryView: View {
     @StateObject private var viewModel: BillViewModel
     @StateObject private var keyboardObserver = KeyboardObserver()
@@ -283,6 +284,7 @@ struct BillEntryView: View {
         dismiss()
     }
 }
+// swiftlint:enable type_body_length
 
 private enum BillEntryLayout {
     static let bottomPanelReservedSpace: CGFloat = 228
