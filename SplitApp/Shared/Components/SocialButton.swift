@@ -10,9 +10,16 @@ struct SocialButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(textColor)
+                if icon == "yandex" {
+                    Image(icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 32)
+                } else {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundColor(textColor)
+                }
             }
             .frame(width: 25)
             .frame(height: 50)
@@ -42,12 +49,12 @@ struct SocialButton_Previews: PreviewProvider {
             }
 
             SocialButton(
-                icon: "g.circle.fill",
+                icon: "yandex",
                 backgroundColor: .white,
                 textColor: .black,
                 hasBorder: true
             ) {
-                print("Google sign in")
+                print("Yandex sign in")
             }
         }
         .padding()

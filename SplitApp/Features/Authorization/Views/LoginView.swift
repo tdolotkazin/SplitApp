@@ -6,13 +6,16 @@ struct LoginView: View {
 
     var body: some View {
         ZStack {
+            Color("ColorGreen")
+                .ignoresSafeArea()
+
             AppTheme.backgroundRadialGlow
                 .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     HeaderView()
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 28)
 
                     VStack(spacing: 16) {
                         LegalTextSection()

@@ -2,15 +2,14 @@ import SwiftUI
 
 struct HeaderView: View {
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(AppTheme.dividerHighlight)
-                    .frame(width: 80, height: 80)
-            }
+        VStack(spacing: 12) {
+            Image("imgLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 280, maxHeight: 220)
 
             Text("SplitApp")
-                .font(.largeTitle)
+                .font(.title)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
 
