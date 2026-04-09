@@ -4,7 +4,13 @@ struct BillEntryView: View {
     @StateObject private var viewModel = BillViewModel()
     @StateObject private var keyboardObserver = KeyboardObserver()
     @State private var showParticipantSheet = false
+    @State private var emojis: [EmojiPredictModel] = []
+
     @Environment(\.dismiss) private var dismiss
+
+    private var matcher: EmojiAutoReplaceMatcher {
+        EmojiAutoReplaceMatcher(emojis: emojis)
+    }
 
     var body: some View {
         NavigationStack {
@@ -30,6 +36,7 @@ struct BillEntryView: View {
                             ForEach(viewModel.items) { item in
                                 BillItemRow(
                                     item: item,
+                                    matcher: matcher,
                                     onAssign: {
                                         viewModel.selectedItemForAssignment = item
                                         showParticipantSheet = true
@@ -161,10 +168,18 @@ struct BillEntryView: View {
                 .presentationDetents([.medium, .fraction(0.5)])
                 .presentationDragIndicator(.visible)
             }
+            .task {
+                loadEmojis()
+            }
         }
     }
-}
 
-#Preview {
-    BillEntryView()
+    private func loadEmojis() {
+        do {
+            let parser = EmojiTextParser()
+            emojis = try parser.parse()
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
 }
