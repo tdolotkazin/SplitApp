@@ -80,6 +80,8 @@ struct SplitAppApp: App {
         do {
             try await APIClient.shared.refreshAccessTokenIfNeeded()
             await MainActor.run {
+                // Загружаем сохраненные данные пользователя
+                CurrentUserStore.shared.loadFromUserDefaults()
                 appState.isLoggedIn = true
                 appState.isLoading = false
             }
@@ -88,6 +90,7 @@ struct SplitAppApp: App {
             storage.delete("refresh_token")
             TokenStore.shared.clear()
             await MainActor.run {
+                CurrentUserStore.shared.clear()
                 appState.isLoggedIn = false
                 appState.isLoading = false
             }

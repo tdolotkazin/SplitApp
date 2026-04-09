@@ -36,14 +36,16 @@ struct EventManagementService: EventManagementServiceProtocol {
     }
 
     private func calculateBalanceSummary(for events: [Event]) async -> EventBalanceSummary {
-        let currentUserId = CurrentUserStore.shared.user.id
+        guard let currentUserId = await CurrentUserStore.shared.user?.id else {
+            return EventBalanceSummary(totalBalance: 0, owedToYou: 0, youOwe: 0)
+        }
         var owedToYou: Double = 0
         var youOwe: Double = 0
 
         await withTaskGroup(of: [EventBalance].self) { group in
             for event in events {
                 group.addTask {
-                    (try? await balancesRepository.getEventBalances(eventId: event.id)) ?? []
+                    await (try? balancesRepository.getEventBalances(eventId: event.id)) ?? []
                 }
             }
             for await balances in group {

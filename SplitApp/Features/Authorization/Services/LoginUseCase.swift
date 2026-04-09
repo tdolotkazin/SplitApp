@@ -22,6 +22,11 @@ final class LoginUseCase {
         TokenStore.shared.save(token: authResponse.accessToken)
         secureStorage.save(authResponse.refreshToken, for: "refresh_token")
 
+        // Сохраняем данные пользователя
+        await MainActor.run {
+            CurrentUserStore.shared.updateFromAuth(authResponse.user)
+        }
+
         return authResponse
     }
 
