@@ -10,38 +10,33 @@ final class ReceiptsDataRepository: ReceiptsRepository {
     }
 
     func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> ReceiptDTO {
+        logOperation(
+            op: "create",
+            mode: "start",
+            context: "eventId=\(eventId)"
+        )
+
         do {
             let dto: ReceiptDTO = try await apiClient.request(
                 endpoint: CreateReceiptEndpoint(eventId: eventId),
                 body: request
             )
-            try await coreDataStore.performBackground { [weak self] context in
-                try self?.upsertReceipt(dto, in: context)
-            }
+
+            try await persistDTOToLocalStores(dto)
+
+            logOperation(
+                op: "create",
+                mode: "network_success",
+                context: "eventId=\(eventId) receiptId=\(dto.id)"
+            )
+            logOperation(
+                op: "create",
+                mode: "network_cache_upsert",
+                context: "eventId=\(eventId) receiptId=\(dto.id)"
+            )
             return dto
         } catch {
-            // Fallback: создаем чек локально если нет бэкенда
-            let receiptId = UUID()
-            let receiptItems = request.items.map { item in
-                let receiptItemId = UUID()
-                return ReceiptItemDTO(
-                    id: receiptItemId,
-                    receiptId: receiptId,
-                    name: item.name,
-                    cost: item.cost,
-                    shareItems: item.shareItems.map { shareItem in
-                        ShareItemDTO(
-                            id: UUID(),
-                            receiptItemId: receiptItemId,
-                            userId: shareItem.userId,
-                            shareValue: shareItem.shareValue
-                        )
-                    }
-                )
-            }
-
-            let dto = ReceiptDTO(
-                id: receiptId,
+            let localDTO = makeLocalCreateReceiptDTO(
                 eventId: eventId,
                 payerId: request.payerId,
                 title: request.title,
@@ -52,22 +47,54 @@ final class ReceiptsDataRepository: ReceiptsRepository {
                 imageUrl: nil
             )
 
-            LocalReceiptsStore.shared.saveReceipt(dto)
-            return dto
+            do {
+                try await persistDTOToLocalStores(localDTO)
+                logOperation(
+                    op: "create",
+                    mode: "local_fallback_success",
+                    context: "eventId=\(eventId) receiptId=\(localDTO.id) networkError=\(error.localizedDescription)"
+                )
+                logOperation(
+                    op: "create",
+                    mode: "local_only",
+                    context: "eventId=\(eventId) receiptId=\(localDTO.id)"
+                )
+                return localDTO
+            } catch {
+                logOperation(
+                    op: "create",
+                    mode: "network_failed_local_failed",
+                    context: "eventId=\(eventId) error=\(error.localizedDescription)"
+                )
+                throw error
+            }
         }
     }
 
     func listReceipts(eventId: UUID) async throws -> [ReceiptDTO] {
-        do {
-            print("🌐 ReceiptsRepository: Пытаемся загрузить чеки с API для события: \(eventId)")
-            let dtos: [ReceiptDTO] = try await apiClient.request(endpoint: ListReceiptsEndpoint(eventId: eventId))
-            print("🌐 ReceiptsRepository: Получено чеков с API: \(dtos.count)")
+        logOperation(
+            op: "list",
+            mode: "start",
+            context: "eventId=\(eventId)"
+        )
 
-            // Если API вернул пустой список, проверяем локальное хранилище
+        do {
+            let dtos: [ReceiptDTO] = try await apiClient.request(endpoint: ListReceiptsEndpoint(eventId: eventId))
+
+            logOperation(
+                op: "list",
+                mode: "network_success",
+                context: "eventId=\(eventId) count=\(dtos.count)"
+            )
+
             if dtos.isEmpty {
                 let localReceipts = LocalReceiptsStore.shared.getReceipts(for: eventId)
-                print("🌐 ReceiptsRepository: API вернул 0 чеков, проверяем локальное хранилище: \(localReceipts.count)")
                 if !localReceipts.isEmpty {
+                    logOperation(
+                        op: "list",
+                        mode: "local_fallback_success",
+                        context: "eventId=\(eventId) count=\(localReceipts.count)"
+                    )
                     return localReceipts
                 }
             }
@@ -75,24 +102,61 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             try await coreDataStore.performBackground { [weak self] context in
                 try self?.syncReceipts(dtos, eventId: eventId, in: context)
             }
+            logOperation(
+                op: "list",
+                mode: "network_cache_upsert",
+                context: "eventId=\(eventId) count=\(dtos.count)"
+            )
             return dtos
         } catch {
-            print("🌐 ReceiptsRepository: Ошибка API: \(error), используем локальное хранилище")
             let localReceipts = LocalReceiptsStore.shared.getReceipts(for: eventId)
-            print("🌐 ReceiptsRepository: Возвращаем локальные чеки: \(localReceipts.count)")
+            if !localReceipts.isEmpty {
+                logOperation(
+                    op: "list",
+                    mode: "local_fallback_success",
+                    context: "eventId=\(eventId) count=\(localReceipts.count) networkError=\(error.localizedDescription)"
+                )
+            } else {
+                logOperation(
+                    op: "list",
+                    mode: "network_failed_local_failed",
+                    context: "eventId=\(eventId) error=\(error.localizedDescription)"
+                )
+            }
             return localReceipts
         }
     }
 
     func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> ReceiptDTO {
+        logOperation(
+            op: "update",
+            mode: "start",
+            context: "receiptId=\(id)"
+        )
+
         do {
             let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
-            try await coreDataStore.performBackground { [weak self] context in
-                try self?.upsertReceipt(dto, in: context)
-            }
+
+            try await persistDTOToLocalStores(dto)
+
+            logOperation(
+                op: "update",
+                mode: "network_success",
+                context: "receiptId=\(id)"
+            )
+            logOperation(
+                op: "update",
+                mode: "network_cache_upsert",
+                context: "receiptId=\(id)"
+            )
             return dto
         } catch {
             guard let existingReceipt = LocalReceiptsStore.shared.getReceipt(id: id) else {
+                logOperation(
+                    op: "update",
+                    mode: "network_failed_local_failed",
+                    context: "receiptId=\(id) error=\(error.localizedDescription)"
+                )
                 throw error
             }
             let updatedDto = makeUpdatedReceiptDTO(
@@ -100,8 +164,28 @@ final class ReceiptsDataRepository: ReceiptsRepository {
                 request: request,
                 existingReceipt: existingReceipt
             )
-            LocalReceiptsStore.shared.updateReceipt(updatedDto)
-            return updatedDto
+
+            do {
+                try await persistDTOToLocalStores(updatedDto)
+                logOperation(
+                    op: "update",
+                    mode: "local_fallback_success",
+                    context: "receiptId=\(id) networkError=\(error.localizedDescription)"
+                )
+                logOperation(
+                    op: "update",
+                    mode: "local_only",
+                    context: "receiptId=\(id)"
+                )
+                return updatedDto
+            } catch {
+                logOperation(
+                    op: "update",
+                    mode: "network_failed_local_failed",
+                    context: "receiptId=\(id) error=\(error.localizedDescription)"
+                )
+                throw error
+            }
         }
     }
 
@@ -192,11 +276,8 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             totalAmount: command.totalAmount,
             items: command.items?.map(mapCreateReceiptItemCommand)
         )
-        let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.upsertReceipt(dto, in: context)
-        }
-        return try await getCachedReceipt(id: dto.id)
+        let dto = try await updateReceipt(id: id, request)
+        return mapToDomain(dto)
     }
 
     func deleteReceipt(id: UUID) async throws {
@@ -208,6 +289,79 @@ final class ReceiptsDataRepository: ReceiptsRepository {
 }
 
 private extension ReceiptsDataRepository {
+    func logOperation(op: String, mode: String, context: String) {
+        print("[ReceiptsRepo] op=\(op) mode=\(mode) \(context)")
+    }
+
+    func persistDTOToLocalStores(_ dto: ReceiptDTO) async throws {
+        try await coreDataStore.performBackground { [weak self] context in
+            try self?.upsertReceipt(dto, in: context)
+        }
+        LocalReceiptsStore.shared.saveReceipt(dto)
+    }
+
+    func makeLocalCreateReceiptDTO(
+        eventId: UUID,
+        request: CreateReceiptRequest
+    ) -> ReceiptDTO {
+        let receiptId = UUID()
+        let receiptItems = request.items.map { item in
+            let receiptItemId = UUID()
+            return ReceiptItemDTO(
+                id: receiptItemId,
+                receiptId: receiptId,
+                name: item.name,
+                cost: item.cost,
+                shareItems: item.shareItems.map { shareItem in
+                    ShareItemDTO(
+                        id: UUID(),
+                        receiptItemId: receiptItemId,
+                        userId: shareItem.userId,
+                        shareValue: shareItem.shareValue
+                    )
+                }
+            )
+        }
+
+        return ReceiptDTO(
+            id: receiptId,
+            eventId: eventId,
+            payerId: request.payerId,
+            title: request.title,
+            totalAmount: request.totalAmount,
+            createdAt: Date(),
+            updatedAt: Date(),
+            items: receiptItems
+        )
+    }
+
+    func mapToDomain(_ dto: ReceiptDTO) -> Receipt {
+        let items = dto.items.map { item in
+            EventReceiptItem(
+                id: item.id,
+                name: item.name ?? "",
+                cost: item.cost,
+                shares: item.shareItems.map {
+                    Share(
+                        id: $0.id,
+                        userId: $0.userId,
+                        shareValue: $0.shareValue
+                    )
+                }
+            )
+        }
+
+        return Receipt(
+            id: dto.id,
+            eventId: dto.eventId,
+            payerId: dto.payerId,
+            title: dto.title,
+            totalAmount: dto.totalAmount,
+            createdAt: dto.createdAt,
+            items: items
+        )
+    }
+
     func makeUpdatedReceiptDTO(
         id: UUID,
         request: UpdateReceiptRequest,

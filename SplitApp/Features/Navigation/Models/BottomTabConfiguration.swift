@@ -55,6 +55,7 @@ extension BottomTabConfiguration {
                         service: dependencies.eventManagementService,
                         eventsRepository: dependencies.eventsRepository,
                         receiptsRepository: dependencies.receiptsRepository,
+                        usersRepository: dependencies.usersRepository,
                         networkMonitor: dependencies.networkMonitor
                     )
                 },

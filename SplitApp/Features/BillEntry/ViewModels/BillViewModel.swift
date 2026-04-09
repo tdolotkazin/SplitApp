@@ -38,6 +38,7 @@ final class BillViewModel: ObservableObject {
     let mode: Mode
     let eventsRepository: any EventsRepository
     let receiptsRepository: any ReceiptsRepository
+    let usersRepository: any UsersRepository
     private let networkMonitor: NetworkMonitor
 
     private var cancellables: Set<AnyCancellable> = []
@@ -104,11 +105,13 @@ final class BillViewModel: ObservableObject {
         mode: Mode,
         eventsRepository: any EventsRepository,
         receiptsRepository: any ReceiptsRepository,
+        usersRepository: any UsersRepository,
         networkMonitor: NetworkMonitor
     ) {
         self.mode = mode
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
+        self.usersRepository = usersRepository
         self.networkMonitor = networkMonitor
         self.isNetworkAvailable = networkMonitor.isConnected
 
@@ -251,10 +254,12 @@ final class BillViewModel: ObservableObject {
 
         do {
             try await persistReceipt(request, eventId: eventId)
+            print("[BillViewModel] op=save mode=success eventId=\(eventId)")
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
             return true
         } catch {
+            print("[BillViewModel] op=save mode=failure eventId=\(eventId) error=\(error.localizedDescription)")
             saveErrorMessage = error.localizedDescription
             return false
         }

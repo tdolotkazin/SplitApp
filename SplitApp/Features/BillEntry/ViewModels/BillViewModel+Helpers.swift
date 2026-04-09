@@ -29,6 +29,7 @@ extension BillViewModel {
             id: eventId
         ) {
             apply(event: cachedEvent)
+            await loadParticipantsFromBackendIfNeeded(for: cachedEvent)
             isLoading = false
         }
 
@@ -37,6 +38,7 @@ extension BillViewModel {
                 id: eventId
             )
             apply(event: refreshedEvent)
+            await loadParticipantsFromBackendIfNeeded(for: refreshedEvent)
         } catch {
             if loadedEvent == nil {
                 loadErrorMessage = error.localizedDescription
@@ -54,6 +56,7 @@ extension BillViewModel {
             id: eventId
         ) {
             apply(event: cachedEvent)
+            await loadParticipantsFromBackendIfNeeded(for: cachedEvent)
             isLoading = false
         }
 
@@ -76,6 +79,7 @@ extension BillViewModel {
             let event = try await refreshedEvent
             let receipts = try await refreshedReceipts
             apply(event: event)
+            await loadParticipantsFromBackendIfNeeded(for: event)
 
             guard let receipt = receipts.first(where: { $0.id == receiptId })
             else {
@@ -191,5 +195,32 @@ extension BillViewModel {
             initials: String(user.name.prefix(2)).uppercased(),
             color: .accentColor
         )
+    }
+
+    func loadParticipantsFromBackendIfNeeded(for event: Event) async {
+        if !participants.isEmpty { return }
+
+        let participantIds = Set(event.participantIds + event.users.map(\.id))
+        guard !participantIds.isEmpty else { return }
+
+        do {
+            let users = try await usersRepository.listUsers()
+            let filtered = users.filter { participantIds.contains($0.id) }
+            participants = filtered.map(Self.makeParticipant)
+            print("[BillParticipants] mode=network_success eventId=\(event.id) count=\(participants.count)")
+        } catch {
+            do {
+                let cachedUsers = try await usersRepository.getCachedUsers()
+                let filtered = cachedUsers.filter { participantIds.contains($0.id) }
+                participants = filtered.map(Self.makeParticipant)
+                print("[BillParticipants] mode=cache_fallback eventId=\(event.id) count=\(participants.count) networkError=\(error.localizedDescription)")
+            } catch {
+                print("[BillParticipants] mode=network_failed_local_failed eventId=\(event.id) error=\(error.localizedDescription)")
+            }
+        }
+
+        if let loadedReceipt {
+            items = mapReceiptToBillItems(loadedReceipt, participants: participants)
+        }
     }
 }

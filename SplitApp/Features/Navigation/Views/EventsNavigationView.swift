@@ -4,17 +4,20 @@ struct EventsNavigationView: View {
     @StateObject private var viewModel: EventsNavigationViewModel
     private let eventsRepository: any EventsRepository
     private let receiptsRepository: any ReceiptsRepository
+    private let usersRepository: any UsersRepository
     private let networkMonitor: NetworkMonitor
 
     init(
         service: EventManagementServiceProtocol,
         eventsRepository: any EventsRepository,
         receiptsRepository: any ReceiptsRepository,
+        usersRepository: any UsersRepository,
         networkMonitor: NetworkMonitor,
         rules: EventsNavigationRules = .init()
     ) {
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
+        self.usersRepository = usersRepository
         self.networkMonitor = networkMonitor
         _viewModel = StateObject(
             wrappedValue: EventsNavigationViewModel(
@@ -62,6 +65,7 @@ struct EventsNavigationView: View {
                 mode: destination.mode,
                 eventsRepository: eventsRepository,
                 receiptsRepository: receiptsRepository,
+                usersRepository: usersRepository,
                 networkMonitor: networkMonitor
             )
 
@@ -83,6 +87,7 @@ struct EventsNavigationView: View {
         service: EventManagementService(eventsRepository: EventsDataRepository()),
         eventsRepository: EventsDataRepository(),
         receiptsRepository: ReceiptsDataRepository(),
+        usersRepository: UsersDataRepository(),
         networkMonitor: .shared
     )
 }
