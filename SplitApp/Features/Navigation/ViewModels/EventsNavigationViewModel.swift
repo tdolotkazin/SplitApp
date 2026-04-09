@@ -5,6 +5,7 @@ import Combine
 final class EventsNavigationViewModel: ObservableObject {
     @Published var path: [EventsNavigationRoute] = []
     @Published var showBillEntry = false
+    @Published var editingReceipt: ReceiptDTO?
 
     let homeViewModel: EventsHomeViewModel
     let scannerViewModel: ReceiptViewModel
@@ -58,7 +59,13 @@ final class EventsNavigationViewModel: ObservableObject {
             path.append(.scanner)
         case .billEntry:
             path.removeAll()
+            editingReceipt = nil
             showBillEntry = true
         }
+    }
+
+    func openReceiptForEdit(_ receipt: ReceiptDTO) {
+        editingReceipt = receipt
+        showBillEntry = true
     }
 }
