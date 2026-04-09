@@ -39,6 +39,10 @@ final class EventsHomeViewModel: ObservableObject {
         )
     }
 
+    var currentEventReceiptsTotal: Double {
+        currentEventBills.reduce(0) { $0 + $1.amount }
+    }
+
     func loadDataIfNeeded() async {
         guard !isLoaded else { return }
 
