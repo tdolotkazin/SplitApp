@@ -37,7 +37,9 @@ struct BillRowView: View {
                     .foregroundStyle(
                         bill.tone == .neutral
                             ? AnyShapeStyle(AppTheme.textSecondary)
-                            : AnyShapeStyle(AppTheme.accentGradient)
+                            : AnyShapeStyle(
+                                AppTheme.accentGradient
+                            )
                     )
             }
         }

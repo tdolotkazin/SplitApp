@@ -7,6 +7,7 @@ final class EventsNavigationViewModel: ObservableObject {
     @Published var showBillEntry = false
     @Published var editingReceipt: ReceiptDTO?
 
+
     let homeViewModel: EventsHomeViewModel
     let scannerViewModel: ReceiptViewModel
 
