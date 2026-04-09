@@ -2,22 +2,20 @@ import SwiftUI
 
 struct HeaderView: View {
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 18) {
             Image("imgLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: 280, maxHeight: 220)
+                .frame(maxWidth: 360, maxHeight: 300)
 
             Text("SplitApp")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(.black)
 
             Text("Делите счета легко")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(.system(size: 18, weight: .regular, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.38))
         }
-        .padding(.top, 20)
         .padding(.bottom, 32)
     }
 }

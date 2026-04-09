@@ -8,35 +8,29 @@ struct LoginView: View {
         ZStack {
             Color("ColorGreen")
                 .ignoresSafeArea()
+            VStack(spacing: 0) {
+                Spacer(minLength: 80)
 
-            AppTheme.backgroundRadialGlow
-                .ignoresSafeArea()
+                HeaderView()
+                    .padding(.horizontal, 28)
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    HeaderView()
-                        .padding(.horizontal, 28)
+                Spacer()
 
-                    VStack(spacing: 16) {
-                        LegalTextSection()
-
-                        SocialButton(
-                            icon: "yandex",
-                            backgroundColor: .white,
-                            textColor: .black,
-                            hasBorder: true
-                        ) {
-                            Task {
-                                let success = await viewModel.login()
-                                if success {
-                                    appState.isLoggedIn = true
-                                }
-                            }
+                SocialButton(
+                    icon: "yandex",
+                    backgroundColor: .white,
+                    textColor: .black,
+                    hasBorder: false
+                ) {
+                    Task {
+                        let success = await viewModel.login()
+                        if success {
+                            appState.isLoggedIn = true
                         }
                     }
-                    .padding(.horizontal, 20)
                 }
-                .padding(.vertical, 32)
+
+                Spacer(minLength: 180)
             }
         }
     }
