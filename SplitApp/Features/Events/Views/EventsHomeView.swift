@@ -26,7 +26,7 @@ struct EventsHomeView: View {
                             .foregroundStyle(AppTheme.textPrimary)
                             .padding(.horizontal, 20)
 
-                        BalanceCardView(summary: viewModel.balanceSummary)
+                        BalanceCardView(totalAmount: viewModel.currentEventReceiptsTotal)
                             .padding(.horizontal, 20)
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -117,29 +117,34 @@ struct EventsHomeView: View {
     }
 
     private var emptyBillsCard: some View {
-        GlassCard(padding: 14) {
-            HStack(spacing: 12) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 28))
-                Text("Чеков пока нет")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                Spacer()
-            }
+        HStack(spacing: 10) {
+            Image(systemName: "xmark.circle")
+                .font(.system(size: 22, weight: .regular))
+                .foregroundStyle(AppTheme.textSecondary.opacity(0.75))
+            Text("Пока нет прикрепленных чеков")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary.opacity(0.82))
+            Spacer()
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
+                .stroke(AppTheme.textSecondary.opacity(0.16), lineWidth: 1)
+        )
     }
 }
 
 private struct BalanceCardView: View {
-    let summary: EventBalanceSummary
+    let totalAmount: Double
 
     var body: some View {
         GlassCard(padding: 24) {
             VStack(alignment: .center, spacing: 8) {
-                Text("Общий баланс")
+                Text("Общий счет")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
-                Text(summary.totalBalance.rubleText(signed: true, minimumFractionDigits: 2))
+                Text(totalAmount.rubleText(signed: true, minimumFractionDigits: 2))
                     .font(.system(size: 56, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.accentGradient)
                     .shadow(color: AppTheme.accent.opacity(0.25), radius: 12, x: 0, y: 4)
