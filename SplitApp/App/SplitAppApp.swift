@@ -67,6 +67,8 @@ struct SplitAppApp: App {
 
     private func bootstrap() async {
         let storage = KeychainStorage()
+
+        //storage.delete("refresh_token")
         guard storage.get("refresh_token") != nil else {
             await MainActor.run {
                 appState.isLoggedIn = false

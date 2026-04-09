@@ -50,6 +50,7 @@ extension YandexAuthProviderImpl: YandexLoginSDKObserver {
             continuation?.resume(returning: authToken)
 
         case .failure(let error):
+            continuation?.resume(throwing: error)
             print("Ошибка входа: \(error.localizedDescription)")
         }
     }

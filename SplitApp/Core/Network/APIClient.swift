@@ -42,131 +42,6 @@ final class APIClient {
         self.secureStorage = KeychainStorage()
     }
 
-    // MARK: - Public Methods
-    /*
-    /// Perform a request that returns a decoded response body.
-    func request<T: Decodable>(
-        endpoint: Endpoint,
-        body: (any Encodable)? = nil
-    ) async throws -> T {
-
-        do {
-            let request = try buildRequest(endpoint: endpoint, body: body)
-                    let (data, response) = try await session.data(for: request)
-
-                    try validateResponse(response, data: data)
-
-                    return try decoder.decode(T.self, from: data)
-        } catch NetworkError.unauthorized {
-            try await refreshToken()
-            let request = try buildRequest(endpoint: endpoint, body: body)
-            let (data, response) = try await session.data(for: request)
-
-            try validateResponse(response, data: data)
-
-            return try decoder.decode(T.self, from: data)
-
-        }
-        /*
-        let urlRequest = try buildRequest(endpoint: endpoint, body: body)
-        let (data, response) = try await session.data(for: urlRequest)
-
-        try validateResponse(response, data: data)
-
-        do {
-            return try decoder.decode(T.self, from: data)
-        } catch {
-            throw NetworkError.decodingError(error)
-        }*/
-    }
-
-    /// Perform a request that expects no response body (e.g. 204 No Content).
-    func requestVoid(
-        endpoint: Endpoint,
-        body: (any Encodable)? = nil
-    ) async throws {
-        let urlRequest = try buildRequest(endpoint: endpoint, body: body)
-        let (data, response) = try await session.data(for: urlRequest)
-
-        try validateResponse(response, data: data)
-    }
-
-    private func buildRequest(
-        endpoint: Endpoint,
-        body: (any Encodable)?
-    ) throws -> URLRequest {
-        var components = URLComponents(
-            url: baseURL.appendingPathComponent(endpoint.path),
-            resolvingAgainstBaseURL: false)
-
-        if let queryItems = endpoint.queryItems {
-            components?.queryItems = queryItems
-        }
-
-        guard let url = components?.url else {
-            throw NetworkError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method.rawValue
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        let token = TokenStore.shared.accessToken
-        //let token = "splitapp-production-token"
-        if let token = TokenStore.shared.accessToken, !token.isEmpty {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-
-        if let body {
-            request.httpBody = try encoder.encode(body)
-        }
-
-        return request
-    }
-
-    private func validateResponse(_ response: URLResponse, data: Data) throws {
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.invalidResponse
-        }
-
-        switch httpResponse.statusCode {
-        case 200...299:
-            return
-        case 401:
-            throw NetworkError.unauthorized
-        default:
-            let detail = try? decoder.decode(ErrorResponseDTO.self, from: data).detail
-            throw NetworkError.httpError(statusCode: httpResponse.statusCode, detail: detail)
-        }
-    }
-
-    private func refreshToken() async throws {
-
-        guard let refreshToken = secureStorage.get("refresh_token") else {
-            throw NetworkError.unauthorized
-        }
-
-        let url = baseURL.appendingPathComponent("/api/refresh")
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body = ["refresh_token": refreshToken]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await session.data(for: request)
-
-        try validateResponse(response, data: data)
-
-        let authResponse = try decoder.decode(AuthResponse.self, from: data)
-
-        TokenStore.shared.accessToken = authResponse.accessToken
-        secureStorage.save(authResponse.refreshToken, for: "refresh_token")
-    }
-} */
-
     func request<T: Decodable>(
         endpoint: Endpoint,
         body: (any Encodable)? = nil
@@ -187,7 +62,6 @@ final class APIClient {
     ) async throws -> T {
 
         let request = try buildRequest(endpoint: endpoint, body: body)
-
         let (data, response) = try await session.data(for: request)
 
         do {
@@ -200,13 +74,14 @@ final class APIClient {
                 throw NetworkError.unauthorized
             }
 
-            try await refreshToken()
+            try await refreshAccessTokenIfNeeded()
 
-            return try await performRequest(
-                endpoint: endpoint,
-                body: body,
-                isRetry: true
-            )
+            let retryRequest = try buildRequest(endpoint: endpoint, body: body)
+            let (retryData, retryResponse) = try await session.data(for: retryRequest)
+
+            try validateResponse(retryResponse, data: retryData)
+
+            return try decoder.decode(T.self, from: retryData)
         }
     }
 
@@ -259,62 +134,33 @@ final class APIClient {
     }
 
     func refreshAccessTokenIfNeeded() async throws {
-            if let _ = TokenStore.shared.accessToken, TokenStore.shared.isValid { return }
 
-            guard let refreshToken = secureStorage.get("refresh_token") else {
-                throw NetworkError.unauthorized
-            }
-
-            print("Refreshing access token with refresh token: \(refreshToken)")
-
-            let url = baseURL.appendingPathComponent("/api/refresh")
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try JSONSerialization.data(withJSONObject: ["refresh_token": refreshToken])
-
-            let (data, response) = try await session.data(for: request)
-            try validateResponse(response, data: data)
-
-            let authResponse = try decoder.decode(AuthResponse.self, from: data)
-            TokenStore.shared.save(token: authResponse.accessToken)
-
-            if secureStorage.get("refresh_token") != authResponse.refreshToken {
-                secureStorage.save(authResponse.refreshToken, for: "refresh_token")
-            }
-
-            print("Access token refreshed: \(authResponse.accessToken)")
+        if let _ = TokenStore.shared.accessToken,
+           TokenStore.shared.isValid {
+            return
         }
-
-    func refreshToken() async throws {
 
         guard let refreshToken = secureStorage.get("refresh_token") else {
             throw NetworkError.unauthorized
         }
 
-        let url = baseURL.appendingPathComponent("/api/refresh")
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         let body = ["refresh_token": refreshToken]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await session.data(for: request)
+        let response: AuthResponseRefreshToken = try await performRequest(
+            endpoint: RefreshTokenEndpoint(),
+            body: body,
+            isRetry: true
+        )
 
-        try validateResponse(response, data: data)
+        TokenStore.shared.accessToken = response.accessToken
 
-        let authResponse = try decoder.decode(AuthResponse.self, from: data)
-
-        TokenStore.shared.accessToken = authResponse.accessToken
-        secureStorage.save(authResponse.refreshToken, for: "refresh_token")
+        secureStorage.save(response.refreshToken, for: "refresh_token")
     }
 
     // MARK: - Validate
 
     private func validateResponse(_ response: URLResponse, data: Data) throws {
-
+        print(response)
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse
         }
@@ -329,7 +175,7 @@ final class APIClient {
         default:
             throw NetworkError.httpError(
                 statusCode: http.statusCode,
-                detail: nil
+                detail: response.debugDescription
             )
         }
     }

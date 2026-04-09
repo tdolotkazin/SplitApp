@@ -5,7 +5,7 @@ struct HeaderView: View {
         VStack(spacing: 8) {
             ZStack {
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.blue)
+                    .fill(AppTheme.dividerHighlight)
                     .frame(width: 80, height: 80)
                 }
 
