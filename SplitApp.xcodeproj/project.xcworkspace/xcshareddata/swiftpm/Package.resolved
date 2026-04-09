@@ -1,0 +1,24 @@
+{
+  "originHash" : "c4453c45b7f5659185879a13ed810148038172d9d8c2ca2d9cf97d1607375294",
+  "pins" : [
+    {
+      "identity" : "keychain-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/evgenyneu/keychain-swift.git",
+      "state" : {
+        "revision" : "5e1b02b6a9dac2a759a1d5dbc175c86bd192a608",
+        "version" : "24.0.0"
+      }
+    },
+    {
+      "identity" : "yandex-login-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yandexmobile/yandex-login-sdk-ios.git",
+      "state" : {
+        "revision" : "bb58530959d4c20c3c873deb84498844322dfee0",
+        "version" : "3.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}

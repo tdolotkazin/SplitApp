@@ -2,15 +2,25 @@ import Foundation
 
 enum EventsNavigationRoute: Hashable {
     case scanner
-    case eventDetail(UUID)
+    case eventPicker
 }
 
 struct BillEntryDestination: Identifiable {
     let id = UUID()
     let mode: BillViewModel.Mode
 
-    static func create(eventId: UUID?, scannedItems: [BillItem] = []) -> BillEntryDestination {
-        BillEntryDestination(mode: .create(eventId: eventId, scannedItems: scannedItems))
+    static func create(
+        eventId: UUID?,
+        scannedItems: [BillItem] = [],
+        receiptImageJPEGData: Data? = nil
+    ) -> BillEntryDestination {
+        BillEntryDestination(
+            mode: .create(
+                eventId: eventId,
+                scannedItems: scannedItems,
+                receiptImageJPEGData: receiptImageJPEGData
+            )
+        )
     }
 
     static func edit(eventId: UUID, receiptId: UUID) -> BillEntryDestination {
@@ -22,8 +32,7 @@ enum EventsNavigationAction: Equatable {
     case scanButtonTapped
     case addButtonTapped
     case scannerCaptureCompleted
-    case eventRowTapped(UUID)
-    case addReceiptTapped(UUID)
+    case currentEventTapped
     case receiptTapped(eventId: UUID, receiptId: UUID)
 }
 
@@ -40,9 +49,9 @@ struct EventsNavigationRules {
         switch action {
         case .scanButtonTapped:
             return scanButtonRoute
-        case .eventRowTapped(let id):
-            return .eventDetail(id)
-        case .addButtonTapped, .scannerCaptureCompleted, .addReceiptTapped, .receiptTapped:
+        case .currentEventTapped:
+            return .eventPicker
+        case .addButtonTapped, .scannerCaptureCompleted, .receiptTapped:
             return nil
         }
     }

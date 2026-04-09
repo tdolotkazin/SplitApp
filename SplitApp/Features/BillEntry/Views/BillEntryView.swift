@@ -126,13 +126,6 @@ struct BillEntryView: View {
                         .foregroundStyle(AppTheme.textSecondary)
                         .font(.system(size: 17))
                 }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово", action: saveAndDismiss)
-                        .foregroundStyle(AppTheme.accent)
-                        .font(.system(size: 17, weight: .semibold))
-                        .disabled(!viewModel.canSave)
-                }
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -220,9 +213,10 @@ private enum BillEntryLayout {
     let deps = AppDependencies.preview
     BillEntryView(
         viewModel: BillViewModel(
-            mode: .create(eventId: nil, scannedItems: []),
+            mode: .create(eventId: nil, scannedItems: [], receiptImageJPEGData: nil),
             eventsRepository: deps.eventsRepository,
             receiptsRepository: deps.receiptsRepository,
+            usersRepository: deps.usersRepository,
             networkMonitor: deps.networkMonitor
         )
     )

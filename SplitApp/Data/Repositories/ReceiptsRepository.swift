@@ -1,9 +1,8 @@
 import Foundation
 import CoreData
-
 final class ReceiptsDataRepository: ReceiptsRepository {
-    private let apiClient: APIClient
-    private let coreDataStore: CoreDataStore
+    let apiClient: APIClient
+    let coreDataStore: CoreDataStore
 
     init(apiClient: APIClient = .shared, coreDataStore: CoreDataStore = .shared) {
         self.apiClient = apiClient
@@ -11,63 +10,85 @@ final class ReceiptsDataRepository: ReceiptsRepository {
     }
 
     func createReceipt(eventId: UUID, _ request: CreateReceiptRequest) async throws -> ReceiptDTO {
+        logOperation(
+            operation: "create",
+            mode: "start",
+            context: "eventId=\(eventId)"
+        )
+
         do {
             let dto: ReceiptDTO = try await apiClient.request(
                 endpoint: CreateReceiptEndpoint(eventId: eventId),
                 body: request
             )
-            try await coreDataStore.performBackground { [weak self] context in
-                try self?.upsertReceipt(dto, in: context)
-            }
+
+            try await persistDTOToLocalStores(dto)
+
+            logOperation(
+            operation: "create",
+                mode: "network_success",
+                context: "eventId=\(eventId) receiptId=\(dto.id)"
+            )
+            logOperation(
+            operation: "create",
+                mode: "network_cache_upsert",
+                context: "eventId=\(eventId) receiptId=\(dto.id)"
+            )
             return dto
         } catch {
-            // Fallback: создаем чек локально если нет бэкенда
-            let receiptId = UUID()
-            let receiptItems = request.items.map { item in
-                let receiptItemId = UUID()
-                return ReceiptItemDTO(
-                    id: receiptItemId,
-                    receiptId: receiptId,
-                    name: item.name,
-                    cost: item.cost,
-                    shareItems: item.shareItems.map { shareItem in
-                        ShareItemDTO(
-                            id: UUID(),
-                            receiptItemId: receiptItemId,
-                            userId: shareItem.userId,
-                            shareValue: shareItem.shareValue
-                        )
-                    }
-                )
-            }
-
-            let dto = ReceiptDTO(
-                id: receiptId,
+            let localDTO = makeLocalCreateReceiptDTO(
                 eventId: eventId,
-                payerId: request.payerId,
-                title: request.title,
-                totalAmount: request.totalAmount,
-                createdAt: Date(),
-                updatedAt: Date(),
-                items: receiptItems
+                request: request
             )
 
-            LocalReceiptsStore.shared.saveReceipt(dto)
-            return dto
+            do {
+                try await persistDTOToLocalStores(localDTO)
+                logOperation(
+            operation: "create",
+                    mode: "local_fallback_success",
+                    context: "eventId=\(eventId) receiptId=\(localDTO.id) networkError=\(error.localizedDescription)"
+                )
+                logOperation(
+            operation: "create",
+                    mode: "local_only",
+                    context: "eventId=\(eventId) receiptId=\(localDTO.id)"
+                )
+                return localDTO
+            } catch {
+                logOperation(
+            operation: "create",
+                    mode: "network_failed_local_failed",
+                    context: "eventId=\(eventId) error=\(error.localizedDescription)"
+                )
+                throw error
+            }
         }
     }
 
     func listReceipts(eventId: UUID) async throws -> [ReceiptDTO] {
-        do {
-            print("🌐 ReceiptsRepository: Пытаемся загрузить чеки с API для события: \(eventId)")
-            let dtos: [ReceiptDTO] = try await apiClient.request(endpoint: ListReceiptsEndpoint(eventId: eventId))
-            print("🌐 ReceiptsRepository: Получено чеков с API: \(dtos.count)")
+        logOperation(
+            operation: "list",
+            mode: "start",
+            context: "eventId=\(eventId)"
+        )
 
-            // Если API вернул пустой список, проверяем локальное хранилище
+        do {
+            let dtos: [ReceiptDTO] = try await apiClient.request(endpoint: ListReceiptsEndpoint(eventId: eventId))
+
+            logOperation(
+            operation: "list",
+                mode: "network_success",
+                context: "eventId=\(eventId) count=\(dtos.count)"
+            )
+
             if dtos.isEmpty {
                 let localReceipts = LocalReceiptsStore.shared.getReceipts(for: eventId)
-                print("🌐 ReceiptsRepository: API вернул 0 чеков, проверяем локальное хранилище: \(localReceipts.count)")
                 if !localReceipts.isEmpty {
+                    logOperation(
+            operation: "list",
+                        mode: "local_fallback_success",
+                        context: "eventId=\(eventId) count=\(localReceipts.count)"
+                    )
                     return localReceipts
                 }
             }
@@ -75,33 +96,49 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             try await coreDataStore.performBackground { [weak self] context in
                 try self?.syncReceipts(dtos, eventId: eventId, in: context)
             }
+            logOperation(
+            operation: "list",
+                mode: "network_cache_upsert",
+                context: "eventId=\(eventId) count=\(dtos.count)"
+            )
             return dtos
         } catch {
-            print("🌐 ReceiptsRepository: Ошибка API: \(error), используем локальное хранилище")
-            let localReceipts = LocalReceiptsStore.shared.getReceipts(for: eventId)
-            print("🌐 ReceiptsRepository: Возвращаем локальные чеки: \(localReceipts.count)")
-            return localReceipts
+            return handleListReceiptsFallback(
+                eventId: eventId,
+                networkError: error
+            )
         }
     }
 
     func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> ReceiptDTO {
+        logOperation(
+            operation: "update",
+            mode: "start",
+            context: "receiptId=\(id)"
+        )
+
         do {
             let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
-            try await coreDataStore.performBackground { [weak self] context in
-                try self?.upsertReceipt(dto, in: context)
-            }
+
+            try await persistDTOToLocalStores(dto)
+
+            logOperation(
+            operation: "update",
+                mode: "network_success",
+                context: "receiptId=\(id)"
+            )
+            logOperation(
+            operation: "update",
+                mode: "network_cache_upsert",
+                context: "receiptId=\(id)"
+            )
             return dto
         } catch {
-            guard let existingReceipt = LocalReceiptsStore.shared.getReceipt(id: id) else {
-                throw error
-            }
-            let updatedDto = makeUpdatedReceiptDTO(
+            return try await handleUpdateReceiptFallback(
                 id: id,
                 request: request,
-                existingReceipt: existingReceipt
+                networkError: error
             )
-            LocalReceiptsStore.shared.updateReceipt(updatedDto)
-            return updatedDto
         }
     }
 
@@ -112,10 +149,23 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             totalAmount: command.totalAmount,
             items: command.items.map(mapCreateReceiptItemCommand)
         )
-        let dto: ReceiptDTO = try await apiClient.request(
+        var dto: ReceiptDTO = try await apiClient.request(
             endpoint: CreateReceiptEndpoint(eventId: eventId),
             body: request
         )
+
+        if let receiptImageJPEGData = command.receiptImageJPEGData {
+            do {
+                let uploadResponse = try await uploadReceiptImage(
+                    receiptId: dto.id,
+                    imageJPEGData: receiptImageJPEGData
+                )
+                dto = updateImageUrl(in: dto, imageUrl: uploadResponse.imageUrl)
+            } catch {
+                print("Не удалось загрузить фото чека \(dto.id): \(error)")
+            }
+        }
+
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertReceipt(dto, in: context)
         }
@@ -179,180 +229,8 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             totalAmount: command.totalAmount,
             items: command.items?.map(mapCreateReceiptItemCommand)
         )
-        let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.upsertReceipt(dto, in: context)
-        }
-        return try await getCachedReceipt(id: dto.id)
+        let dto = try await updateReceipt(id: id, request)
+        return mapToDomain(dto)
     }
 
-    func deleteReceipt(id: UUID) async throws {
-        try await apiClient.requestVoid(endpoint: DeleteReceiptEndpoint(id: id))
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.deleteLocalReceipt(id: id, in: context)
-        }
-    }
-}
-
-private extension ReceiptsDataRepository {
-    func makeUpdatedReceiptDTO(
-        id: UUID,
-        request: UpdateReceiptRequest,
-        existingReceipt: ReceiptDTO
-    ) -> ReceiptDTO {
-        let baseItems = request.items ?? existingReceipt.items.map { existingItem in
-            CreateReceiptItemRequest(
-                name: existingItem.name,
-                cost: existingItem.cost,
-                shareItems: existingItem.shareItems.map { shareItem in
-                    CreateShareItemRequest(
-                        userId: shareItem.userId,
-                        shareValue: shareItem.shareValue
-                    )
-                }
-            )
-        }
-        let receiptItems = mapCreateItemsToReceiptItems(baseItems, receiptId: id)
-
-        return ReceiptDTO(
-            id: id,
-            eventId: existingReceipt.eventId,
-            payerId: existingReceipt.payerId,
-            title: request.title ?? existingReceipt.title,
-            totalAmount: request.totalAmount ?? existingReceipt.totalAmount,
-            createdAt: existingReceipt.createdAt,
-            updatedAt: Date(),
-            items: receiptItems
-        )
-    }
-
-    func mapCreateItemsToReceiptItems(
-        _ items: [CreateReceiptItemRequest],
-        receiptId: UUID
-    ) -> [ReceiptItemDTO] {
-        items.map { item in
-            let receiptItemId = UUID()
-            return ReceiptItemDTO(
-                id: receiptItemId,
-                receiptId: receiptId,
-                name: item.name,
-                cost: item.cost,
-                shareItems: item.shareItems.map { shareItem in
-                    ShareItemDTO(
-                        id: UUID(),
-                        receiptItemId: receiptItemId,
-                        userId: shareItem.userId,
-                        shareValue: shareItem.shareValue
-                    )
-                }
-            )
-        }
-    }
-
-    private func mapCreateReceiptItemCommand(_ command: CreateReceiptItemCommand) -> CreateReceiptItemRequest {
-        CreateReceiptItemRequest(
-            name: command.name,
-            cost: command.cost,
-            shareItems: command.shareItems.map { share in
-                CreateShareItemRequest(userId: share.userId, shareValue: share.shareValue)
-            }
-        )
-    }
-
-    private func mapToDomain(_ cdReceipt: CDReceipt) -> Receipt {
-        let cdItems = ((cdReceipt.items as? Set<CDReceiptItem>) ?? [])
-            .sorted { ($0.name ?? "") < ($1.name ?? "") }
-        let items: [EventReceiptItem] = cdItems.compactMap { item in
-            guard let itemId = item.id else { return nil }
-            let cdShares = ((item.shareItems as? Set<CDShareItem>) ?? [])
-                .sorted { $0.shareValue > $1.shareValue }
-            let shares: [Share] = cdShares.compactMap { share in
-                guard let shareId = share.id, let userId = share.userId else { return nil }
-                return Share(id: shareId, userId: userId, shareValue: share.shareValue)
-            }
-            return EventReceiptItem(id: itemId, name: item.name ?? "", cost: item.cost, shares: shares)
-        }
-
-        return Receipt(
-            id: cdReceipt.id ?? UUID(),
-            eventId: cdReceipt.eventId ?? UUID(),
-            payerId: cdReceipt.payerId ?? UUID(),
-            title: cdReceipt.title,
-            totalAmount: cdReceipt.totalAmount,
-            createdAt: cdReceipt.createdAt ?? Date(),
-            items: items
-        )
-    }
-
-    private func upsertReceipt(_ dto: ReceiptDTO, in context: NSManagedObjectContext) throws {
-        let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", dto.id as CVarArg)
-        fetchRequest.fetchLimit = 1
-
-        let existing = try context.fetch(fetchRequest).first
-        let receipt = existing ?? CDReceipt(context: context)
-        receipt.update(from: dto)
-
-        let eventFetch: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
-        eventFetch.predicate = NSPredicate(format: "id == %@", dto.eventId as CVarArg)
-        eventFetch.fetchLimit = 1
-        receipt.event = try context.fetch(eventFetch).first
-
-        let existingItems = receipt.items as? Set<CDReceiptItem> ?? []
-        let dtoItemIds = Set(dto.items.map { $0.id })
-
-        for item in existingItems where !dtoItemIds.contains(item.id ?? UUID()) {
-            context.delete(item)
-        }
-
-        for itemDto in dto.items {
-            let item = existingItems.first { $0.id == itemDto.id } ?? CDReceiptItem(context: context)
-            item.update(from: itemDto)
-            item.receipt = receipt
-            try syncShareItems(itemDto.shareItems, for: item, in: context)
-        }
-    }
-
-    private func syncReceipts(_ dtos: [ReceiptDTO], eventId: UUID, in context: NSManagedObjectContext) throws {
-        let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "eventId == %@", eventId as CVarArg)
-        let existingReceipts = try context.fetch(fetchRequest)
-        let dtoIds = Set(dtos.map(\.id))
-
-        for receipt in existingReceipts where !dtoIds.contains(receipt.id ?? UUID()) {
-            context.delete(receipt)
-        }
-
-        for dto in dtos {
-            try upsertReceipt(dto, in: context)
-        }
-    }
-
-    private func syncShareItems(
-        _ dtos: [ShareItemDTO],
-        for item: CDReceiptItem,
-        in context: NSManagedObjectContext
-    ) throws {
-        let existingShares = item.shareItems as? Set<CDShareItem> ?? []
-        let dtoIds = Set(dtos.map(\.id))
-
-        for share in existingShares where !dtoIds.contains(share.id ?? UUID()) {
-            context.delete(share)
-        }
-
-        for dto in dtos {
-            let share = existingShares.first { $0.id == dto.id } ?? CDShareItem(context: context)
-            share.update(from: dto)
-            share.receiptItem = item
-        }
-    }
-
-    private func deleteLocalReceipt(id: UUID, in context: NSManagedObjectContext) throws {
-        let fetchRequest: NSFetchRequest<CDReceipt> = CDReceipt.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        fetchRequest.fetchLimit = 1
-        if let receipt = try context.fetch(fetchRequest).first {
-            context.delete(receipt)
-        }
-    }
 }

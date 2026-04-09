@@ -39,8 +39,12 @@ struct BottomTabConfiguration {
 }
 
 extension BottomTabConfiguration {
-    static func makeDefault(with dependencies: AppDependencies) -> BottomTabConfiguration {
-        BottomTabConfiguration(
+    @MainActor
+    static func makeDefault(with dependencies: AppDependencies, appState: AppState) -> BottomTabConfiguration {
+        let storage = KeychainStorage()
+        let logoutUseCase = LogoutUseCase(secureStorage: storage, appState: appState)
+        let profileVM = ProfileViewModel(logoutUseCase: logoutUseCase)
+        return BottomTabConfiguration(
             items: [
                 BottomTabItem(
                     id: .events,
@@ -51,8 +55,8 @@ extension BottomTabConfiguration {
                         service: dependencies.eventManagementService,
                         eventsRepository: dependencies.eventsRepository,
                         receiptsRepository: dependencies.receiptsRepository,
-                        networkMonitor: dependencies.networkMonitor,
-                        friendsRepository: dependencies.friendsRepository
+                        usersRepository: dependencies.usersRepository,
+                        networkMonitor: dependencies.networkMonitor
                     )
                 },
                 BottomTabItem(
@@ -67,21 +71,25 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    ProfileScreenView(model: ProfileScreenModel(
-                        initials: "ИВ",
-                        email: "ivan@example.com",
-                        name: "Иван Волков 🌸",
-                        eventsCountText: "12",
-                        friendsCountText: "8",
-                        closedBillsText: "€340",
-                        openBillsText: "€34")
+                    ProfileScreenView(
+                        model: ProfileScreenModel(
+                            initials: "ИВ",
+                            email: "ivan@example.com",
+                            name: "Иван Волков 🌸",
+                            eventsCountText: "12",
+                            friendsCountText: "8",
+                            closedBillsText: "€340",
+                            openBillsText: "€34"
+                        ),
+                        viewModel: profileVM
                     )
                 }
             ]
         )
     }
 
+    @MainActor
     static var preview: BottomTabConfiguration {
-        makeDefault(with: .preview)
+        makeDefault(with: .preview, appState: AppState(isLoggedIn: true))
     }
 }

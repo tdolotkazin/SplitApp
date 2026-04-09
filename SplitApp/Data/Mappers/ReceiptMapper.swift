@@ -9,7 +9,8 @@ enum ReceiptMapper {
             title: dto.title,
             totalAmount: dto.totalAmount,
             createdAt: dto.createdAt,
-            items: items
+            items: items,
+            imageURL: dto.imageUrl
         )
     }
 

@@ -4,21 +4,21 @@ struct EventsNavigationView: View {
     @StateObject private var viewModel: EventsNavigationViewModel
     private let eventsRepository: any EventsRepository
     private let receiptsRepository: any ReceiptsRepository
+    private let usersRepository: any UsersRepository
     private let networkMonitor: NetworkMonitor
-    private let friendsRepository: any FriendsRepository
 
     init(
         service: EventManagementServiceProtocol,
         eventsRepository: any EventsRepository,
         receiptsRepository: any ReceiptsRepository,
+        usersRepository: any UsersRepository,
         networkMonitor: NetworkMonitor,
-        friendsRepository: any FriendsRepository,
         rules: EventsNavigationRules = .init()
     ) {
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
+        self.usersRepository = usersRepository
         self.networkMonitor = networkMonitor
-        self.friendsRepository = friendsRepository
         _viewModel = StateObject(
             wrappedValue: EventsNavigationViewModel(
                 service: service,
@@ -34,13 +34,13 @@ struct EventsNavigationView: View {
                 onScanTap: { viewModel.handle(.scanButtonTapped) },
                 onAddTap: { viewModel.handle(.addButtonTapped) },
                 onBillTap: { billId in
-                    guard let eventId = LocalEventStore.shared.currentEventId else {
+                    guard let eventId = viewModel.homeViewModel.currentEvent?.id else {
                         return
                     }
                     viewModel.handle(.receiptTapped(eventId: eventId, receiptId: billId))
                 },
-                onEventTap: { eventId in
-                    viewModel.handle(.eventRowTapped(eventId))
+                onEventTap: {
+                    viewModel.handle(.currentEventTapped)
                 }
             )
             .task {
@@ -55,20 +55,8 @@ struct EventsNavigationView: View {
                     )
                     .navigationBarBackButtonHidden(true)
 
-                case .eventDetail(let eventId):
-                    EventDetailView(
-                        viewModel: EventDetailViewModel(
-                            eventId: eventId,
-                            service: viewModel.service,
-                            receiptsRepository: receiptsRepository
-                        ),
-                        onAddReceipt: { viewModel.handle(.addReceiptTapped(eventId)) },
-                        onReceiptTap: { receiptId in
-                            viewModel.handle(
-                                .receiptTapped(eventId: eventId, receiptId: receiptId)
-                            )
-                        }
-                    )
+                case .eventPicker:
+                    EventPickerView(viewModel: viewModel.homeViewModel)
                 }
             }
         }
@@ -77,8 +65,8 @@ struct EventsNavigationView: View {
                 mode: destination.mode,
                 eventsRepository: eventsRepository,
                 receiptsRepository: receiptsRepository,
-                networkMonitor: networkMonitor,
-                friendsRepository: friendsRepository
+                usersRepository: usersRepository,
+                networkMonitor: networkMonitor
             )
 
             BillEntryView(viewModel: billViewModel)
@@ -95,12 +83,11 @@ struct EventsNavigationView: View {
 }
 
 #Preview {
-    let deps = AppDependencies.preview
-    return EventsNavigationView(
-        service: deps.eventManagementService,
-        eventsRepository: deps.eventsRepository,
-        receiptsRepository: deps.receiptsRepository,
-        networkMonitor: deps.networkMonitor,
-        friendsRepository: deps.friendsRepository
+    EventsNavigationView(
+        service: EventManagementService(eventsRepository: EventsDataRepository()),
+        eventsRepository: EventsDataRepository(),
+        receiptsRepository: ReceiptsDataRepository(),
+        usersRepository: UsersDataRepository(),
+        networkMonitor: .shared
     )
 }

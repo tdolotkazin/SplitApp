@@ -130,6 +130,8 @@ struct ParticipantPickerSheet: View {
                         }
                     )
                     .buttonStyle(PlainButtonStyle())
+                    .disabled(true)
+                    .opacity(0.6)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
