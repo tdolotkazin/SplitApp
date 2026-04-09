@@ -56,7 +56,8 @@ final class APIClient {
         isRetry: Bool
     ) async throws -> T {
         if requiresAuthorization(endpoint: endpoint),
-           (TokenStore.shared.accessToken?.isEmpty ?? true) {
+            TokenStore.shared.accessToken?.isEmpty ?? true
+        {
             try? await refreshAccessTokenIfNeeded()
         }
 
@@ -75,7 +76,9 @@ final class APIClient {
             try await refreshAccessTokenIfNeeded()
 
             let retryRequest = try buildRequest(endpoint: endpoint, body: body)
-            let (retryData, retryResponse) = try await session.data(for: retryRequest)
+            let (retryData, retryResponse) = try await session.data(
+                for: retryRequest
+            )
 
             try validateResponse(retryResponse, data: retryData)
 
@@ -84,8 +87,8 @@ final class APIClient {
     }
 
     private func requiresAuthorization(endpoint: Endpoint) -> Bool {
-        endpoint.path != AuthUserEndpoint(yandexToken: "").path &&
-        endpoint.path != RefreshTokenEndpoint().path
+        endpoint.path != AuthUserEndpoint(yandexToken: "").path
+            && endpoint.path != RefreshTokenEndpoint().path
     }
 
     func requestVoid(
@@ -137,7 +140,8 @@ final class APIClient {
 
     func refreshAccessTokenIfNeeded() async throws {
         if TokenStore.shared.accessToken != nil,
-           TokenStore.shared.isValid {
+            TokenStore.shared.isValid
+        {
             return
         }
 
@@ -155,34 +159,6 @@ final class APIClient {
 
         TokenStore.shared.save(token: response.accessToken)
         secureStorage.save(response.refreshToken, for: "refresh_token")
-    }
-
-    private func performRequest<T: Decodable>(
-        endpoint: Endpoint,
-        body: (any Encodable)?,
-        isRetry: Bool
-    ) async throws -> T {
-        let request = try buildRequest(endpoint: endpoint, body: body)
-        let (data, response) = try await session.data(for: request)
-
-        do {
-            try validateResponse(response, data: data)
-            return try decoder.decode(T.self, from: data)
-        } catch NetworkError.unauthorized {
-            if isRetry {
-                throw NetworkError.unauthorized
-            }
-
-            try await refreshAccessTokenIfNeeded()
-
-            let retryRequest = try buildRequest(endpoint: endpoint, body: body)
-            let (retryData, retryResponse) = try await session.data(for: retryRequest)
-
-            try validateResponse(retryResponse, data: retryData)
-            return try decoder.decode(T.self, from: retryData)
-        } catch {
-            throw NetworkError.decodingError(error)
-        }
     }
 
     private func buildRequest(
@@ -225,14 +201,15 @@ final class APIClient {
         }
 
         switch http.statusCode {
-        case 200 ... 299:
+        case 200...299:
             return
         case 401:
             throw NetworkError.unauthorized
         case 403:
             throw NetworkError.httpError(statusCode: 403, detail: "Forbidden")
         default:
-            let detail = (try? decoder.decode(ErrorResponseDTO.self, from: data).detail)
+            let detail =
+                (try? decoder.decode(ErrorResponseDTO.self, from: data).detail)
                 ?? response.debugDescription
             throw NetworkError.httpError(
                 statusCode: http.statusCode,
