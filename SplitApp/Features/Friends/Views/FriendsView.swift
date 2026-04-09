@@ -21,6 +21,13 @@ struct FriendsView: View {
         .task {
             await viewModel.loadFriends()
         }
+        .sheet(isPresented: $showAddFriend) {
+            AddFriendSheet { name in
+                Task {
+                    await viewModel.addLocalFriend(name: name)
+                }
+            }
+        }
     }
 }
 
@@ -109,7 +116,12 @@ private extension FriendsView {
 
     @ViewBuilder
     var emptyState: some View {
-        if viewModel.filteredFriends.isEmpty && !viewModel.searchText.isEmpty {
+        if viewModel.friends.isEmpty && viewModel.searchText.isEmpty && !viewModel.isLoading {
+            EmptyFriendsState(onAddFriend: {
+                showAddFriend = true
+            })
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+        } else if viewModel.filteredFriends.isEmpty && !viewModel.searchText.isEmpty {
             EmptySearchState()
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
