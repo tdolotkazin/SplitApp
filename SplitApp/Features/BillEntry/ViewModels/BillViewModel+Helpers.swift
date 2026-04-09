@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 
+// swiftlint:disable file_length
 extension BillViewModel {
     func loadCreateContext(
         eventId: UUID?,
@@ -15,11 +16,14 @@ extension BillViewModel {
         }
 
         guard let eventId else {
-            participants = [
-                Participant(name: "Я", initials: "Я", color: .accentColor),
-                Participant(name: "Друг 1", initials: "Д1", color: .blue),
-                Participant(name: "Друг 2", initials: "Д2", color: .green)
-            ]
+            await loadFriendsIntoParticipants()
+            if participants.isEmpty {
+                participants = [
+                    Participant(name: "Я", initials: "Я", color: .accentColor),
+                    Participant(name: "Друг 1", initials: "Д1", color: .blue),
+                    Participant(name: "Друг 2", initials: "Д2", color: .green)
+                ]
+            }
             return
         }
 
@@ -64,6 +68,7 @@ extension BillViewModel {
             id: receiptId
         ) {
             apply(receipt: cachedReceipt)
+            await loadMissingParticipantsForLoadedReceipt()
             isUsingCachedData = true
             isLoading = false
         }
@@ -91,12 +96,14 @@ extension BillViewModel {
             }
 
             apply(receipt: receipt)
+            await loadMissingParticipantsForLoadedReceipt()
             isUsingCachedData = false
         } catch {
             if loadedReceipt == nil {
                 loadErrorMessage = error.localizedDescription
             } else {
                 isUsingCachedData = true
+                await loadMissingParticipantsForLoadedReceipt()
             }
         }
 
@@ -128,7 +135,8 @@ extension BillViewModel {
     func apply(event: Event) {
         loadedEvent = event
         payerId = loadedReceipt?.payerId ?? event.creatorId
-        participants = event.participants.map(Self.makeParticipant)
+        let eventParticipants = (event.participants + event.users).map(Self.makeParticipant)
+        participants = mergeParticipants(eventParticipants)
 
         if let loadedReceipt {
             items = mapReceiptToBillItems(
@@ -141,6 +149,7 @@ extension BillViewModel {
     func apply(receipt: Receipt) {
         loadedReceipt = receipt
         payerId = receipt.payerId
+        receiptTitle = receipt.title ?? ""
         items = mapReceiptToBillItems(receipt, participants: participants)
     }
 
@@ -148,9 +157,11 @@ extension BillViewModel {
         _ receipt: Receipt,
         participants: [Participant]
     ) -> [BillItem] {
-        receipt.items.map { item in
-            let assignedParticipants = item.shares.compactMap { share in
-                participants.first(where: { $0.id == share.userId })
+        let participantsById = Dictionary(uniqueKeysWithValues: participants.map { ($0.id, $0) })
+
+        return receipt.items.map { item in
+            let assignedParticipants = item.shares.map { share in
+                participantsById[share.userId] ?? Self.makeFallbackParticipant(for: share.userId)
             }
 
             return BillItem(
@@ -166,9 +177,10 @@ extension BillViewModel {
         payerId: UUID,
         items: [BillItem]
     ) -> CreateReceiptCommand {
-        CreateReceiptCommand(
+        let trimmedTitle = receiptTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        return CreateReceiptCommand(
             payerId: payerId,
-            title: nil,
+            title: trimmedTitle.isEmpty ? nil : trimmedTitle,
             totalAmount: NSDecimalNumber(decimal: total).doubleValue,
             items: items.compactMap { item in
                 guard !item.assignedTo.isEmpty else { return nil }
@@ -176,10 +188,13 @@ extension BillViewModel {
                 return CreateReceiptItemCommand(
                     name: item.name.isEmpty ? nil : item.name,
                     cost: NSDecimalNumber(decimal: item.amount).doubleValue,
-                    shareItems: item.assignedTo.map { assignedTo in
+                    shareItems: zip(
+                        item.assignedTo,
+                        normalizedShareValues(for: item.assignedTo.count)
+                    ).map { assignedTo, shareValue in
                         CreateShareItemCommand(
                             userId: assignedTo.id,
-                            shareValue: 1
+                            shareValue: shareValue
                         )
                     }
                 )
@@ -192,41 +207,201 @@ extension BillViewModel {
         Participant(
             id: user.id,
             name: user.name,
-            initials: String(user.name.prefix(2)).uppercased(),
-            color: .accentColor
+            initials: makeInitials(from: user.name),
+            color: makeStableColor(for: user.id),
+            avatarURL: makeAvatarURL(from: user.avatarUrl)
+        )
+    }
+
+    static let avatarColors: [Color] = [
+        Color(hex: "#FFB5A7"),
+        Color(hex: "#A7D8FF"),
+        Color(hex: "#D4C5F9"),
+        Color(hex: "#C9F7F5"),
+        Color(hex: "#FADCB6"),
+        Color(hex: "#C8F4CC")
+    ]
+
+    static func makeInitials(from name: String) -> String {
+        let parts = name
+            .split(separator: " ")
+            .filter { !$0.isEmpty }
+
+        if parts.count >= 2 {
+            let first = String(parts[0].prefix(1))
+            let second = String(parts[1].prefix(1))
+            return (first + second).uppercased()
+        }
+
+        return String(name.prefix(2)).uppercased()
+    }
+
+    static func makeStableColor(for id: UUID) -> Color {
+        let normalized = id.uuidString.replacingOccurrences(of: "-", with: "")
+        let checksum = normalized.unicodeScalars.reduce(0) { partialResult, scalar in
+            partialResult + Int(scalar.value)
+        }
+        let index = checksum % avatarColors.count
+        return avatarColors[index]
+    }
+
+    static func makeAvatarURL(from value: String?) -> URL? {
+        guard let value, !value.isEmpty else {
+            return nil
+        }
+
+        return URL(string: value)
+    }
+
+    static func makeFallbackParticipant(for userId: UUID) -> Participant {
+        return Participant(
+            id: userId,
+            name: "Неизвестный участник",
+            initials: "?",
+            color: makeStableColor(for: userId),
+            avatarURL: nil
         )
     }
 
     func loadParticipantsFromBackendIfNeeded(for event: Event) async {
-        if !participants.isEmpty { return }
-
-        let participantIds = Set(event.participantIds + event.users.map(\.id))
-        guard !participantIds.isEmpty else { return }
+        let eventParticipants = (event.participants + event.users).map(Self.makeParticipant)
+        participants = mergeParticipants(eventParticipants)
 
         do {
             let users = try await usersRepository.listUsers()
-            let filtered = users.filter { participantIds.contains($0.id) }
-            participants = filtered.map(Self.makeParticipant)
-            print("[BillParticipants] mode=network_success eventId=\(event.id) count=\(participants.count)")
+            participants = mergeParticipants(users.map(Self.makeParticipant))
         } catch {
-            do {
-                let cachedUsers = try await usersRepository.getCachedUsers()
-                let filtered = cachedUsers.filter { participantIds.contains($0.id) }
-                participants = filtered.map(Self.makeParticipant)
-                let message =
-                    "[BillParticipants] mode=cache_fallback eventId=\(event.id) " +
-                    "count=\(participants.count) networkError=\(error.localizedDescription)"
-                print(message)
-            } catch {
-                let message =
-                    "[BillParticipants] mode=network_failed_local_failed eventId=\(event.id) " +
-                    "error=\(error.localizedDescription)"
-                print(message)
+            if let cached = try? await usersRepository.getCachedUsers() {
+                participants = mergeParticipants(cached.map(Self.makeParticipant))
             }
         }
 
         if let loadedReceipt {
+            let unresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+            if !unresolved.isEmpty {
+                let resolvedById = await resolveParticipantsByIds(unresolved)
+                participants = mergeParticipants(resolvedById)
+                let stillUnresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+                if !stillUnresolved.isEmpty {
+                    print("[BillParticipants] unresolved_after_event_load ids=\(stillUnresolved)")
+                }
+            }
             items = mapReceiptToBillItems(loadedReceipt, participants: participants)
         }
     }
+
+    func ensureParticipantsInEvent(eventId: UUID, items: [BillItem], payerId: UUID) async throws {
+        let eventParticipantIds = Set(
+            ((loadedEvent?.participants ?? []) + (loadedEvent?.users ?? [])).map(\.id)
+        )
+
+        var neededIds = Set(items.flatMap { $0.assignedTo.map(\.id) })
+        neededIds.insert(payerId)
+
+        let missingIds = Array(neededIds.subtracting(eventParticipantIds))
+        guard !missingIds.isEmpty else { return }
+
+        _ = try await eventsRepository.addParticipants(
+            eventId: eventId,
+            AddParticipantsCommand(userIds: missingIds)
+        )
+    }
+
+    func loadFriendsIntoParticipants() async {
+        do {
+            let users = try await usersRepository.listUsers()
+            participants = mergeParticipants(users.map(Self.makeParticipant))
+        } catch {
+            do {
+                let cachedUsers = try await usersRepository.getCachedUsers()
+                participants = mergeParticipants(cachedUsers.map(Self.makeParticipant))
+            } catch {
+                participants = mergeParticipants([])
+            }
+        }
+    }
+
+    func loadMissingParticipantsForLoadedReceipt() async {
+        guard let loadedReceipt else { return }
+        let missingBeforeLoad = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+        guard !missingBeforeLoad.isEmpty else { return }
+
+        do {
+            let users = try await usersRepository.listUsers()
+            participants = mergeParticipants(users.map(Self.makeParticipant))
+        } catch {
+            if let cachedUsers = try? await usersRepository.getCachedUsers() {
+                participants = mergeParticipants(cachedUsers.map(Self.makeParticipant))
+            }
+        }
+
+        let unresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+        if !unresolved.isEmpty {
+            let resolvedById = await resolveParticipantsByIds(unresolved)
+            participants = mergeParticipants(resolvedById)
+            let stillUnresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+            if !stillUnresolved.isEmpty {
+                print("[BillParticipants] unresolved_after_receipt_load ids=\(stillUnresolved)")
+            }
+        }
+
+        items = mapReceiptToBillItems(loadedReceipt, participants: participants)
+    }
+
+    func normalizedShareValues(for participantCount: Int) -> [Double] {
+        guard participantCount > 0 else { return [] }
+        guard participantCount > 1 else { return [1.0] }
+
+        let scale = 1_000_000
+        let baseScaled = scale / participantCount
+        let lastScaled = scale - baseScaled * (participantCount - 1)
+
+        var values = Array(repeating: Double(baseScaled) / Double(scale), count: participantCount)
+        values[participantCount - 1] = Double(lastScaled) / Double(scale)
+        return values
+    }
+
+    func mergeParticipants(_ newParticipants: [Participant]) -> [Participant] {
+        var byId: [UUID: Participant] = [:]
+
+        for participant in participants {
+            byId[participant.id] = participant
+        }
+
+        for participant in newParticipants {
+            byId[participant.id] = participant
+        }
+
+        return byId.values.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
+    }
+
+    func missingShareUserIds(in receipt: Receipt, knownParticipants: [Participant]) -> [UUID] {
+        let knownIds = Set(knownParticipants.map(\.id))
+        let missingIds = Set(receipt.items.flatMap { item in
+            item.shares.map(\.userId)
+        }).subtracting(knownIds)
+
+        return Array(missingIds)
+    }
+
+    func resolveParticipantsByIds(_ ids: [UUID]) async -> [Participant] {
+        let users: [User]
+        do {
+            users = try await usersRepository.listUsers()
+        } catch {
+            guard let cachedUsers = try? await usersRepository.getCachedUsers() else {
+                return []
+            }
+            return cachedUsers
+                .filter { ids.contains($0.id) }
+                .map(Self.makeParticipant)
+        }
+
+        return users
+            .filter { ids.contains($0.id) }
+            .map(Self.makeParticipant)
+    }
 }
+// swiftlint:enable file_length

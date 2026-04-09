@@ -253,6 +253,11 @@ final class BillViewModel: ObservableObject {
         defer { isSaving = false }
 
         do {
+            try await ensureParticipantsInEvent(
+                eventId: eventId,
+                items: validItems,
+                payerId: payerId
+            )
             try await persistReceipt(request, eventId: eventId)
             print("[BillViewModel] op=save mode=success eventId=\(eventId)")
             let generator = UINotificationFeedbackGenerator()

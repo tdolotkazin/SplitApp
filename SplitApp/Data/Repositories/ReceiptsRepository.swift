@@ -156,21 +156,26 @@ final class ReceiptsDataRepository: ReceiptsRepository {
         )
 
         if let receiptImageJPEGData = command.receiptImageJPEGData {
-            do {
-                let uploadResponse = try await uploadReceiptImage(
-                    receiptId: dto.id,
-                    imageJPEGData: receiptImageJPEGData
-                )
-                dto = updateImageUrl(in: dto, imageUrl: uploadResponse.imageUrl)
-            } catch {
-                print("Не удалось загрузить фото чека \(dto.id): \(error)")
-            }
+            let uploadResponse = try await uploadReceiptImage(
+                receiptId: dto.id,
+                imageJPEGData: receiptImageJPEGData
+            )
+            dto = updateImageUrl(in: dto, imageUrl: uploadResponse.imageUrl)
         }
 
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.upsertReceipt(dto, in: context)
+        do {
+            try await coreDataStore.performBackground { [weak self] context in
+                try self?.upsertReceipt(dto, in: context)
+            }
+        } catch {
+            // Backend create/upload already succeeded — don't block user flow on local cache write failure.
+            print(
+                "[ReceiptsRepo] op=create mode=cache_write_failed " +
+                "receiptId=\(dto.id) error=\(error.localizedDescription)"
+            )
         }
-        return try await getCachedReceipt(id: dto.id)
+
+        return mapToDomain(dto)
     }
 
     func getCachedReceipts(eventId: UUID) async throws -> [Receipt] {

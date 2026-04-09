@@ -48,11 +48,12 @@ final class EventsNavigationViewModel: ObservableObject {
         case let .receiptTapped(eventId, receiptId):
             billEntryDestination = .edit(eventId: eventId, receiptId: receiptId)
         case .scannerCaptureCompleted:
+            guard billEntryDestination == nil else { return }
             let billItems = scannerViewModel.items.map {
                 BillItem(name: $0.name, amount: $0.amount)
             }
             billEntryDestination = .create(
-                eventId: nil,
+                eventId: homeViewModel.currentEvent?.id,
                 scannedItems: billItems,
                 receiptImageJPEGData: scannerViewModel.scannedReceiptImageJPEGData
             )
@@ -67,6 +68,7 @@ final class EventsNavigationViewModel: ObservableObject {
 
     func didFinishBillEntry() {
         billEntryDestination = nil
+        path.removeAll()
     }
 
     private func open(_ route: EventsNavigationRoute) {

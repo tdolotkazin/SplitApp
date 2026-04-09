@@ -96,15 +96,14 @@ struct ParticipantPickerSheet: View {
                                         .font(AppTheme.fontBodyBold)
                                 }
                             }
-                            .foregroundStyle(.white)
-                            .padding(.vertical, 16)
+                            .foregroundStyle(AppTheme.accentForeground)
                             .frame(maxWidth: .infinity)
+                            .frame(height: 56)
                             .background(
-                                selectedParticipants.isEmpty
-                                    ? AppTheme.accent.opacity(0.4)
-                                    : AppTheme.accent
+                                AppTheme.accentGradient
                             )
-                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge))
+                            .shadow(color: AppTheme.accent.opacity(0.25), radius: 12, x: 0, y: 4)
                         }
                     )
                     .buttonStyle(PlainButtonStyle())
