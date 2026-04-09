@@ -6,14 +6,8 @@ struct CreateEventEndpoint: Endpoint {
 }
 
 struct ListEventsEndpoint: Endpoint {
-    let userId: UUID?
     let path = "/api/events"
     let method: HTTPMethod = .GET
-
-    var queryItems: [URLQueryItem]? {
-        guard let userId else { return nil }
-        return [URLQueryItem(name: "user_id", value: userId.uuidString)]
-    }
 }
 
 struct GetEventEndpoint: Endpoint {
