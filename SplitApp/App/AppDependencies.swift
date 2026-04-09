@@ -71,7 +71,8 @@ final class AppDependencies {
 
         self.eventManagementService = EventManagementService(
             eventsRepository: self.eventsRepository,
-            receiptsRepository: serviceReceiptsRepository
+            receiptsRepository: serviceReceiptsRepository,
+            balancesRepository: self.balancesRepository
         )
     }
 

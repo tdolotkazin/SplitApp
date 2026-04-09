@@ -20,13 +20,7 @@ struct EventDTO: Codable, Identifiable {
 }
 
 struct CreateEventRequest: Codable {
-    let creatorId: UUID
     let name: String
-
-    enum CodingKeys: String, CodingKey {
-        case name
-        case creatorId = "creator_id"
-    }
 }
 
 struct UpdateEventRequest: Codable {

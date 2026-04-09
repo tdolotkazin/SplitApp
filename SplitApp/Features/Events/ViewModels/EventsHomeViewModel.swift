@@ -55,20 +55,30 @@ final class EventsHomeViewModel: ObservableObject {
         isCreatingEvent = true
         defer { isCreatingEvent = false }
         do {
-            let newItem = try await service.createEvent(name: name)
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                let newEvent = Event(
-                    id: newItem.id,
-                    name: newItem.title,
-                    date: Date(),
-                    icon: "📌",
-                    participantsCount: 0,
-                    balanceDelta: 0
-                )
-                latestEvents.append(newItem)
-                allEvents.append(newEvent)
+            let newEvent = try await service.createEvent(name: name)
+            let newItem = Self.mapEventToListItem(newEvent)
+
+            // Сразу показываем новый ивент из POST-ответа — не ждём GET
+            latestEvents.insert(newItem, at: 0)
+            allEvents.insert(newEvent, at: 0)
+            currentEventData = newEvent
+            currentEvent = newItem
+            currentEventBills = []
+            LocalEventStore.shared.setCurrentEvent(id: newEvent.id, participants: newEvent.users)
+
+            // Обновляем список с бека отдельно, не бросая ошибку наверх
+            if let homeData = try? await service.fetchHomeData() {
+                var fetchedEvents = homeData.events
+                var fetchedItems = fetchedEvents.map(Self.mapEventToListItem)
+                // Если бек ещё не вернул новый ивент — вставляем сами
+                if !fetchedEvents.contains(where: { $0.id == newEvent.id }) {
+                    fetchedEvents.insert(newEvent, at: 0)
+                    fetchedItems.insert(newItem, at: 0)
+                }
+                allEvents = fetchedEvents
+                latestEvents = fetchedItems
+                balanceSummary = homeData.balanceSummary
             }
-            selectEvent(newItem)
         } catch {
             errorMessage = error.localizedDescription
         }
