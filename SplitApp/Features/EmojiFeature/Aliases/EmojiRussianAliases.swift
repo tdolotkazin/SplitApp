@@ -25,6 +25,38 @@ enum EmojiRussianAliases {
         "отдых": "palm tree",
         "прогулка": "footprints",
 
+        // MARK: - Встречи / прогулки / тусовки
+        "встреча": "confetti ball",
+        "встретиться": "confetti ball",
+        "сбор": "confetti ball",
+        "собраться": "confetti ball",
+        "компания": "confetti ball",
+        "друзья": "confetti ball",
+        "друг": "confetti ball",
+        "подруга": "confetti ball",
+        "посиделки": "confetti ball",
+        "тусовка": "confetti ball",
+        "туса": "confetti ball",
+        "тусить": "confetti ball",
+        "гулянка": "confetti ball",
+
+        "гулять": "footprints",
+        "прогуляться": "footprints",
+        "променад": "footprints",
+
+        "вечер": "crescent moon",
+        "вечерок": "crescent moon",
+
+        "выпить": "cocktail glass",
+        "посидеть": "cocktail glass",
+        "барчик": "cocktail glass",
+
+        "паб": "beer mug",
+
+        "вдвоем": "red heart",
+        "пара": "red heart",
+        "романтический вечер": "candle",
+
         // MARK: - Еда
         "пицца": "pizza",
         "бургер": "hamburger",
