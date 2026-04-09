@@ -5,24 +5,15 @@ struct FriendAvatar: View {
     var size: CGFloat = 56
 
     var body: some View {
-        Group {
-            if let avatarUrl = friend.avatarUrl, let url = URL(string: avatarUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        placeholderView
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        placeholderView
-                    @unknown default:
-                        placeholderView
-                    }
+        AsyncImage(url: friend.avatarURL) { phase in
+            Group {
+                if case .success(let image) = phase {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    initialsAvatar
                 }
-            } else {
-                placeholderView
             }
         }
         .frame(width: size, height: size)
@@ -33,7 +24,7 @@ struct FriendAvatar: View {
         )
     }
 
-    private var placeholderView: some View {
+    private var initialsAvatar: some View {
         ZStack {
             LinearGradient(
                 colors: [

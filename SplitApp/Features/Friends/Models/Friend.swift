@@ -6,18 +6,18 @@ struct Friend: Identifiable, Hashable {
     var name: String
     var initials: String
     var color: Color
-    var avatarUrl: String?
+    var avatarURL: URL?
     var userId: UUID?
 
     init(
         id: UUID = UUID(), name: String, initials: String, color: Color,
-        avatarUrl: String? = nil, userId: UUID? = nil
+        avatarURL: URL? = nil, userId: UUID? = nil
     ) {
         self.id = id
         self.name = name
         self.initials = initials
         self.color = color
-        self.avatarUrl = avatarUrl
+        self.avatarURL = avatarURL
         self.userId = userId
     }
 
@@ -33,7 +33,7 @@ struct Friend: Identifiable, Hashable {
             name: user.name,
             initials: initials.isEmpty ? "?" : initials,
             color: generateColor(for: user.id),
-            avatarUrl: user.avatarUrl,
+            avatarURL: user.avatarUrl.flatMap { URL(string: $0) },
             userId: user.id
         )
     }
@@ -50,7 +50,7 @@ struct Friend: Identifiable, Hashable {
             name: localFriend.name,
             initials: initials.isEmpty ? "?" : initials,
             color: generateColor(for: localFriend.id),
-            avatarUrl: nil,
+            avatarURL: nil,
             userId: nil
         )
     }

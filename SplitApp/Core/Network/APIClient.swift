@@ -185,7 +185,7 @@ final class APIClient {
             isRetry: true
         )
 
-        TokenStore.shared.accessToken = response.accessToken
+        TokenStore.shared.save(token: response.accessToken)
 
         secureStorage.save(response.refreshToken, for: "refresh_token")
     }
