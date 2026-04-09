@@ -34,6 +34,58 @@ struct ReceiptItemDTO: Codable, Identifiable {
         case receiptId = "receipt_id"
         case shareItems = "share_items"
     }
+
+    init(
+        id: UUID,
+        receiptId: UUID,
+        name: String?,
+        cost: Double,
+        shareItems: [ShareItemDTO]
+    ) {
+        self.id = id
+        self.receiptId = receiptId
+        self.name = name
+        self.cost = cost
+        self.shareItems = shareItems
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        let id = try container.decode(UUID.self, forKey: .id)
+        let receiptId = try container.decode(UUID.self, forKey: .receiptId)
+        let name = try container.decodeIfPresent(String.self, forKey: .name)
+        let cost = try container.decode(Double.self, forKey: .cost)
+
+        if let objects = try? container.decode([ShareItemDTO].self, forKey: .shareItems) {
+            self.init(
+                id: id,
+                receiptId: receiptId,
+                name: name,
+                cost: cost,
+                shareItems: objects
+            )
+            return
+        }
+
+        let userIds = try container.decode([UUID].self, forKey: .shareItems)
+        let normalizedShares = userIds.map {
+            ShareItemDTO(
+                id: UUID(),
+                receiptItemId: id,
+                userId: $0,
+                shareValue: 1
+            )
+        }
+
+        self.init(
+            id: id,
+            receiptId: receiptId,
+            name: name,
+            cost: cost,
+            shareItems: normalizedShares
+        )
+    }
 }
 
 struct ShareItemDTO: Codable, Identifiable {

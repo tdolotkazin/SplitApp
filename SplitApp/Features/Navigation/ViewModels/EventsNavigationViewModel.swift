@@ -24,10 +24,14 @@ final class EventsNavigationViewModel: ObservableObject {
     @MainActor
     convenience init(
         service: EventManagementServiceProtocol,
+        activeEventRepository: any ActiveEventRepository,
         rules: EventsNavigationRules
     ) {
         self.init(
-            homeViewModel: EventsHomeViewModel(service: service),
+            homeViewModel: EventsHomeViewModel(
+                service: service,
+                activeEventRepository: activeEventRepository
+            ),
             scannerViewModel: ReceiptViewModel(),
             rules: rules
         )

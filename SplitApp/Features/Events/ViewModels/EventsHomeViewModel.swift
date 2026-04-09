@@ -13,16 +13,30 @@ final class EventsHomeViewModel: ObservableObject {
     @Published var isCreatingEvent = false
 
     private let service: EventManagementServiceProtocol
+    private let activeEventRepository: any ActiveEventRepository
     private var currentEventData: Event?
     private var allEvents: [Event] = []
+    private let receiptEmojiResolver: ReceiptTitleEmojiResolver
 
-    init(service: EventManagementServiceProtocol) {
+    init(
+        service: EventManagementServiceProtocol,
+        activeEventRepository: any ActiveEventRepository
+    ) {
         self.service = service
-        balanceSummary = EventBalanceSummary(totalBalance: 0, owedToYou: 0, youOwe: 0)
-        latestEvents = []
-        currentEvent = nil
-        currentEventBills = []
-        currentEventData = nil
+        self.activeEventRepository = activeEventRepository
+        self.receiptEmojiResolver = .shared
+        self.balanceSummary = EventBalanceSummary(totalBalance: 0, owedToYou: 0, youOwe: 0)
+        self.latestEvents = []
+        self.currentEvent = nil
+        self.currentEventBills = []
+        self.currentEventData = nil
+    }
+
+    convenience init(service: EventManagementServiceProtocol) {
+        self.init(
+            service: service,
+            activeEventRepository: ActiveEventSelectionDataRepository()
+        )
     }
 
     func loadDataIfNeeded() async {
@@ -33,16 +47,14 @@ final class EventsHomeViewModel: ObservableObject {
             balanceSummary = homeData.balanceSummary
             allEvents = homeData.events
             latestEvents = homeData.events.map(Self.mapEventToListItem)
+            currentEventBills = []
 
-            // Выбираем первое событие как текущее
-            if let firstEvent = homeData.events.first {
-                currentEventData = firstEvent
-                currentEvent = Self.mapEventToListItem(firstEvent)
-
-                // Сохраняем участников события в локальное хранилище
-                LocalEventStore.shared.setCurrentEvent(id: firstEvent.id, participants: firstEvent.users)
-
-                await loadReceipts(for: firstEvent.id)
+            if let resolvedEvent = await resolveCurrentEvent(from: homeData.events) {
+                applyCurrentEvent(resolvedEvent)
+                await loadReceipts(for: resolvedEvent.id)
+            } else {
+                currentEvent = nil
+                currentEventData = nil
             }
 
             isLoaded = true
@@ -61,10 +73,9 @@ final class EventsHomeViewModel: ObservableObject {
             // Сразу показываем новый ивент из POST-ответа — не ждём GET
             latestEvents.insert(newItem, at: 0)
             allEvents.insert(newEvent, at: 0)
-            currentEventData = newEvent
-            currentEvent = newItem
+            applyCurrentEvent(newEvent)
             currentEventBills = []
-            LocalEventStore.shared.setCurrentEvent(id: newEvent.id, participants: newEvent.users)
+            await activeEventRepository.setActiveEventId(newEvent.id)
 
             // Обновляем список с бека отдельно, не бросая ошибку наверх
             if let homeData = try? await service.fetchHomeData() {
@@ -85,17 +96,31 @@ final class EventsHomeViewModel: ObservableObject {
     }
 
     func deleteEvent(_ item: EventListItem) {
+        let isDeletingCurrentEvent = currentEvent?.id == item.id
+
         withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
             latestEvents.removeAll { $0.id == item.id }
             allEvents.removeAll { $0.id == item.id }
-            if currentEvent?.id == item.id {
-                currentEvent = latestEvents.first
-                if let first = allEvents.first {
-                    LocalEventStore.shared.setCurrentEvent(id: first.id, participants: first.users)
-                    Task { await loadReceipts(for: first.id) }
-                }
+            if isDeletingCurrentEvent, let firstEvent = allEvents.first {
+                applyCurrentEvent(firstEvent)
+            } else if isDeletingCurrentEvent {
+                currentEvent = nil
+                currentEventData = nil
+                currentEventBills = []
             }
         }
+
+        if isDeletingCurrentEvent, let firstEvent = allEvents.first {
+            Task {
+                await activeEventRepository.setActiveEventId(firstEvent.id)
+                await loadReceipts(for: firstEvent.id)
+            }
+        } else if isDeletingCurrentEvent {
+            Task {
+                await activeEventRepository.clearActiveEventId()
+            }
+        }
+
         Task {
             try? await service.deleteEvent(id: item.id)
         }
@@ -103,10 +128,11 @@ final class EventsHomeViewModel: ObservableObject {
 
     func selectEvent(_ item: EventListItem) {
         guard let event = allEvents.first(where: { $0.id == item.id }) else { return }
-        currentEventData = event
-        currentEvent = Self.mapEventToListItem(event)
-        LocalEventStore.shared.setCurrentEvent(id: event.id, participants: event.users)
-        Task { await loadReceipts(for: event.id) }
+        applyCurrentEvent(event)
+        Task {
+            await activeEventRepository.setActiveEventId(event.id)
+            await loadReceipts(for: event.id)
+        }
     }
 
     func loadReceipts(for eventId: UUID) async {
@@ -114,7 +140,7 @@ final class EventsHomeViewModel: ObservableObject {
             print("🔵 Загружаем чеки для события: \(eventId)")
             let receipts = try await service.fetchReceipts(eventId: eventId)
             print("✅ Загружено чеков: \(receipts.count)")
-            currentEventBills = receipts.map(Self.mapReceiptToBillListItem)
+            currentEventBills = receipts.map(mapReceiptToBillListItem)
             print("✅ Обновлен список чеков: \(currentEventBills.count)")
         } catch {
             print("❌ Ошибка загрузки чеков: \(error)")
@@ -151,9 +177,7 @@ final class EventsHomeViewModel: ObservableObject {
         return formatter.string(from: date)
     }
 
-    private static func mapReceiptToBillListItem(_ receipt: ReceiptDTO) -> BillListItem {
-        print("🔄 Маппинг чека: \(receipt.id), title: \(receipt.title ?? "nil"), items count: \(receipt.items.count)")
-
+    private func mapReceiptToBillListItem(_ receipt: ReceiptDTO) -> BillListItem {
         // Считаем количество уникальных участников
         let uniqueParticipants = Set(
             receipt.items.flatMap { item in
@@ -162,23 +186,45 @@ final class EventsHomeViewModel: ObservableObject {
         )
         let participantsCount = uniqueParticipants.count
 
-        print("🔄 Участников: \(participantsCount)")
-
-        let timeText = formatTime(from: receipt.createdAt)
+        let timeText = Self.formatTime(from: receipt.createdAt)
         let subtitle = "\(participantsCount) уч. · \(timeText)"
+        let displayTitle = normalizedReceiptTitle(receipt.title)
 
-        let billItem = BillListItem(
+        return BillListItem(
             id: receipt.id,
-            emoji: "🧾",
-            title: receipt.title ?? "Чек",
+            emoji: receiptEmojiResolver.emoji(for: displayTitle),
+            title: displayTitle,
             subtitle: subtitle,
             amount: receipt.totalAmount,
-            tone: tone(for: receipt.totalAmount)
+            tone: Self.tone(for: receipt.totalAmount)
         )
+    }
 
-        print("🔄 Создан BillListItem: id=\(billItem.id), title=\(billItem.title), amount=\(billItem.amount)")
+    private func resolveCurrentEvent(from events: [Event]) async -> Event? {
+        guard !events.isEmpty else {
+            await activeEventRepository.clearActiveEventId()
+            return nil
+        }
 
-        return billItem
+        if let storedEventId = await activeEventRepository.getActiveEventId(),
+           let storedEvent = events.first(where: { $0.id == storedEventId }) {
+            return storedEvent
+        }
+
+        let firstEvent = events[0]
+        await activeEventRepository.setActiveEventId(firstEvent.id)
+        return firstEvent
+    }
+
+    private func applyCurrentEvent(_ event: Event) {
+        currentEventData = event
+        currentEvent = Self.mapEventToListItem(event)
+        LocalEventStore.shared.setCurrentEvent(id: event.id, participants: event.users)
+    }
+
+    private func normalizedReceiptTitle(_ title: String?) -> String {
+        let trimmedTitle = title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmedTitle.isEmpty ? "Чек" : trimmedTitle
     }
 }
 
@@ -188,5 +234,31 @@ extension EventsHomeViewModel {
         let viewModel = EventsHomeViewModel(service: service)
         Task { await viewModel.loadDataIfNeeded() }
         return viewModel
+    }
+}
+
+private struct ReceiptTitleEmojiResolver {
+    static let shared = ReceiptTitleEmojiResolver()
+    private static let fallbackEmoji = "🧾"
+
+    private let matcher: EmojiAutoReplaceMatcher
+
+    init(parser: EmojiTextParser = EmojiTextParser()) {
+        let emojis = (try? parser.parse()) ?? []
+        self.matcher = EmojiAutoReplaceMatcher(emojis: emojis)
+    }
+
+    func emoji(for title: String) -> String {
+        let words = title
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+
+        for word in words {
+            if let match = matcher.match(for: word) {
+                return match.emoji
+            }
+        }
+
+        return Self.fallbackEmoji
     }
 }

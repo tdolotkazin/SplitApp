@@ -2,19 +2,13 @@ import Foundation
 
 struct CreateReceiptEndpoint: Endpoint {
     let eventId: UUID
-    var path: String {
-        "/api/events/\(eventId.uuidString)/receipts"
-    }
-
+    var path: String { "/api/events/\(eventId.uuidString.lowercased())/receipts" }
     let method: HTTPMethod = .POST
 }
 
 struct ListReceiptsEndpoint: Endpoint {
     let eventId: UUID
-    var path: String {
-        "/api/events/\(eventId.uuidString)/receipts"
-    }
-
+    var path: String { "/api/events/\(eventId.uuidString.lowercased())/receipts" }
     let method: HTTPMethod = .GET
 }
 

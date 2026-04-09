@@ -48,6 +48,46 @@ final class APIClient {
         )
     }
 
+    // MARK: - Core logic
+
+    private func performRequest<T: Decodable>(
+        endpoint: Endpoint,
+        body: (any Encodable)?,
+        isRetry: Bool
+    ) async throws -> T {
+        if requiresAuthorization(endpoint: endpoint),
+           (TokenStore.shared.accessToken?.isEmpty ?? true) {
+            try? await refreshAccessTokenIfNeeded()
+        }
+
+        let request = try buildRequest(endpoint: endpoint, body: body)
+        let (data, response) = try await session.data(for: request)
+
+        do {
+            try validateResponse(response, data: data)
+            return try decoder.decode(T.self, from: data)
+
+        } catch NetworkError.unauthorized {
+            if isRetry {
+                throw NetworkError.unauthorized
+            }
+
+            try await refreshAccessTokenIfNeeded()
+
+            let retryRequest = try buildRequest(endpoint: endpoint, body: body)
+            let (retryData, retryResponse) = try await session.data(for: retryRequest)
+
+            try validateResponse(retryResponse, data: retryData)
+
+            return try decoder.decode(T.self, from: retryData)
+        }
+    }
+
+    private func requiresAuthorization(endpoint: Endpoint) -> Bool {
+        endpoint.path != AuthUserEndpoint(yandexToken: "").path &&
+        endpoint.path != RefreshTokenEndpoint().path
+    }
+
     func requestVoid(
         endpoint: Endpoint,
         body: (any Encodable)? = nil
