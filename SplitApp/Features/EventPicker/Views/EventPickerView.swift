@@ -99,6 +99,7 @@ struct EventPickerView: View {
             event: event,
             isSelected: event.id == viewModel.currentEvent?.id,
             isDeleting: deletingEventID == event.id,
+            canDelete: event.creatorId == viewModel.currentUserId,
             onTap: {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                     viewModel.selectEvent(event)
@@ -252,6 +253,7 @@ private struct SwipeableEventRow: View {
     let event: EventListItem
     let isSelected: Bool
     let isDeleting: Bool
+    let canDelete: Bool
     let onTap: () -> Void
     let onDelete: () -> Void
 
@@ -296,17 +298,19 @@ private struct SwipeableEventRow: View {
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelected)
         .deleteTransition(isDeleting: isDeleting)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                VStack(spacing: 4) {
-                    Image(systemName: "trash.fill")
-                        .font(.system(size: 20, weight: .semibold))
-                    Text("Удалить")
-                        .font(.system(size: 12, weight: .medium))
+            if canDelete {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("Удалить")
+                            .font(.system(size: 12, weight: .medium))
+                    }
                 }
+                .tint(.red)
             }
-            .tint(.red)
         }
     }
 
