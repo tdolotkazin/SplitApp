@@ -12,19 +12,19 @@ enum NetworkError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            "Invalid URL"
         case .invalidResponse:
-            return "Invalid server response"
-        case .httpError(let statusCode, let detail):
-            return "HTTP error \(statusCode): \(detail ?? "Unknown error")"
-        case .decodingError(let error):
-            return "Decoding error: \(error.localizedDescription)"
+            "Invalid server response"
+        case let .httpError(statusCode, detail):
+            "HTTP error \(statusCode): \(detail ?? "Unknown error")"
+        case let .decodingError(error):
+            "Decoding error: \(error.localizedDescription)"
         case .unauthorized:
-            return "Unauthorized – please log in again"
+            "Unauthorized – please log in again"
         case .noData:
-            return "No data received from server"
+            "No data received from server"
         case .noRefreshToken:
-            return "No refresh token available"
+            "No refresh token available"
         }
     }
 }

@@ -12,13 +12,13 @@ struct ProfileScreenModel {
 
 extension ProfileScreenModel {
     init(from response: ProfileResponse) {
-        self.initials = response.initials
-        self.email = response.email
-        self.name = response.name
-        self.eventsCountText = String(response.eventsCount)
-        self.friendsCountText = String(response.friendsCount)
-        self.closedBillsText = "€\(response.closedBillsAmount)"
-        self.openBillsText = "€\(response.openBillsAmount)"
+        initials = response.initials
+        email = response.email
+        name = response.name
+        eventsCountText = String(response.eventsCount)
+        friendsCountText = String(response.friendsCount)
+        closedBillsText = "€\(response.closedBillsAmount)"
+        openBillsText = "€\(response.openBillsAmount)"
     }
 }
 

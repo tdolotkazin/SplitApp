@@ -16,10 +16,7 @@ struct PersistenceController {
     }
 
     @MainActor
-    static let preview: PersistenceController = {
-        let result = PersistenceController(inMemory: true)
-        return result
-    }()
+    static let preview: PersistenceController = .init(inMemory: true)
 
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "SplitApp")

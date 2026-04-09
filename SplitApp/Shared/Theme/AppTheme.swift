@@ -16,7 +16,7 @@ enum AppTheme {
             colors: [
                 dynamicColor(light: "#F8F9FA", dark: "#0C1015"),
                 dynamicColor(light: "#E9ECEF", dark: "#11161C"),
-                dynamicColor(light: "#DEE2E6", dark: "#151B22")
+                dynamicColor(light: "#DEE2E6", dark: "#151B22"),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -27,7 +27,7 @@ enum AppTheme {
         RadialGradient(
             colors: [
                 dynamicColor(light: "#147CB342", dark: "#100E4A62"),
-                .clear
+                .clear,
             ],
             center: .center,
             startRadius: 100,
@@ -47,7 +47,7 @@ enum AppTheme {
         LinearGradient(
             colors: [
                 dynamicColor(light: "#7CB342", dark: "#C5FF1A"),
-                dynamicColor(light: "#689F38", dark: "#A4E400")
+                dynamicColor(light: "#689F38", dark: "#A4E400"),
             ],
             startPoint: .leading,
             endPoint: .trailing

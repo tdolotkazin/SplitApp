@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct EmptySearchState: View {
-
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "person.slash")

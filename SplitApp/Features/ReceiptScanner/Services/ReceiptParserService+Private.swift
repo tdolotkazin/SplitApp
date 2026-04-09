@@ -4,7 +4,6 @@ import NaturalLanguage
 // MARK: - Line Classification
 
 extension ReceiptParserService {
-
     func isServiceLine(_ line: String) -> Bool {
         let lower = line.lowercased().trimmingCharacters(in: .whitespaces)
         if Self.singleWordServiceTokens.contains(lower) { return true }
@@ -46,7 +45,7 @@ extension ReceiptParserService {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         guard trimmed.hasPrefix("*") else { return false }
         let after = String(trimmed.dropFirst())
-        return after.count <= 2 && after.allSatisfy { $0.isNumber }
+        return after.count <= 2 && after.allSatisfy(\.isNumber)
     }
 
     /// OCR noise from QR codes, barcodes, or garbled text.
@@ -54,7 +53,8 @@ extension ReceiptParserService {
         let tokens = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
 
         if tokens.count == 1, let first = tokens[0].unicodeScalars.first,
-           !CharacterSet.alphanumerics.contains(first) {
+           !CharacterSet.alphanumerics.contains(first)
+        {
             return true
         }
 
@@ -67,21 +67,21 @@ extension ReceiptParserService {
 
         let noisyTokenCount = tokens.filter { tok in
             tok.count <= 3 &&
-            tok.unicodeScalars.contains(where: { CharacterSet.decimalDigits.contains($0) }) &&
-            tok.unicodeScalars.contains(where: { CharacterSet.uppercaseLetters.contains($0) })
+                tok.unicodeScalars.contains(where: { CharacterSet.decimalDigits.contains($0) }) &&
+                tok.unicodeScalars.contains(where: { CharacterSet.uppercaseLetters.contains($0) })
         }.count
-        if tokens.count >= 4 && noisyTokenCount * 2 >= tokens.count { return true }
+        if tokens.count >= 4, noisyTokenCount * 2 >= tokens.count { return true }
 
         let total = line.unicodeScalars.filter { !CharacterSet.whitespaces.contains($0) }
         let alphanumeric = total.filter { CharacterSet.alphanumerics.contains($0) }
-        if total.count > 4 && alphanumeric.count * 3 < total.count { return true }
+        if total.count > 4, alphanumeric.count * 3 < total.count { return true }
 
         return false
     }
 
     static let continuationWords: Set<String> = [
         "с", "со", "и", "из", "для", "в", "на", "к", "по", "от",
-        "или", "без", "под", "над", "за", "при", "до", "а"
+        "или", "без", "под", "над", "за", "при", "до", "а",
     ]
 
     /// Previous line ends with preposition → next line is continuation.
@@ -102,7 +102,7 @@ extension ReceiptParserService {
         let parts = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         guard parts.count >= 2, let first = parts.first else { return false }
         let digits = first.replacingOccurrences(of: "-", with: "")
-        return digits.count <= 4 && digits.allSatisfy({ $0.isNumber })
+        return digits.count <= 4 && digits.allSatisfy(\.isNumber)
     }
 
     /// Lines that look like a person name (cashier, loyalty card holder).
@@ -129,13 +129,13 @@ extension ReceiptParserService {
         guard second.hasPrefix("*") else { return false }
         let digits = String(second.dropFirst())
         return !digits.isEmpty && digits.replacingOccurrences(of: ".", with: "")
-                                        .replacingOccurrences(of: ",", with: "")
-                                        .allSatisfy({ $0.isNumber })
+            .replacingOccurrences(of: ",", with: "")
+            .allSatisfy(\.isNumber)
     }
 
     /// Lines like "18.00%", "10.00%" — VAT rate lines.
     func isPercentageLine(_ line: String) -> Bool {
-        return line.trimmingCharacters(in: .whitespaces).hasSuffix("%")
+        line.trimmingCharacters(in: .whitespaces).hasSuffix("%")
     }
 
     /// Lines that look like a street address ending with a building number like "68А1", "13 В".
@@ -145,7 +145,7 @@ extension ReceiptParserService {
         let lastToken = (trimmed.components(separatedBy: .whitespaces).last ?? "").lowercased()
         let digits = lastToken.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) }
         let letters = lastToken.unicodeScalars.filter { CharacterSet.letters.contains($0) }
-        guard digits.count > 0 && letters.count > 0 && lastToken.count <= 6 else { return false }
+        guard digits.count > 0, letters.count > 0, lastToken.count <= 6 else { return false }
 
         let measureSuffixes = ["г", "кг", "мл", "л", "гр", "oz", "ml", "kg"]
         if measureSuffixes.contains(where: { lastToken.hasSuffix($0) }) { return false }
@@ -165,7 +165,6 @@ extension ReceiptParserService {
 // MARK: - Price Detection
 
 extension ReceiptParserService {
-
     func findPriceAtEnd(of line: String) -> (namePart: String, amount: Decimal)? {
         let stripped = stripCurrencySuffix(from: line)
         let parts = stripped.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
@@ -191,7 +190,8 @@ extension ReceiptParserService {
         let parts = stripped.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         if parts.count == 2,
            let last = parts.last,
-           last.count == 1, last.first?.isLetter == true {
+           last.count == 1, last.first?.isLetter == true
+        {
             stripped = parts[0]
         }
 
@@ -207,11 +207,12 @@ extension ReceiptParserService {
 
     func parsePrice(from token: String) -> Decimal? {
         var token = token
-        if !token.contains(".") && !token.contains(",") {
+        if !token.contains("."), !token.contains(",") {
             let dashParts = token.components(separatedBy: "-")
             if dashParts.count == 2,
-               !dashParts[0].isEmpty, dashParts[0].allSatisfy({ $0.isNumber }),
-               dashParts[1].count <= 2, dashParts[1].allSatisfy({ $0.isNumber }) {
+               !dashParts[0].isEmpty, dashParts[0].allSatisfy(\.isNumber),
+               dashParts[1].count <= 2, dashParts[1].allSatisfy(\.isNumber)
+            {
                 token = dashParts.joined(separator: ".")
             }
         }
@@ -223,7 +224,7 @@ extension ReceiptParserService {
 
         if parts.count == 1 {
             guard !parts[0].isEmpty,
-                  parts[0].allSatisfy({ $0.isNumber }),
+                  parts[0].allSatisfy(\.isNumber),
                   parts[0].count >= 2,
                   parts[0].count <= 6 else { return nil }
             guard let amount = Decimal(string: parts[0]), amount >= 5 else { return nil }
@@ -232,9 +233,9 @@ extension ReceiptParserService {
 
         guard parts.count == 2,
               parts[1].count <= 2,
-              parts[1].allSatisfy({ $0.isNumber }),
+              parts[1].allSatisfy(\.isNumber),
               !parts[0].isEmpty,
-              parts[0].allSatisfy({ $0.isNumber }),
+              parts[0].allSatisfy(\.isNumber),
               parts[0].count <= 6 else { return nil }
 
         guard let amount = Decimal(string: normalized), amount > 0 else { return nil }
@@ -249,7 +250,7 @@ extension ReceiptParserService {
         if trimmed.hasPrefix("*") { trimmed = String(trimmed.dropFirst()) }
         let parts = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         guard let first = parts.first else { return trimmed }
-        if first.allSatisfy({ $0.isNumber }) && first.count >= 4 {
+        if first.allSatisfy(\.isNumber), first.count >= 4 {
             return parts.dropFirst().joined(separator: " ")
         }
         return trimmed
@@ -267,7 +268,6 @@ extension ReceiptParserService {
 // MARK: - Name Construction
 
 extension ReceiptParserService {
-
     func makeItem(nameParts: [String], amount: Decimal) -> ScannedReceiptItem? {
         let raw = nameParts.joined(separator: " ")
         let name = extractMeaningfulWords(from: raw)
@@ -285,7 +285,7 @@ extension ReceiptParserService {
         }
 
         var words: [String] = []
-        tokenizer.enumerateTokens(in: text.startIndex..<text.endIndex) { range, _ in
+        tokenizer.enumerateTokens(in: text.startIndex ..< text.endIndex) { range, _ in
             let token = String(text[range])
             if token.unicodeScalars.contains(where: { CharacterSet.letters.contains($0) }) {
                 words.append(token)

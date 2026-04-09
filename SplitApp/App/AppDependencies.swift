@@ -31,45 +31,45 @@ final class AppDependencies {
 
         self.eventsRepository =
             eventsRepository
-            ?? EventsDataRepository(
-                apiClient: apiClient,
-                coreDataStore: coreDataStore
-            )
+                ?? EventsDataRepository(
+                    apiClient: apiClient,
+                    coreDataStore: coreDataStore
+                )
 
         self.receiptsRepository =
             receiptsRepository
-            ?? ReceiptsDataRepository(
-                apiClient: apiClient,
-                coreDataStore: coreDataStore
-            )
+                ?? ReceiptsDataRepository(
+                    apiClient: apiClient,
+                    coreDataStore: coreDataStore
+                )
 
         self.usersRepository =
             usersRepository
-            ?? UsersDataRepository(
-                apiClient: apiClient,
-                coreDataStore: coreDataStore
-            )
+                ?? UsersDataRepository(
+                    apiClient: apiClient,
+                    coreDataStore: coreDataStore
+                )
         self.balancesRepository =
             balancesRepository ?? BalancesDataRepository(apiClient: apiClient)
         self.paymentsRepository =
             paymentsRepository
-            ?? PaymentsDataRepository(
-                apiClient: apiClient,
-                coreDataStore: coreDataStore
-            )
-        self.activeEventRepository = ActiveEventSelectionDataRepository()
-        self.friendsRepository = FriendsDataRepository(
+                ?? PaymentsDataRepository(
+                    apiClient: apiClient,
+                    coreDataStore: coreDataStore
+                )
+        activeEventRepository = ActiveEventSelectionDataRepository()
+        friendsRepository = FriendsDataRepository(
             usersRepository: self.usersRepository
         )
 
         let serviceReceiptsRepository =
             (self.receiptsRepository as? ReceiptsDataRepository)
-            ?? ReceiptsDataRepository(
-                apiClient: apiClient,
-                coreDataStore: coreDataStore
-            )
+                ?? ReceiptsDataRepository(
+                    apiClient: apiClient,
+                    coreDataStore: coreDataStore
+                )
 
-        self.eventManagementService = EventManagementService(
+        eventManagementService = EventManagementService(
             eventsRepository: self.eventsRepository,
             receiptsRepository: serviceReceiptsRepository
         )

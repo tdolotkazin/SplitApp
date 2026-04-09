@@ -2,7 +2,6 @@ import Foundation
 import KeychainSwift
 
 final class APIClient {
-
     static let shared = APIClient()
 
     private let secureStorage: KeychainStorage
@@ -13,8 +12,8 @@ final class APIClient {
     private let encoder: JSONEncoder
 
     private init() {
-        self.decoder = JSONDecoder()
-        self.decoder.dateDecodingStrategy = .custom { decoder in
+        decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
 
@@ -33,18 +32,18 @@ final class APIClient {
             )
         }
 
-        self.encoder = JSONEncoder()
-        self.encoder.dateEncodingStrategy = .iso8601
+        encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
 
-        self.session = URLSession(configuration: .default)
-        self.secureStorage = KeychainStorage()
+        session = URLSession(configuration: .default)
+        secureStorage = KeychainStorage()
     }
 
     func request<T: Decodable>(
         endpoint: Endpoint,
         body: (any Encodable)? = nil
     ) async throws -> T {
-        return try await performRequest(
+        try await performRequest(
             endpoint: endpoint,
             body: body,
             isRetry: false
@@ -58,7 +57,6 @@ final class APIClient {
         body: (any Encodable)?,
         isRetry: Bool
     ) async throws -> T {
-
         let request = try buildRequest(endpoint: endpoint, body: body)
         let (data, response) = try await session.data(for: request)
 
@@ -67,7 +65,6 @@ final class APIClient {
             return try decoder.decode(T.self, from: data)
 
         } catch NetworkError.unauthorized {
-
             if isRetry {
                 throw NetworkError.unauthorized
             }
@@ -134,7 +131,6 @@ final class APIClient {
         endpoint: Endpoint,
         body: (any Encodable)?
     ) throws -> URLRequest {
-
         var components = URLComponents(
             url: baseURL.appendingPathComponent(endpoint.path),
             resolvingAgainstBaseURL: false
@@ -167,9 +163,9 @@ final class APIClient {
     }
 
     func refreshAccessTokenIfNeeded() async throws {
-
         if TokenStore.shared.accessToken != nil,
-           TokenStore.shared.isValid {
+           TokenStore.shared.isValid
+        {
             return
         }
 
@@ -192,14 +188,14 @@ final class APIClient {
 
     // MARK: - Validate
 
-    private func validateResponse(_ response: URLResponse, data: Data) throws {
+    private func validateResponse(_ response: URLResponse, data _: Data) throws {
         print(response)
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse
         }
 
         switch http.statusCode {
-        case 200...299:
+        case 200 ... 299:
             return
         case 401:
             throw NetworkError.unauthorized

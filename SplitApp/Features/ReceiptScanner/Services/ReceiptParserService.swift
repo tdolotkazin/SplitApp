@@ -9,7 +9,6 @@ import NaturalLanguage
 ///              Uses a FIFO name queue: each name line is enqueued,
 ///              each standalone price dequeues the oldest name.
 final class ReceiptParserService {
-
     // MARK: - Configuration
 
     let minLettersInName = 4
@@ -20,7 +19,7 @@ final class ReceiptParserService {
         "блюдо", "всего", "количество", "наименование",
         "товар", "товары", "услуга",
         "пятерочка", "пятёрочка", "агроторг", "магнит", "дикси",
-        "перекрёсток", "перекресток", "лента", "ашан", "метро"
+        "перекрёсток", "перекресток", "лента", "ашан", "метро",
     ]
 
     static let serviceKeywords: Set<String> = [
@@ -32,8 +31,8 @@ final class ReceiptParserService {
         "фискальный", "фн:", "фд:", "фп:", "офд",
         "ндс", "сумма ндс", "nds", "vat",
         "кассовый чек", "чек №", "чек #", "спасибо",
-                "инн:", "кпп:", "огрн",
-                "фискальный", "фн:", "фд:", "фп:", "офд",
+        "инн:", "кпп:", "огрн",
+        "фискальный", "фн:", "фд:", "фп:", "офд",
         "приход", "расход", "возврат прихода", "возврат расхода",
         "www.", "http", ".ru", ".com", "receipt", "cashier",
         "подытог", "округление", "принято:", "сдача:",
@@ -52,18 +51,18 @@ final class ReceiptParserService {
         "кассир",
         "азк №", "азк no", "азс №", "азс no", "эн ккт", "зн ккт", "рн ккт",
         "нефтепродукт", "роснефть", "лукойл", "газпром",
-        "онлайн-касса", "онлайн - касса"
+        "онлайн-касса", "онлайн - касса",
     ]
 
     static let addressKeywords: Set<String> = [
         "обл.,", "область", "район", "ул.", "улица",
         "проспект", "корп.", "офис", "этаж",
         " д.", "д. ", ". д.",
-        "г.о.", "г. о.", "сириус", "354340"
+        "г.о.", "г. о.", "сириус", "354340",
     ]
 
     static let quantityUnits: Set<String> = [
-        "шт", "кг", " x ", " х ", " × "
+        "шт", "кг", " x ", " х ", " × ",
     ]
 
     let tokenizer = NLTokenizer(unit: .word)
@@ -103,7 +102,7 @@ final class ReceiptParserService {
             ("addrNum", isAddressWithNumber),
             ("noise", isOCRNoise),
             ("storeNum", isStoreNumberLine),
-            ("person", isPersonName)
+            ("person", isPersonName),
         ]
         for (reason, check) in classifiers where check(line) {
             print("[Parser] skip(\(reason)): \(line)")
@@ -146,11 +145,11 @@ final class ReceiptParserService {
         guard letters.count >= minLettersInName else { return }
 
         let prevWordCount = nameQueue.last?
-            .components(separatedBy: .whitespaces).filter({ !$0.isEmpty }).count ?? 0
+            .components(separatedBy: .whitespaces).filter { !$0.isEmpty }.count ?? 0
         let shouldMerge = !nameQueue.isEmpty && (
             prevWordCount == 1 ||
-            (prevWordCount >= 3 &&
-             (isContinuation(after: nameQueue.last!) || isContinuationStart(of: enqueueLine)))
+                (prevWordCount >= 3 &&
+                    (isContinuation(after: nameQueue.last!) || isContinuationStart(of: enqueueLine)))
         )
 
         if shouldMerge {

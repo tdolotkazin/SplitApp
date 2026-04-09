@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 import SwiftUI
 
 @MainActor
@@ -18,11 +18,11 @@ final class EventsHomeViewModel: ObservableObject {
 
     init(service: EventManagementServiceProtocol) {
         self.service = service
-        self.balanceSummary = EventBalanceSummary(totalBalance: 0, owedToYou: 0, youOwe: 0)
-        self.latestEvents = []
-        self.currentEvent = nil
-        self.currentEventBills = []
-        self.currentEventData = nil
+        balanceSummary = EventBalanceSummary(totalBalance: 0, owedToYou: 0, youOwe: 0)
+        latestEvents = []
+        currentEvent = nil
+        currentEventBills = []
+        currentEventData = nil
     }
 
     func loadDataIfNeeded() async {

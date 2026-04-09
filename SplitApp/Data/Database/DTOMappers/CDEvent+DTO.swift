@@ -1,7 +1,6 @@
 import CoreData
 
 extension CDEvent {
-
     /// Convert CoreData entity to DTO.
     func toDTO() -> EventDTO {
         let participantSet = (participants as? Set<CDUser>) ?? []
@@ -22,11 +21,11 @@ extension CDEvent {
 
     /// Update CoreData entity from DTO (does not update relationships).
     func update(from dto: EventDTO) {
-        self.id = dto.id
-        self.creatorId = dto.creatorId
-        self.name = dto.name
-        self.isClosed = dto.isClosed
-        self.createdAt = dto.createdAt
-        self.updatedAt = dto.updatedAt
+        id = dto.id
+        creatorId = dto.creatorId
+        name = dto.name
+        isClosed = dto.isClosed
+        createdAt = dto.createdAt
+        updatedAt = dto.updatedAt
     }
 }

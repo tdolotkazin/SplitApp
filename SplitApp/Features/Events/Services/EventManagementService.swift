@@ -10,7 +10,6 @@ protocol EventManagementServiceProtocol {
 }
 
 struct EventManagementService: EventManagementServiceProtocol {
-
     private let eventsRepository: any EventsRepository
     private let receiptsRepository: ReceiptsDataRepository
 
@@ -38,15 +37,15 @@ struct EventManagementService: EventManagementServiceProtocol {
     }
 
     func fetchReceipts(eventId: UUID) async throws -> [ReceiptDTO] {
-        return try await receiptsRepository.listReceipts(eventId: eventId)
+        try await receiptsRepository.listReceipts(eventId: eventId)
     }
 
     func createReceipt(eventId: UUID, request: CreateReceiptRequest) async throws -> ReceiptDTO {
-        return try await receiptsRepository.createReceipt(eventId: eventId, request)
+        try await receiptsRepository.createReceipt(eventId: eventId, request)
     }
 
     func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO {
-        return try await receiptsRepository.updateReceipt(id: id, request)
+        try await receiptsRepository.updateReceipt(id: id, request)
     }
 
     func createEvent(name: String) async throws -> EventListItem {

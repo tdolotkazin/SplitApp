@@ -48,16 +48,16 @@ struct FriendDebtCard: View {
                 .scaleEffect(isPressed ? 0.95 : 1.0)
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)
-                        .onChanged({ _ in
+                        .onChanged { _ in
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                                 isPressed = true
                             }
-                        })
-                        .onEnded({ _ in
+                        }
+                        .onEnded { _ in
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                                 isPressed = false
                             }
-                        })
+                        }
                 )
             }
         }

@@ -5,6 +5,7 @@ import YandexLoginSDK
 enum AuthError: Error {
     case invalidToken
 }
+
 final class YandexAuthProviderImpl: YandexAuthProvider {
     private var continuation: CheckedContinuation<UserSessionToken, Error>?
     private let vcProvider: ViewControllerProvider
@@ -18,8 +19,9 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
         YandexLoginSDK.shared.remove(observer: self)
     }
 
-    func login(from viewContollerProvider: UIViewController) async throws
-    -> UserSessionToken {
+    func login(from _: UIViewController) async throws
+        -> UserSessionToken
+    {
         guard let viewContollerProvider = vcProvider.rootViewController else {
             throw AuthError.invalidToken
         }
@@ -40,16 +42,14 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
 extension YandexAuthProviderImpl: YandexLoginSDKObserver {
     func didFinishLogin(with result: Result<LoginResult, any Error>) {
         switch result {
-
-        case .success(let data):
+        case let .success(data):
             let authToken = UserSessionToken(
                 jwt: data.jwt,
-                token: data.token,
-
+                token: data.token
             )
             continuation?.resume(returning: authToken)
 
-        case .failure(let error):
+        case let .failure(error):
             continuation?.resume(throwing: error)
             print("Ошибка входа: \(error.localizedDescription)")
         }

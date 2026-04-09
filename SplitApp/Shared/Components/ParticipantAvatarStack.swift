@@ -5,10 +5,21 @@ struct ParticipantAvatarStack: View {
     var avatarSize: CGFloat = 28
     var maxVisible: Int = 2
 
-    private var overlap: CGFloat { avatarSize * 0.55 }
-    private var step: CGFloat { avatarSize - overlap }
-    private var visible: [Participant] { Array(participants.prefix(maxVisible)) }
-    private var overflow: Int { max(0, participants.count - maxVisible) }
+    private var overlap: CGFloat {
+        avatarSize * 0.55
+    }
+
+    private var step: CGFloat {
+        avatarSize - overlap
+    }
+
+    private var visible: [Participant] {
+        Array(participants.prefix(maxVisible))
+    }
+
+    private var overflow: Int {
+        max(0, participants.count - maxVisible)
+    }
 
     var body: some View {
         HStack(spacing: 10) {

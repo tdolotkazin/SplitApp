@@ -13,7 +13,6 @@ struct SocialButton: View {
                 Image(systemName: icon)
                     .font(.title2)
                     .foregroundColor(textColor)
-
             }
             .frame(width: 25)
             .frame(height: 50)

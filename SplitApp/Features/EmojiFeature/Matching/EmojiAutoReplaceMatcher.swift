@@ -12,7 +12,7 @@ final class EmojiAutoReplaceMatcher {
                 index[key] = emoji
             }
         }
-        self.exactIndex = index
+        exactIndex = index
     }
 
     func match(for word: String) -> EmojiPredictModel? {

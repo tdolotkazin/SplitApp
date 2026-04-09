@@ -34,7 +34,8 @@ final class EmojiTextParser {
         guard trimmed.contains("; fully-qualified") else { return nil }
 
         guard let semicolonIndex = trimmed.firstIndex(of: ";"),
-              let hashIndex = trimmed.firstIndex(of: "#") else {
+              let hashIndex = trimmed.firstIndex(of: "#")
+        else {
             return nil
         }
 

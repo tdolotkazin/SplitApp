@@ -1,9 +1,8 @@
-import Vision
 import UIKit
+import Vision
 
 /// Extracts raw text lines from a receipt image using on-device OCR.
 final class ReceiptScannerService {
-
     /// Recognizes text in the given image and returns lines of text.
     func recognizeText(in image: UIImage) async throws -> [String] {
         guard let cgImage = image.cgImage else {

@@ -1,5 +1,5 @@
-import Foundation
 import CoreData
+import Foundation
 
 protocol EventsRepositoryProtocol {
     func listEvents(userId: UUID?) async throws -> [Event]
