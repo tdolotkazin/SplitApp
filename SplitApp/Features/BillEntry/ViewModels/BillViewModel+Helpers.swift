@@ -7,62 +7,72 @@ extension BillViewModel {
         scannedItems: [BillItem],
         receiptImageJPEGData: Data?
     ) async {
+        initializeScannedData(scannedItems: scannedItems, receiptImageJPEGData: receiptImageJPEGData)
+
+        guard let eventId else {
+            await loadLocalFriendsAsParticipants()
+            return
+        }
+
+        await loadEventContext(eventId: eventId)
+    }
+
+    private func initializeScannedData(scannedItems: [BillItem], receiptImageJPEGData: Data?) {
         if items.isEmpty {
             items = scannedItems
         }
         if self.receiptImageJPEGData == nil {
             self.receiptImageJPEGData = receiptImageJPEGData
         }
+    }
 
-        guard let eventId else {
-            // Загружаем локальных друзей как участников
-            if let friendsRepository {
-                do {
-                    let localFriends = try await friendsRepository.listLocalFriends()
-                    print("🔍 BillViewModel загрузил \(localFriends.count) локальных друзей")
-                    for friend in localFriends {
-                        print("  - \(friend.name) (id: \(friend.id))")
-                    }
-                    participants = localFriends.map { friend in
-                        let initials = friend.name.split(separator: " ")
-                            .prefix(2)
-                            .compactMap { $0.first }
-                            .map { String($0).uppercased() }
-                            .joined()
-
-                        return Participant(
-                            id: friend.id,
-                            name: friend.name,
-                            initials: initials.isEmpty ? "?" : initials,
-                            color: .accentColor
-                        )
-                    }
-                    print("✅ BillViewModel создал \(participants.count) участников")
-                } catch {
-                    print("❌ Ошибка загрузки локальных друзей в BillViewModel: \(error)")
-                    participants = []
-                }
-            } else {
-                print("⚠️ BillViewModel: friendsRepository отсутствует")
-                participants = []
-            }
+    private func loadLocalFriendsAsParticipants() async {
+        guard let friendsRepository else {
+            print("⚠️ BillViewModel: friendsRepository отсутствует")
+            participants = []
             return
         }
 
+        do {
+            let localFriends = try await friendsRepository.listLocalFriends()
+            print("🔍 BillViewModel загрузил \(localFriends.count) локальных друзей")
+            for friend in localFriends {
+                print("  - \(friend.name) (id: \(friend.id))")
+            }
+            participants = localFriends.map(makeParticipantFromLocalFriend)
+            print("✅ BillViewModel создал \(participants.count) участников")
+        } catch {
+            print("❌ Ошибка загрузки локальных друзей в BillViewModel: \(error)")
+            participants = []
+        }
+    }
+
+    private func makeParticipantFromLocalFriend(_ friend: LocalFriend) -> Participant {
+        let initials = friend.name.split(separator: " ")
+            .prefix(2)
+            .compactMap { $0.first }
+            .map { String($0).uppercased() }
+            .joined()
+
+        return Participant(
+            id: friend.id,
+            name: friend.name,
+            initials: initials.isEmpty ? "?" : initials,
+            color: .accentColor
+        )
+    }
+
+    private func loadEventContext(eventId: UUID) async {
         isLoading = participants.isEmpty
 
-        if let cachedEvent = try? await eventsRepository.getCachedEvent(
-            id: eventId
-        ) {
+        if let cachedEvent = try? await eventsRepository.getCachedEvent(id: eventId) {
             apply(event: cachedEvent)
             await loadParticipantsFromBackendIfNeeded(for: cachedEvent)
             isLoading = false
         }
 
         do {
-            let refreshedEvent = try await eventsRepository.refreshEvent(
-                id: eventId
-            )
+            let refreshedEvent = try await eventsRepository.refreshEvent(id: eventId)
             apply(event: refreshedEvent)
             await loadParticipantsFromBackendIfNeeded(for: refreshedEvent)
         } catch {

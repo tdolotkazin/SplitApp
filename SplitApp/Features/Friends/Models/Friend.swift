@@ -9,7 +9,10 @@ struct Friend: Identifiable, Hashable {
     var avatarUrl: String?
     var userId: UUID?
 
-    init(id: UUID = UUID(), name: String, initials: String, color: Color, avatarUrl: String? = nil, userId: UUID? = nil) {
+    init(
+        id: UUID = UUID(), name: String, initials: String, color: Color,
+        avatarUrl: String? = nil, userId: UUID? = nil
+    ) {
         self.id = id
         self.name = name
         self.initials = initials

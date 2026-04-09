@@ -35,19 +35,22 @@ struct AddFriendSheet: View {
 
                     Spacer()
 
-                    Button(action: {
-                        guard !friendName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-                        onAdd(friendName.trimmingCharacters(in: .whitespacesAndNewlines))
-                        dismiss()
-                    }) {
-                        Text("Добавить")
-                            .font(.system(size: 17, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.accentForeground)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(AppTheme.accentGradient)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                    }
+                    Button(
+                        action: {
+                            guard !friendName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+                            onAdd(friendName.trimmingCharacters(in: .whitespacesAndNewlines))
+                            dismiss()
+                        },
+                        label: {
+                            Text("Добавить")
+                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                .foregroundStyle(AppTheme.accentForeground)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(AppTheme.accentGradient)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
+                    )
                     .disabled(friendName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .opacity(friendName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
                     .padding(.horizontal, 20)
