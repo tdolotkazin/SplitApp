@@ -3,6 +3,9 @@ import SwiftUI
 struct BillEntryView: View {
     @StateObject private var viewModel = BillViewModel()
     @State private var showParticipantSheet = false
+    @State private var showSavingAnimation = false
+    @State private var savingTextOffset: CGFloat = 0
+    @State private var savingTextOpacity: Double = 0
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -18,8 +21,12 @@ struct BillEntryView: View {
                 .dismissKeyboardOnTap()
 
                 VStack(spacing: 0) {
-                    HeaderRow()
+                    receiptNameField
+                        .padding(.horizontal, 20)
                         .padding(.top, 8)
+                        .padding(.bottom, 4)
+
+                    HeaderRow()
                         .onTapGesture {
                             hideKeyboard()
                         }
@@ -67,6 +74,10 @@ struct BillEntryView: View {
                     .scrollContentBackground(.hidden)
                     .animation(nil, value: viewModel.items.count)
                 }
+
+                if showSavingAnimation {
+                    savingOverlay
+                }
             }
             .overlay(alignment: .bottom) {
                 bottomActionPanel
@@ -85,7 +96,7 @@ struct BillEntryView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Готово") {
-                        viewModel.save()
+                        triggerSave()
                     }
                     .foregroundStyle(AppTheme.accent)
                     .font(.system(size: 17, weight: .semibold))
@@ -117,6 +128,59 @@ struct BillEntryView: View {
         }
     }
 
+    private var receiptNameField: some View {
+        TextField("Название чека", text: $viewModel.receiptName)
+            .font(.system(size: 20, weight: .semibold, design: .rounded))
+            .foregroundStyle(AppTheme.textPrimary)
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(AppTheme.accent.opacity(0.25), lineWidth: 1)
+            )
+    }
+
+    private var savingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.01)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+
+            Text(viewModel.receiptName.isEmpty ? "Чек" : viewModel.receiptName)
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.accent)
+                .shadow(color: AppTheme.accent.opacity(0.6), radius: 16, y: 4)
+                .offset(y: savingTextOffset)
+                .opacity(savingTextOpacity)
+                .allowsHitTesting(false)
+        }
+    }
+
+    private func triggerSave() {
+        hideKeyboard()
+        viewModel.save()
+
+        showSavingAnimation = true
+        savingTextOffset = 0
+        savingTextOpacity = 0
+
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            savingTextOpacity = 1
+        }
+
+        withAnimation(.spring(response: 0.7, dampingFraction: 0.65).delay(0.15)) {
+            savingTextOffset = -160
+            savingTextOpacity = 0
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            showSavingAnimation = false
+            savingTextOffset = 0
+        }
+    }
+
     private var bottomActionPanel: some View {
         VStack(spacing: 0) {
             AddItemButton {
@@ -140,7 +204,7 @@ struct BillEntryView: View {
             .padding(.horizontal, 20)
 
             GlassButton(title: "Разделить счёт") {
-                viewModel.save()
+                triggerSave()
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
