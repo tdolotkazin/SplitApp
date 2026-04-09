@@ -47,36 +47,6 @@ final class BillViewModel: ObservableObject {
         items.reduce(0) { $0 + $1.amount }
     }
 
-    @MainActor
-    init(service: EventManagementServiceProtocol? = nil) {
-        self.service = service ?? EventManagementService()
-
-        // Получаем участников из локального хранилища и преобразуем в Participant
-        let users = LocalEventStore.shared.getCurrentParticipants()
-        let colors: [String] = [
-            "#7C3AED", "#06B6D4", "#3B82F6", "#F59E0B", "#10B981", "#EF4444",
-            "#8B5CF6", "#EC4899", "#14B8A6", "#F97316", "#6366F1", "#D946EF",
-            "#0EA5E9", "#84CC16", "#F43F5E", "#A78BFA", "#2DD4BF", "#FB923C",
-            "#4ADE80", "#E879F9"
-        ]
-    }
-
-    participants = users.enumerated().map { index, user in
-        let colorHex = colors[index % colors.count]
-        let initials = String(user.name.prefix(2)).uppercased()
-
-        return Participant(
-            id: user.id,
-            name: user.name,
-            initials: initials,
-            color: Color(hex: colorHex)
-        )
-    }
-
-    let scanned = ScannedReceiptStore.shared.consume()
-    if !scanned.isEmpty {
-        items = scanned
-    }
     var title: String {
         switch mode {
         case .create:

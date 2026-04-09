@@ -8,6 +8,8 @@ protocol EventManagementServiceProtocol {
     func fetchEvent(id: UUID) async throws -> Event
     func cachedEvent(id: UUID) async throws -> Event?
     func refreshEvent(id: UUID) async throws -> Event
+    func createEvent(name: String) async throws -> EventListItem
+    func deleteEvent(id: UUID) async throws
 }
 
 struct EventManagementService: EventManagementServiceProtocol {
@@ -64,8 +66,8 @@ struct EventManagementService: EventManagementServiceProtocol {
 
     func createEvent(name: String) async throws -> EventListItem {
         let creatorId = CurrentUserStore.shared.user.id
-        let request = CreateEventRequest(creatorId: creatorId, name: name)
-        let event = try await eventsRepository.createEvent(request)
+        let command = CreateEventCommand(creatorId: creatorId, name: name)
+        let event = try await eventsRepository.createEvent(command)
         return EventMapper.mapToListItem(event)
     }
 

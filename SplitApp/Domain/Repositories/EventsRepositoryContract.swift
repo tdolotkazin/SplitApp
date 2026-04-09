@@ -12,6 +12,7 @@ protocol EventsRepository {
     func getCachedEvent(id: UUID) async throws -> Event?
     /// Forces network refresh for a single event.
     func refreshEvent(id: UUID) async throws -> Event
+    func deleteEvent(id: UUID) async throws
     func updateEvent(id: UUID, _ command: UpdateEventCommand) async throws -> Event
     func addParticipants(eventId: UUID, _ command: AddParticipantsCommand) async throws -> [User]
     func removeParticipant(eventId: UUID, userId: UUID) async throws

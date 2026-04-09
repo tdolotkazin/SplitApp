@@ -4,17 +4,17 @@ import CoreData
 protocol EventsRepositoryProtocol {
     func listEvents(userId: UUID?) async throws -> [Event]
     func refreshEvents(userId: UUID?) async throws -> [Event]
-    func createEvent(_ request: CreateEventRequest) async throws -> Event
+    func createEvent(_ command: CreateEventCommand) async throws -> Event
     func deleteEvent(id: UUID) async throws
     func getEvent(id: UUID) async throws -> Event
     func getCachedEvent(id: UUID) async throws -> Event?
     func refreshEvent(id: UUID) async throws -> Event
-    func updateEvent(id: UUID, _ request: UpdateEventRequest) async throws -> Event
-    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User]
+    func updateEvent(id: UUID, _ command: UpdateEventCommand) async throws -> Event
+    func addParticipants(eventId: UUID, _ command: AddParticipantsCommand) async throws -> [User]
     func removeParticipant(eventId: UUID, userId: UUID) async throws
 }
 
-final class EventsRepository: EventsRepositoryProtocol {
+final class EventsDataRepository: EventsRepository, EventsRepositoryProtocol {
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 
@@ -25,7 +25,11 @@ final class EventsRepository: EventsRepositoryProtocol {
 
     // MARK: - Networking + Database Operations
 
-    func createEvent(_ request: CreateEventRequest) async throws -> Event {
+    func createEvent(_ command: CreateEventCommand) async throws -> Event {
+        let request = CreateEventRequest(
+            creatorId: command.creatorId,
+            name: command.name
+        )
         do {
             let dto: EventDTO = try await apiClient.request(endpoint: CreateEventEndpoint(), body: request)
             try await coreDataStore.performBackground { [weak self] context in
@@ -42,6 +46,7 @@ final class EventsRepository: EventsRepositoryProtocol {
                 name: request.name,
                 isClosed: false,
                 users: [request.creatorId],
+                participants: nil,
                 createdAt: now,
                 updatedAt: now
             )
@@ -50,7 +55,6 @@ final class EventsRepository: EventsRepositoryProtocol {
             }
             return EventMapper.mapToDomain(dto: dto)
         }
-        return try await refreshEvent(id: dto.id)
     }
 
     func listEvents(userId: UUID? = nil) async throws -> [Event] {
@@ -124,7 +128,7 @@ final class EventsRepository: EventsRepositoryProtocol {
     func deleteEvent(id: UUID) async throws {
         try await apiClient.requestVoid(endpoint: DeleteEventEndpoint(id: id))
         try await coreDataStore.performBackground { [weak self] context in
-            guard let self else { return }
+            guard self != nil else { return }
             let fetchRequest: NSFetchRequest<CDEvent> = CDEvent.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
             if let event = try context.fetch(fetchRequest).first {
@@ -133,7 +137,8 @@ final class EventsRepository: EventsRepositoryProtocol {
         }
     }
 
-    func addParticipants(eventId: UUID, _ request: AddParticipantsRequest) async throws -> [User] {
+    func addParticipants(eventId: UUID, _ command: AddParticipantsCommand) async throws -> [User] {
+        let request = AddParticipantsRequest(userIds: command.userIds)
         let dtos: [UserDTO] = try await apiClient.request(
             endpoint: AddParticipantsEndpoint(eventId: eventId),
             body: request

@@ -30,8 +30,6 @@ enum EventsNavigationAction: Equatable {
 struct EventsNavigationRules {
     let scanButtonRoute: EventsNavigationRoute
 
-    let eventCardRoute: EventsNavigationRoute
-
     init(
         scanButtonRoute: EventsNavigationRoute = .scanner
     ) {

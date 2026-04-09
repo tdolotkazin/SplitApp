@@ -38,7 +38,7 @@ struct EventsHomeView: View {
 
                             if let currentEvent = viewModel.currentEvent {
                                 Button(
-                                    action: { onEventTap?() },
+                                    action: { onEventTap(currentEvent.id) },
                                     label: { CurrentEventCardView(event: currentEvent) }
                                 )
                                 .buttonStyle(PlainButtonStyle())
@@ -46,7 +46,7 @@ struct EventsHomeView: View {
                                 .transition(.move(edge: .top).combined(with: .opacity))
                             } else {
                                 Button(
-                                    action: { onEventTap?() },
+                                    action: onAddTap,
                                     label: { emptyEventCard }
                                 )
                                 .buttonStyle(PlainButtonStyle())

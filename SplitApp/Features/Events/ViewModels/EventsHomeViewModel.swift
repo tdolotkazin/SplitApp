@@ -60,7 +60,6 @@ final class EventsHomeViewModel: ObservableObject {
                 let newEvent = Event(
                     id: newItem.id,
                     name: newItem.title,
-                    positions: [],
                     date: Date(),
                     icon: "📌",
                     participantsCount: 0,
