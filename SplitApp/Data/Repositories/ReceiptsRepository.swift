@@ -83,11 +83,52 @@ final class ReceiptsRepository: ReceiptsRepositoryProtocol {
     }
 
     func updateReceipt(id: UUID, _ request: UpdateReceiptRequest) async throws -> ReceiptDTO {
-        let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.upsertReceipt(dto, in: context)
+        do {
+            let dto: ReceiptDTO = try await apiClient.request(endpoint: UpdateReceiptEndpoint(id: id), body: request)
+            try await coreDataStore.performBackground { [weak self] context in
+                try self?.upsertReceipt(dto, in: context)
+            }
+            return dto
+        } catch {
+            // Fallback: обновляем чек локально если нет бэкенда
+            // Получаем существующий чек из локального хранилища
+            guard let existingReceipt = LocalReceiptsStore.shared.getReceipt(id: id) else {
+                throw error
+            }
+
+            // Преобразуем UpdateReceiptRequest обратно в ReceiptDTO
+            let receiptItems = (request.items ?? existingReceipt.items.map { existingItem in
+                CreateReceiptItemRequest(
+                    name: existingItem.name,
+                    cost: existingItem.cost,
+                    shareItems: existingItem.shareItems.map { userId in
+                        CreateShareItemRequest(userId: userId, shareValue: 0)
+                    }
+                )
+            }).map { item in
+                ReceiptItemDTO(
+                    id: UUID(),
+                    receiptId: id,
+                    name: item.name,
+                    cost: item.cost,
+                    shareItems: item.shareItems.map { $0.userId }
+                )
+            }
+
+            let updatedDto = ReceiptDTO(
+                id: id,
+                eventId: existingReceipt.eventId,
+                payerId: existingReceipt.payerId,
+                title: request.title ?? existingReceipt.title,
+                totalAmount: request.totalAmount ?? existingReceipt.totalAmount,
+                createdAt: existingReceipt.createdAt,
+                updatedAt: Date(),
+                items: receiptItems
+            )
+
+            LocalReceiptsStore.shared.updateReceipt(updatedDto)
+            return updatedDto
         }
-        return dto
     }
 
     func deleteReceipt(id: UUID) async throws {

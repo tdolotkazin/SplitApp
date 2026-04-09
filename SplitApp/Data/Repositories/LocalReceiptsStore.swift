@@ -22,6 +22,21 @@ final class LocalReceiptsStore {
         return filtered
     }
 
+    /// Возвращает чек по ID
+    func getReceipt(id: UUID) -> ReceiptDTO? {
+        return receipts.first { $0.id == id }
+    }
+
+    /// Обновляет существующий чек
+    func updateReceipt(_ receipt: ReceiptDTO) {
+        if let index = receipts.firstIndex(where: { $0.id == receipt.id }) {
+            receipts[index] = receipt
+            print("💾 LocalReceiptsStore: Обновлён чек ID: \(receipt.id)")
+        } else {
+            print("⚠️ LocalReceiptsStore: Чек ID: \(receipt.id) не найден для обновления")
+        }
+    }
+
     /// Удаляет чек
     func deleteReceipt(id: UUID) {
         receipts.removeAll { $0.id == id }

@@ -5,6 +5,7 @@ protocol EventManagementServiceProtocol {
     func fetchHomeData() async throws -> EventsHomeData
     func fetchReceipts(eventId: UUID) async throws -> [ReceiptDTO]
     func createReceipt(eventId: UUID, request: CreateReceiptRequest) async throws -> ReceiptDTO
+    func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO
 }
 
 struct EventManagementService: EventManagementServiceProtocol {
@@ -41,5 +42,9 @@ struct EventManagementService: EventManagementServiceProtocol {
 
     func createReceipt(eventId: UUID, request: CreateReceiptRequest) async throws -> ReceiptDTO {
         return try await receiptsRepository.createReceipt(eventId: eventId, request)
+    }
+
+    func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO {
+        return try await receiptsRepository.updateReceipt(id: id, request)
     }
 }

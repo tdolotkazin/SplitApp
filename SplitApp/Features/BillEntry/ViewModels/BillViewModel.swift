@@ -110,27 +110,35 @@ class BillViewModel: ObservableObject {
             return
         }
 
-        // Используем eventId из LocalEventStore или из currentEventId
-        let eventId = currentEventId ?? LocalEventStore.shared.currentEventId
-
-        guard let eventId = eventId else {
-            print("Нет текущего события")
-            return
-        }
-
         // Haptic feedback
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
 
         Task {
             do {
-                let request = createReceiptRequest(from: validItems)
-                print("🔵 Создаем чек для события: \(eventId)")
-                let receipt = try await service.createReceipt(eventId: eventId, request: request)
-                print("✅ Чек успешно создан! ID: \(receipt.id), eventId: \(receipt.eventId)")
+                // Проверяем, редактируем ли мы существующий чек или создаём новый
+                if let receiptId = currentReceiptId {
+                    // Обновляем существующий чек
+                    let request = createUpdateReceiptRequest(from: validItems)
+                    print("🔵 Обновляем чек: \(receiptId)")
+                    let receipt = try await service.updateReceipt(id: receiptId, request: request)
+                    print("✅ Чек успешно обновлён! ID: \(receipt.id)")
+                } else {
+                    // Создаём новый чек
+                    let eventId = currentEventId ?? LocalEventStore.shared.currentEventId
+                    guard let eventId = eventId else {
+                        print("Нет текущего события")
+                        return
+                    }
+
+                    let request = createReceiptRequest(from: validItems)
+                    print("🔵 Создаем чек для события: \(eventId)")
+                    let receipt = try await service.createReceipt(eventId: eventId, request: request)
+                    print("✅ Чек успешно создан! ID: \(receipt.id), eventId: \(receipt.eventId)")
+                }
                 onReceiptCreated?()
             } catch {
-                print("❌ Ошибка создания чека: \(error)")
+                print("❌ Ошибка сохранения чека: \(error)")
             }
         }
     }
@@ -159,6 +167,32 @@ class BillViewModel: ObservableObject {
 
         return CreateReceiptRequest(
             payerId: payerId,
+            title: receiptTitle.isEmpty ? nil : receiptTitle,
+            totalAmount: NSDecimalNumber(decimal: total).doubleValue,
+            items: requestItems
+        )
+    }
+
+    private func createUpdateReceiptRequest(from items: [BillItem]) -> UpdateReceiptRequest {
+        let requestItems = items.compactMap { item -> CreateReceiptItemRequest? in
+            guard !item.assignedTo.isEmpty else { return nil }
+
+            // Создаем shareItems для каждого участника позиции
+            let shareItems = item.assignedTo.map { participant in
+                CreateShareItemRequest(
+                    userId: participant.id,
+                    shareValue: NSDecimalNumber(decimal: item.amount).doubleValue / Double(item.assignedTo.count)
+                )
+            }
+
+            return CreateReceiptItemRequest(
+                name: item.name,
+                cost: NSDecimalNumber(decimal: item.amount).doubleValue,
+                shareItems: shareItems
+            )
+        }
+
+        return UpdateReceiptRequest(
             title: receiptTitle.isEmpty ? nil : receiptTitle,
             totalAmount: NSDecimalNumber(decimal: total).doubleValue,
             items: requestItems
