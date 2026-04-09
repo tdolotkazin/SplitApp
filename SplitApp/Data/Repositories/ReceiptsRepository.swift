@@ -38,13 +38,7 @@ final class ReceiptsDataRepository: ReceiptsRepository {
         } catch {
             let localDTO = makeLocalCreateReceiptDTO(
                 eventId: eventId,
-                payerId: request.payerId,
-                title: request.title,
-                totalAmount: request.totalAmount,
-                createdAt: Date(),
-                updatedAt: Date(),
-                items: receiptItems,
-                imageUrl: nil
+                request: request
             )
 
             do {
@@ -331,7 +325,8 @@ private extension ReceiptsDataRepository {
             totalAmount: request.totalAmount,
             createdAt: Date(),
             updatedAt: Date(),
-            items: receiptItems
+            items: receiptItems,
+            imageUrl: nil
         )
     }
 
