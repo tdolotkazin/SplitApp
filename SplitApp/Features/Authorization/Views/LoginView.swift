@@ -9,12 +9,10 @@ struct LoginView: View {
         ZStack {
             AppTheme.backgroundRadialGlow
                 .ignoresSafeArea()
-            
+
             VStack {
                 HeaderView()
-
                     .padding(.horizontal, 16)
-
                 VStack(spacing: 16) {
 
                     HStack(spacing: 12) {
@@ -33,7 +31,7 @@ struct LoginView: View {
                                 }
                             }
                         }
-
+                        
                     }
                 }
                 .padding(.horizontal, 20)
