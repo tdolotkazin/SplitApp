@@ -60,7 +60,17 @@ struct EventsNavigationView: View {
                 }
             }
         }
-        .fullScreenCover(item: $viewModel.billEntryDestination) { destination in
+        .fullScreenCover(
+            item: $viewModel.billEntryDestination,
+            onDismiss: {
+                Task { @MainActor in
+                    if let eventId = LocalEventStore.shared.currentEventId {
+                        await viewModel.homeViewModel.loadReceipts(for: eventId)
+                    }
+                    viewModel.didFinishBillEntry()
+                }
+            }
+        ) { destination in
             let billViewModel = BillViewModel(
                 mode: destination.mode,
                 eventsRepository: eventsRepository,
@@ -68,16 +78,7 @@ struct EventsNavigationView: View {
                 usersRepository: usersRepository,
                 networkMonitor: networkMonitor
             )
-
             BillEntryView(viewModel: billViewModel)
-                .onDisappear {
-                    Task { @MainActor in
-                        if let eventId = LocalEventStore.shared.currentEventId {
-                            await viewModel.homeViewModel.loadReceipts(for: eventId)
-                        }
-                        viewModel.didFinishBillEntry()
-                    }
-                }
         }
     }
 }

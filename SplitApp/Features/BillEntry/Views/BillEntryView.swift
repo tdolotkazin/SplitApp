@@ -7,6 +7,7 @@ struct BillEntryView: View {
     @State private var showSavingAnimation = false
     @State private var savingTextOffset: CGFloat = 0
     @State private var savingTextOpacity: Double = 0
+    @FocusState private var isReceiptTitleFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
     init(viewModel: BillViewModel) {
@@ -41,6 +42,9 @@ struct BillEntryView: View {
                     .padding(.horizontal, 24)
                 } else {
                     VStack(spacing: 0) {
+                        receiptTitleCard
+                        billTableHeader
+
                         ScrollViewReader { proxy in
                             List {
                                 ForEach(viewModel.items) { item in
@@ -66,9 +70,9 @@ struct BillEntryView: View {
                                     .listRowInsets(
                                         EdgeInsets(
                                             top: 4,
-                                            leading: 0,
+                                            leading: 20,
                                             bottom: 4,
-                                            trailing: 0
+                                            trailing: 20
                                         )
                                     )
                                     .id(item.id)
@@ -93,11 +97,22 @@ struct BillEntryView: View {
                                     .frame(height: BillEntryLayout.bottomPanelReservedSpace)
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
+                                    .listRowInsets(
+                                        EdgeInsets(
+                                            top: 0,
+                                            leading: 20,
+                                            bottom: 0,
+                                            trailing: 20
+                                        )
+                                    )
                                     .contentShape(Rectangle())
                                     .onTapGesture {
                                         hideKeyboard()
                                     }
                             }
+                            .listStyle(.plain)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.clear)
                         }
 
                         if !keyboardObserver.isVisible {
@@ -118,7 +133,7 @@ struct BillEntryView: View {
                     )
                 }
             }
-            .navigationTitle("Ввод чека")
+            .navigationTitle(viewModel.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -154,6 +169,70 @@ struct BillEntryView: View {
                 .presentationDragIndicator(.visible)
             }
         }
+    }
+
+    private var receiptTitleCard: some View {
+        GlassCard(padding: 12) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("НАЗВАНИЕ ЧЕКА")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .tracking(1.1)
+                    .foregroundStyle(AppTheme.textSecondary)
+
+                TextField("Например: ужин в пятницу", text: $viewModel.receiptTitle)
+                    .font(AppTheme.fontBody)
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .focused($isReceiptTitleFocused)
+                    .textInputAutocapitalization(.sentences)
+                    .submitLabel(.done)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(
+                        isReceiptTitleFocused
+                            ? AppTheme.inputBackgroundFocused
+                            : AppTheme.inputBackground
+                    )
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
+                            .stroke(
+                                isReceiptTitleFocused ? AppTheme.accent : Color.clear,
+                                lineWidth: 1.5
+                            )
+                    )
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+    }
+
+    private var billTableHeader: some View {
+        HStack(spacing: 12) {
+            Text("ПОЗИЦИЯ")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .tracking(1.1)
+                .foregroundStyle(AppTheme.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("СТОИМОСТЬ")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .tracking(1.1)
+                .foregroundStyle(AppTheme.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(width: BillEntryColumns.amountWidth, alignment: .center)
+
+            Text("ЧЬЁ")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .tracking(1.1)
+                .foregroundStyle(AppTheme.textSecondary)
+                .frame(width: BillEntryColumns.participantWidth, alignment: .center)
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 4)
     }
 
     private var bottomActionPanel: some View {

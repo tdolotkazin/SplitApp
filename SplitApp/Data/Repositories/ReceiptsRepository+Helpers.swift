@@ -222,13 +222,25 @@ extension ReceiptsDataRepository {
         receiptId: UUID,
         imageJPEGData: Data
     ) async throws -> ReceiptImageUploadResponseDTO {
-        try await apiClient.requestMultipart(
-            endpoint: UploadReceiptImageEndpoint(id: receiptId),
-            fileFieldName: "file",
-            fileName: "receipt-\(receiptId.uuidString).jpg",
-            mimeType: "image/jpeg",
-            fileData: imageJPEGData
-        )
+        do {
+            return try await apiClient.requestMultipart(
+                endpoint: UploadReceiptImageEndpoint(id: receiptId),
+                fileFieldName: "file",
+                fileName: "receipt-\(receiptId.uuidString).jpg",
+                mimeType: "image/jpeg",
+                fileData: imageJPEGData
+            )
+        } catch NetworkError.httpError(let statusCode, _) where statusCode == 400 || statusCode == 415 || statusCode == 422 {
+            return try await apiClient.requestMultipart(
+                endpoint: UploadReceiptImageEndpoint(id: receiptId),
+                fileFieldName: "image",
+                fileName: "receipt-\(receiptId.uuidString).jpg",
+                mimeType: "image/jpeg",
+                fileData: imageJPEGData
+            )
+        } catch {
+            throw error
+        }
     }
 
     func updateImageUrl(in dto: ReceiptDTO, imageUrl: String) -> ReceiptDTO {

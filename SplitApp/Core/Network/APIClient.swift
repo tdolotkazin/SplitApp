@@ -18,18 +18,25 @@ final class APIClient {
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
 
-            let manualFormatter = DateFormatter()
-            manualFormatter.locale = Locale(identifier: "en_US_POSIX")
-            manualFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
-            manualFormatter.timeZone = TimeZone(identifier: "UTC")
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(identifier: "UTC")
 
-            if let date = manualFormatter.date(from: dateString) {
-                return date
+            for format in [
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
+                "yyyy-MM-dd'T'HH:mm:ssZ",
+                "yyyy-MM-dd'T'HH:mm:ss"
+            ] {
+                formatter.dateFormat = format
+                if let date = formatter.date(from: dateString) {
+                    return date
+                }
             }
 
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Invalid date"
+                debugDescription: "Invalid date: \(dateString)"
             )
         }
 
@@ -64,7 +71,13 @@ final class APIClient {
 
         do {
             try validateResponse(response, data: data)
-            return try decoder.decode(T.self, from: data)
+            do {
+                return try decoder.decode(T.self, from: data)
+            } catch {
+                let body = String(data: data, encoding: .utf8) ?? "<non-UTF8>"
+                print("[APIClient] decode error: \(error)\nbody: \(body)")
+                throw error
+            }
 
         } catch NetworkError.unauthorized {
 
@@ -100,6 +113,24 @@ final class APIClient {
         mimeType: String,
         fileData: Data
     ) async throws -> T {
+        return try await performMultipartRequest(
+            endpoint: endpoint,
+            fileFieldName: fileFieldName,
+            fileName: fileName,
+            mimeType: mimeType,
+            fileData: fileData,
+            isRetry: false
+        )
+    }
+
+    private func performMultipartRequest<T: Decodable>(
+        endpoint: Endpoint,
+        fileFieldName: String,
+        fileName: String,
+        mimeType: String,
+        fileData: Data,
+        isRetry: Bool
+    ) async throws -> T {
         let boundary = "Boundary-\(UUID().uuidString)"
         var request = try buildRequest(endpoint: endpoint, body: nil)
         request.setValue(
@@ -121,12 +152,30 @@ final class APIClient {
         request.httpBody = body
 
         let (data, response) = try await session.data(for: request)
-        try validateResponse(response, data: data)
 
         do {
+            try validateResponse(response, data: data)
             return try decoder.decode(T.self, from: data)
+        } catch NetworkError.unauthorized {
+            if isRetry {
+                throw NetworkError.unauthorized
+            }
+
+            try await refreshAccessTokenIfNeeded()
+
+            return try await performMultipartRequest(
+                endpoint: endpoint,
+                fileFieldName: fileFieldName,
+                fileName: fileName,
+                mimeType: mimeType,
+                fileData: fileData,
+                isRetry: true
+            )
         } catch {
-            throw NetworkError.decodingError(error)
+            if error is DecodingError {
+                throw NetworkError.decodingError(error)
+            }
+            throw error
         }
     }
 
@@ -206,9 +255,11 @@ final class APIClient {
         case 403:
             throw NetworkError.httpError(statusCode: 403, detail: "Forbidden")
         default:
+            let body = String(data: data, encoding: .utf8) ?? "<non-UTF8>"
+            print("[APIClient] HTTP \(http.statusCode) body: \(body)")
             throw NetworkError.httpError(
                 statusCode: http.statusCode,
-                detail: response.debugDescription
+                detail: body
             )
         }
     }

@@ -48,6 +48,29 @@ struct ShareItemDTO: Codable, Identifiable {
         case userId = "user_id"
         case shareValue = "share_value"
     }
+
+    init(id: UUID, receiptItemId: UUID, userId: UUID, shareValue: Double) {
+        self.id = id
+        self.receiptItemId = receiptItemId
+        self.userId = userId
+        self.shareValue = shareValue
+    }
+
+    // Server returns share_items as plain UUID strings (e.g. ["uuid1", "uuid2"])
+    init(from decoder: Decoder) throws {
+        if let userId = try? decoder.singleValueContainer().decode(UUID.self) {
+            self.userId = userId
+            self.id = UUID()
+            self.receiptItemId = UUID()
+            self.shareValue = 1.0
+        } else {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.id = try container.decode(UUID.self, forKey: .id)
+            self.receiptItemId = try container.decode(UUID.self, forKey: .receiptItemId)
+            self.userId = try container.decode(UUID.self, forKey: .userId)
+            self.shareValue = try container.decode(Double.self, forKey: .shareValue)
+        }
+    }
 }
 
 struct CreateReceiptRequest: Codable {
