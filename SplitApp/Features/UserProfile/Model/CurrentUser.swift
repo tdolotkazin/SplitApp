@@ -13,7 +13,6 @@ final class CurrentUserStore {
 
     private init() {}
 
-    // swiftlint:disable:next line_length
     private static let avatarURL =
         URL(string: "https://avatars.yandex.net/get-yapic/18057972/OxsEFr6TY2BhCCIjGojNlINJEY-1/islands-200")
 
