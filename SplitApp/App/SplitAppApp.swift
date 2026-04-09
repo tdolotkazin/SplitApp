@@ -4,7 +4,7 @@ import SwiftUI
 struct SplitAppApp: App {
     var body: some Scene {
         WindowGroup {
-            CheckWords()
+            ContentView()
         }
     }
 }
