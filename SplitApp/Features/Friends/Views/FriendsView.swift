@@ -1,8 +1,13 @@
 import SwiftUI
 
 struct FriendsView: View {
-    @StateObject private var viewModel = FriendsViewModel()
-    @State private var showAddFriend = false
+    @StateObject private var viewModel: FriendsViewModel
+
+    init(friendsRepository: any FriendsRepository) {
+        _viewModel = StateObject(
+            wrappedValue: FriendsViewModel(friendsRepository: friendsRepository)
+        )
+    }
 
     var body: some View {
         ZStack {
@@ -10,6 +15,9 @@ struct FriendsView: View {
             content
         }
         .navigationBarHidden(true)
+        .task {
+            await viewModel.load()
+        }
     }
 }
 
@@ -34,9 +42,7 @@ private extension FriendsView {
     }
 
     var header: some View {
-        FriendsNavigationHeader(onAddFriend: {
-            showAddFriend = true
-        })
+        FriendsNavigationHeader()
         .onTapGesture {
             hideKeyboard()
         }
@@ -54,10 +60,15 @@ private extension FriendsView {
             VStack(spacing: 24) {
                 activeDebtsSection
                 allFriendsSection
+                loadingState
+                errorState
                 emptyState
                 bottomSpacer
             }
             .padding(.bottom, 32)
+        }
+        .refreshable {
+            await viewModel.reload()
         }
         .scrollDismissesKeyboard(.interactively)
         .simultaneousGesture(
@@ -88,11 +99,32 @@ private extension FriendsView {
         if !viewModel.filteredFriends.isEmpty {
             AllFriendsSection(
                 friends: viewModel.filteredFriends,
-                startIndex: viewModel.activeDebts.count,
-                onFriendTap: { friend in
-                    print("Tapped on friend: \(friend.name)")
-                }
+                startIndex: viewModel.activeDebts.count
             )
+        }
+    }
+
+    @ViewBuilder
+    var loadingState: some View {
+        if viewModel.isLoading {
+            ProgressView("Загружаем друзей...")
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+                .padding(.top, 16)
+        }
+    }
+
+    @ViewBuilder
+    var errorState: some View {
+        if !viewModel.isLoading,
+           viewModel.filteredFriends.isEmpty,
+           let errorMessage = viewModel.errorMessage {
+            Text(errorMessage)
+                .font(.system(size: 15, weight: .regular, design: .rounded))
+                .foregroundStyle(AppTheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
         }
     }
 
@@ -113,6 +145,10 @@ private extension FriendsView {
 
 #Preview {
     NavigationStack {
-        FriendsView()
+        FriendsView(
+            friendsRepository: FriendsDataRepository(
+                usersRepository: UsersDataRepository()
+            )
+        )
     }
 }
