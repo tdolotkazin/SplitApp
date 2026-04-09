@@ -18,8 +18,10 @@ struct FriendsView: View {
             content
         }
         .navigationBarHidden(true)
-        .task {
-            await viewModel.loadFriends()
+        .onAppear {
+            Task {
+                await viewModel.loadFriends()
+            }
         }
         .sheet(isPresented: $showAddFriend) {
             AddFriendSheet { name in
