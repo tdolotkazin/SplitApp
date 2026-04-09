@@ -2,23 +2,20 @@ import SwiftUI
 
 struct HeaderView: View {
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(AppTheme.dividerHighlight)
-                    .frame(width: 80, height: 80)
-            }
+        VStack(spacing: 18) {
+            Image("imgLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 360, maxHeight: 300)
 
             Text("SplitApp")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(.black)
 
             Text("Делите счета легко")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(.system(size: 18, weight: .regular, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.38))
         }
-        .padding(.top, 20)
         .padding(.bottom, 32)
     }
 }

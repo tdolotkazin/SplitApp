@@ -69,6 +69,7 @@ struct SplitAppApp: App {
         let storage = KeychainStorage()
 
         guard storage.get("refresh_token") != nil else {
+            TokenStore.shared.clear()
             await MainActor.run {
                 appState.isLoggedIn = false
                 appState.isLoading = false
@@ -79,12 +80,17 @@ struct SplitAppApp: App {
         do {
             try await APIClient.shared.refreshAccessTokenIfNeeded()
             await MainActor.run {
+                // Загружаем сохраненные данные пользователя
+                CurrentUserStore.shared.loadFromUserDefaults()
                 appState.isLoggedIn = true
                 appState.isLoading = false
             }
         } catch {
             print("Не удалось обновить токен: \(error)")
+            storage.delete("refresh_token")
+            TokenStore.shared.clear()
             await MainActor.run {
+                CurrentUserStore.shared.clear()
                 appState.isLoggedIn = false
                 appState.isLoading = false
             }

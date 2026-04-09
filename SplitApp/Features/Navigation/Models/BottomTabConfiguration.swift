@@ -43,7 +43,10 @@ extension BottomTabConfiguration {
     static func makeDefault(with dependencies: AppDependencies, appState: AppState) -> BottomTabConfiguration {
         let storage = KeychainStorage()
         let logoutUseCase = LogoutUseCase(secureStorage: storage, appState: appState)
-        let profileVM = ProfileViewModel(logoutUseCase: logoutUseCase)
+        let profileVM = ProfileViewModel(
+            usersRepository: dependencies.usersRepository,
+            logoutUseCase: logoutUseCase
+        )
         return BottomTabConfiguration(
             items: [
                 BottomTabItem(
@@ -71,18 +74,7 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    ProfileScreenView(
-                        model: ProfileScreenModel(
-                            initials: "ИВ",
-                            email: "ivan@example.com",
-                            name: "Иван Волков 🌸",
-                            eventsCountText: "12",
-                            friendsCountText: "8",
-                            closedBillsText: "₽340",
-                            openBillsText: "₽34"
-                        ),
-                        viewModel: profileVM
-                    )
+                    ProfileScreenView(viewModel: profileVM)
                 }
             ]
         )
