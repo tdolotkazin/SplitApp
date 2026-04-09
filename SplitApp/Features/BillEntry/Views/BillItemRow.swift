@@ -33,9 +33,6 @@ struct BillItemRow: View {
                     .font(AppTheme.fontBody)
                     .foregroundStyle(AppTheme.textPrimary)
                     .focused($isNameFocused)
-                    .onChange(of: name) { _, newValue in
-                        onUpdate(newValue, amount)
-                    }
                     .frame(maxWidth: .infinity)
 
                 AmountField(amount: $amount)
