@@ -155,13 +155,9 @@ final class APIClient {
 
         var body = Data()
         body.append(Data("--\(boundary)\r\n".utf8))
-        body.append(
-            Data(
-                "Content-Disposition: form-data; name=\"\(payload.fileFieldName)\"; " +
-                "filename=\"\(payload.fileName)\"\r\n"
-                    .utf8
-            )
-        )
+        let disposition = "Content-Disposition: form-data; name=\"\(payload.fileFieldName)\"; " +
+            "filename=\"\(payload.fileName)\"\r\n"
+        body.append(Data(disposition.utf8))
         body.append(Data("Content-Type: \(payload.mimeType)\r\n\r\n".utf8))
         body.append(payload.fileData)
         body.append(Data("\r\n--\(boundary)--\r\n".utf8))
