@@ -5,7 +5,7 @@ struct BillItemRow: View {
     let onAssign: () -> Void
     let onDelete: () -> Void
     let onUpdate: (String, Decimal) -> Void
-    let matcher: EmojiAutoReplaceMatcher
+    //let matcher: EmojiAutoReplaceMatcher
 
     @State private var name: String
     @State private var amount: Decimal
@@ -15,7 +15,7 @@ struct BillItemRow: View {
 
     init(
         item: BillItem,
-        matcher: EmojiAutoReplaceMatcher,
+       // matcher: EmojiAutoReplaceMatcher,
         onAssign: @escaping () -> Void,
         onDelete: @escaping () -> Void,
         onUpdate: @escaping (String, Decimal) -> Void
@@ -24,7 +24,7 @@ struct BillItemRow: View {
         self.onAssign = onAssign
         self.onDelete = onDelete
         self.onUpdate = onUpdate
-        self.matcher = matcher
+      //  self.matcher = matcher
         _name = State(initialValue: item.name)
         _amount = State(initialValue: item.amount)
     }
@@ -37,13 +37,13 @@ struct BillItemRow: View {
                     .foregroundStyle(AppTheme.textPrimary)
                     .focused($isNameFocused)
                     .frame(maxWidth: .infinity)
-                    .emojiAutoReplace(
-                        text: $name,
-                        matcher: matcher,
-                        onUpdate: { updatedName in
-                            onUpdate(updatedName, amount)
-                        }
-                    )
+//                    .emojiAutoReplace(
+//                        text: $name,
+//                       // matcher: matcher,
+//                        onUpdate: { updatedName in
+//                            onUpdate(updatedName, amount)
+//                        }
+//                    )
 
                 AmountField(amount: $amount)
                     .frame(width: BillEntryColumns.amountWidth)
@@ -120,18 +120,18 @@ struct BillItemRow: View {
     }
 }
 
-extension View {
-    func emojiAutoReplace(
-        text: Binding<String>,
-        matcher: EmojiAutoReplaceMatcher,
-        onUpdate: ((String) -> Void)? = nil
-    ) -> some View {
-        modifier(
-            EmojiTextEffectModifier(
-                text: text,
-                matcher: matcher,
-                onUpdate: onUpdate
-            )
-        )
-    }
-}
+//extension View {
+//    func emojiAutoReplace(
+//        text: Binding<String>,
+//        matcher: EmojiAutoReplaceMatcher,
+//        onUpdate: ((String) -> Void)? = nil
+//    ) -> some View {
+//        modifier(
+//            EmojiTextEffectModifier(
+//                text: text,
+//                matcher: matcher,
+//                onUpdate: onUpdate
+//            )
+//        )
+//    }
+//}
