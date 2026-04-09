@@ -45,6 +45,7 @@ extension BottomTabConfiguration {
         let logoutUseCase = LogoutUseCase(secureStorage: storage, appState: appState)
         let profileVM = ProfileViewModel(
             usersRepository: dependencies.usersRepository,
+            eventsRepository: dependencies.eventsRepository,
             logoutUseCase: logoutUseCase
         )
         return BottomTabConfiguration(
@@ -75,7 +76,7 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-
+                    ProfileScreenView(viewModel: profileVM)
                 }
             ]
         )
