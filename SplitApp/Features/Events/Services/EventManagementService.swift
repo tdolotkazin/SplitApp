@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 protocol EventManagementServiceProtocol {
     func fetchHomeData() async throws -> EventsHomeData

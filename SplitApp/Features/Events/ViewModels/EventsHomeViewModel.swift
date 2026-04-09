@@ -233,7 +233,7 @@ final class EventsHomeViewModel: ObservableObject {
 }
 
 extension EventsHomeViewModel {
-    @MainActor static func mock() -> EventsHomeViewModel {
+    static func mock() -> EventsHomeViewModel {
         let service = EventManagementService()
         let viewModel = EventsHomeViewModel(service: service)
         Task { await viewModel.loadDataIfNeeded() }
@@ -241,28 +241,12 @@ extension EventsHomeViewModel {
     }
 }
 
-private struct ReceiptTitleEmojiResolver {
-    static let shared = ReceiptTitleEmojiResolver()
-    private static let fallbackEmoji = "🧾"
-
-    private let matcher: EmojiAutoReplaceMatcher
-
-    init(parser: EmojiTextParser = EmojiTextParser()) {
-        let emojis = (try? parser.parse()) ?? []
-        self.matcher = EmojiAutoReplaceMatcher(emojis: emojis)
-    }
-
-    func emoji(for title: String) -> String {
-        let words = title
-            .components(separatedBy: .whitespacesAndNewlines)
-            .filter { !$0.isEmpty }
-
-        for word in words {
-            if let match = matcher.match(for: word) {
-                return match.emoji
-            }
-        }
-
-        return Self.fallbackEmoji
+extension EventsHomeViewModel {
+    static func mock(
+        service: EventManagementServiceProtocol = EventManagementService()
+    ) -> EventsHomeViewModel {
+        let viewModel = EventsHomeViewModel(service: service)
+        Task { await viewModel.loadDataIfNeeded() }
+        return viewModel
     }
 }
