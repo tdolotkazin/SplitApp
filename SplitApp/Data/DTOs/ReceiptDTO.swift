@@ -9,6 +9,7 @@ struct ReceiptDTO: Codable, Identifiable {
     let createdAt: Date
     let updatedAt: Date
     let items: [ReceiptItemDTO]
+    let imageUrl: String?
 
     enum CodingKeys: String, CodingKey {
         case id, title, items
@@ -17,6 +18,7 @@ struct ReceiptDTO: Codable, Identifiable {
         case totalAmount = "total_amount"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case imageUrl = "image_url"
     }
 }
 
@@ -90,5 +92,13 @@ struct UpdateReceiptRequest: Codable {
     enum CodingKeys: String, CodingKey {
         case title, items
         case totalAmount = "total_amount"
+    }
+}
+
+struct ReceiptImageUploadResponseDTO: Codable {
+    let imageUrl: String
+
+    enum CodingKeys: String, CodingKey {
+        case imageUrl = "image_url"
     }
 }

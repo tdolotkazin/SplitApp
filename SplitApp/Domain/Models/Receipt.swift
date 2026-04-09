@@ -8,6 +8,7 @@ struct Receipt: Hashable, Identifiable {
     let totalAmount: Double
     let createdAt: Date
     let items: [EventReceiptItem]
+    let imageURL: String?
 
     init(
         id: UUID = UUID(),
@@ -16,7 +17,8 @@ struct Receipt: Hashable, Identifiable {
         title: String?,
         totalAmount: Double,
         createdAt: Date = Date(),
-        items: [EventReceiptItem] = []
+        items: [EventReceiptItem] = [],
+        imageURL: String? = nil
     ) {
         self.id = id
         self.eventId = eventId
@@ -25,5 +27,6 @@ struct Receipt: Hashable, Identifiable {
         self.totalAmount = totalAmount
         self.createdAt = createdAt
         self.items = items
+        self.imageURL = imageURL
     }
 }

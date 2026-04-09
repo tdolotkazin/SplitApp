@@ -23,3 +23,9 @@ struct DeleteReceiptEndpoint: Endpoint {
     var path: String { "/api/receipts/\(id.uuidString)" }
     let method: HTTPMethod = .DELETE
 }
+
+struct UploadReceiptImageEndpoint: Endpoint {
+    let id: UUID
+    var path: String { "/api/receipts/\(id.uuidString)/image" }
+    let method: HTTPMethod = .POST
+}
