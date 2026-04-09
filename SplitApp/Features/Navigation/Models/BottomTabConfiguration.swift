@@ -74,7 +74,7 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    ProfileScreenView(viewModel: profileVM)
+
                 }
             ]
         )
