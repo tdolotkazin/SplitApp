@@ -22,13 +22,20 @@ enum EventMapper {
 
     /// Maps network/cache DTO to the domain model used by Services and UI.
     static func mapToDomain(dto: EventDTO) -> Event {
-        Event(
+        let participants = dto.participants?.map(UserMapper.mapToDomain(dto:)) ?? []
+        let participantIds = participants.isEmpty ? dto.users : participants.map(\.id)
+
+        return Event(
             id: dto.id,
+            creatorId: dto.creatorId,
             name: dto.name,
-            positions: [],
+            items: [],
+            receipts: [],
+            participants: participants,
+            participantIds: participantIds,
             date: dto.createdAt,
             icon: "📌",
-            participantsCount: dto.users.count,
+            participantsCount: participantIds.count,
             balanceDelta: 0
         )
     }
@@ -41,15 +48,23 @@ enum EventMapper {
             return nil
         }
 
-        let participantCount = (cdEvent.participants as? Set<CDUser>)?.count ?? 0
+        let participantIds = (cdEvent.participants as? Set<CDUser>)?
+            .compactMap { $0.id } ?? []
+        let participants = (cdEvent.participants as? Set<CDUser>)?
+            .compactMap(UserMapper.mapToDomain(cdUser:))
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending } ?? []
 
         return Event(
             id: id,
+            creatorId: cdEvent.creatorId ?? UUID(),
             name: name,
-            positions: [],
+            items: [],
+            receipts: [],
+            participants: participants,
+            participantIds: participantIds,
             date: createdAt,
             icon: "📌",
-            participantsCount: participantCount,
+            participantsCount: participantIds.count,
             balanceDelta: 0
         )
     }
