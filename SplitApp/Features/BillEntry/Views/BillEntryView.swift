@@ -158,13 +158,6 @@ struct BillEntryView: View {
                     .foregroundStyle(AppTheme.textSecondary)
                     .font(.system(size: 17))
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
-                        triggerSave()
-                    }
-                    .foregroundStyle(AppTheme.accent)
-                    .font(.system(size: 17, weight: .semibold))
-                }
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
