@@ -6,7 +6,7 @@ struct GlassDivider: View {
             colors: [
                 Color.clear,
                 AppTheme.dividerHighlight,
-                Color.clear,
+                Color.clear
             ],
             startPoint: .leading,
             endPoint: .trailing

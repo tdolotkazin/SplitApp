@@ -18,7 +18,7 @@ extension BillViewModel {
             participants = [
                 Participant(name: "Я", initials: "Я", color: .accentColor),
                 Participant(name: "Друг 1", initials: "Д1", color: .blue),
-                Participant(name: "Друг 2", initials: "Д2", color: .green),
+                Participant(name: "Друг 2", initials: "Д2", color: .green)
             ]
             return
         }

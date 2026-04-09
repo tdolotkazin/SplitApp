@@ -29,7 +29,7 @@ struct FriendAvatar: View {
             LinearGradient(
                 colors: [
                     friend.color,
-                    friend.color.opacity(0.8),
+                    friend.color.opacity(0.8)
                 ],
                 startPoint: .top,
                 endPoint: .bottom

@@ -13,7 +13,7 @@ final class LocalEventStore {
     private let defaultParticipants: [User] = [
         User(id: UUID(), name: "Артём", phoneNumber: ""),
         User(id: UUID(), name: "Маша", phoneNumber: ""),
-        User(id: UUID(), name: "Иван", phoneNumber: ""),
+        User(id: UUID(), name: "Иван", phoneNumber: "")
     ]
 
     /// Устанавливает текущее событие с участниками

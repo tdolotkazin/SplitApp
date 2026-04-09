@@ -83,7 +83,7 @@ extension BottomTabConfiguration {
                         ),
                         viewModel: profileVM
                     )
-                },
+                }
             ]
         )
     }

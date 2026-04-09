@@ -257,6 +257,6 @@ enum EmojiRussianAliases {
         "свежо": "leafy green",
         "любовь": "red heart",
         "романтика": "candle",
-        "сюрприз": "wrapped gift",
+        "сюрприз": "wrapped gift"
     ]
 }

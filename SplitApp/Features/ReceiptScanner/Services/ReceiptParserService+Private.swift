@@ -81,7 +81,7 @@ extension ReceiptParserService {
 
     static let continuationWords: Set<String> = [
         "с", "со", "и", "из", "для", "в", "на", "к", "по", "от",
-        "или", "без", "под", "над", "за", "при", "до", "а",
+        "или", "без", "под", "над", "за", "при", "до", "а"
     ]
 
     /// Previous line ends with preposition → next line is continuation.

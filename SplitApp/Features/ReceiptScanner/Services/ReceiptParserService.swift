@@ -19,7 +19,7 @@ final class ReceiptParserService {
         "блюдо", "всего", "количество", "наименование",
         "товар", "товары", "услуга",
         "пятерочка", "пятёрочка", "агроторг", "магнит", "дикси",
-        "перекрёсток", "перекресток", "лента", "ашан", "метро",
+        "перекрёсток", "перекресток", "лента", "ашан", "метро"
     ]
 
     static let serviceKeywords: Set<String> = [
@@ -51,18 +51,18 @@ final class ReceiptParserService {
         "кассир",
         "азк №", "азк no", "азс №", "азс no", "эн ккт", "зн ккт", "рн ккт",
         "нефтепродукт", "роснефть", "лукойл", "газпром",
-        "онлайн-касса", "онлайн - касса",
+        "онлайн-касса", "онлайн - касса"
     ]
 
     static let addressKeywords: Set<String> = [
         "обл.,", "область", "район", "ул.", "улица",
         "проспект", "корп.", "офис", "этаж",
         " д.", "д. ", ". д.",
-        "г.о.", "г. о.", "сириус", "354340",
+        "г.о.", "г. о.", "сириус", "354340"
     ]
 
     static let quantityUnits: Set<String> = [
-        "шт", "кг", " x ", " х ", " × ",
+        "шт", "кг", " x ", " х ", " × "
     ]
 
     let tokenizer = NLTokenizer(unit: .word)
@@ -102,7 +102,7 @@ final class ReceiptParserService {
             ("addrNum", isAddressWithNumber),
             ("noise", isOCRNoise),
             ("storeNum", isStoreNumberLine),
-            ("person", isPersonName),
+            ("person", isPersonName)
         ]
         for (reason, check) in classifiers where check(line) {
             print("[Parser] skip(\(reason)): \(line)")
