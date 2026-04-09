@@ -80,6 +80,5 @@ struct BillRowView: View {
         case .neutral:
             "Закрыт"
         }
-        bill.amount.euroText(minimumFractionDigits: 0)
     }
 }
