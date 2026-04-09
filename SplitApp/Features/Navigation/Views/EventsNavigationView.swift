@@ -31,13 +31,13 @@ struct EventsNavigationView: View {
                 onScanTap: { viewModel.handle(.scanButtonTapped) },
                 onAddTap: { viewModel.handle(.addButtonTapped) },
                 onBillTap: { billId in
-                    guard let eventId = LocalEventStore.shared.currentEventId else {
+                    guard let eventId = viewModel.homeViewModel.currentEvent?.id else {
                         return
                     }
                     viewModel.handle(.receiptTapped(eventId: eventId, receiptId: billId))
                 },
-                onEventTap: { eventId in
-                    viewModel.handle(.eventRowTapped(eventId))
+                onEventTap: {
+                    viewModel.handle(.currentEventTapped)
                 }
             )
             .task {
@@ -52,20 +52,8 @@ struct EventsNavigationView: View {
                     )
                     .navigationBarBackButtonHidden(true)
 
-                case .eventDetail(let eventId):
-                    EventDetailView(
-                        viewModel: EventDetailViewModel(
-                            eventId: eventId,
-                            service: viewModel.service,
-                            receiptsRepository: receiptsRepository
-                        ),
-                        onAddReceipt: { viewModel.handle(.addReceiptTapped(eventId)) },
-                        onReceiptTap: { receiptId in
-                            viewModel.handle(
-                                .receiptTapped(eventId: eventId, receiptId: receiptId)
-                            )
-                        }
-                    )
+                case .eventPicker:
+                    EventPickerView(viewModel: viewModel.homeViewModel)
                 }
             }
         }
