@@ -26,7 +26,7 @@ struct BillEntryView: View {
                 }
                 .dismissKeyboardOnTap()
 
-                if viewModel.isLoading && viewModel.items.isEmpty {
+                if viewModel.isLoading, viewModel.items.isEmpty {
                     ProgressView("Загрузка чека...")
                         .font(.system(size: 17, weight: .medium, design: .rounded))
                 } else if let errorMessage = viewModel.loadErrorMessage, viewModel.items.isEmpty {
@@ -78,7 +78,7 @@ struct BillEntryView: View {
                                     .id(item.id)
                                 }
                                 .onDelete { indexSet in
-                                    indexSet.forEach { index in
+                                    for index in indexSet {
                                         let item = viewModel.items[index]
                                         viewModel.removeItem(id: item.id)
                                     }
@@ -249,7 +249,7 @@ struct BillEntryView: View {
                         .font(.system(size: 24, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
                     Spacer()
-                    Text("€\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
+                    Text("₽\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.accent)
                         .contentTransition(.numericText())

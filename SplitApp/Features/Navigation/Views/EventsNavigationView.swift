@@ -12,6 +12,7 @@ struct EventsNavigationView: View {
         eventsRepository: any EventsRepository,
         receiptsRepository: any ReceiptsRepository,
         usersRepository: any UsersRepository,
+        activeEventRepository: any ActiveEventRepository,
         networkMonitor: NetworkMonitor,
         rules: EventsNavigationRules = .init()
     ) {
@@ -22,6 +23,7 @@ struct EventsNavigationView: View {
         _viewModel = StateObject(
             wrappedValue: EventsNavigationViewModel(
                 service: service,
+                activeEventRepository: activeEventRepository,
                 rules: rules
             )
         )
@@ -89,6 +91,7 @@ struct EventsNavigationView: View {
         eventsRepository: EventsDataRepository(),
         receiptsRepository: ReceiptsDataRepository(),
         usersRepository: UsersDataRepository(),
+        activeEventRepository: ActiveEventSelectionDataRepository(),
         networkMonitor: .shared
     )
 }

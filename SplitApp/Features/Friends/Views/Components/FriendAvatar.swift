@@ -7,7 +7,7 @@ struct FriendAvatar: View {
     var body: some View {
         AsyncImage(url: friend.avatarURL) { phase in
             Group {
-                if case .success(let image) = phase {
+                if case let .success(image) = phase {
                     image
                         .resizable()
                         .scaledToFill()

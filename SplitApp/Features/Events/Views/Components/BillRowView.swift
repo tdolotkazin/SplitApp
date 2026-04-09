@@ -36,10 +36,10 @@ struct BillRowView: View {
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         bill.tone == .neutral
-                        ? AnyShapeStyle(AppTheme.textSecondary)
-                        : AnyShapeStyle(
-                            AppTheme.accentGradient
-                        )
+                            ? AnyShapeStyle(AppTheme.textSecondary)
+                            : AnyShapeStyle(
+                                AppTheme.accentGradient
+                            )
                     )
             }
         }
@@ -74,11 +74,11 @@ struct BillRowView: View {
     private var amountLabel: String {
         switch bill.tone {
         case .positive:
-            return bill.amount.euroText(signed: true, minimumFractionDigits: 0)
+            bill.amount.rubleText(signed: true, minimumFractionDigits: 0)
         case .negative:
-            return bill.amount.euroText(signed: true, minimumFractionDigits: 0)
+            bill.amount.rubleText(signed: true, minimumFractionDigits: 0)
         case .neutral:
-            return "Закрыт"
+            "Закрыт"
         }
     }
 }

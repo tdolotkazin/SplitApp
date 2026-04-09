@@ -9,7 +9,6 @@ import NaturalLanguage
 ///              Uses a FIFO name queue: each name line is enqueued,
 ///              each standalone price dequeues the oldest name.
 final class ReceiptParserService {
-
     // MARK: - Configuration
 
     let minLettersInName = 4
@@ -32,8 +31,8 @@ final class ReceiptParserService {
         "фискальный", "фн:", "фд:", "фп:", "офд",
         "ндс", "сумма ндс", "nds", "vat",
         "кассовый чек", "чек №", "чек #", "спасибо",
-                "инн:", "кпп:", "огрн",
-                "фискальный", "фн:", "фд:", "фп:", "офд",
+        "инн:", "кпп:", "огрн",
+        "фискальный", "фн:", "фд:", "фп:", "офд",
         "приход", "расход", "возврат прихода", "возврат расхода",
         "www.", "http", ".ru", ".com", "receipt", "cashier",
         "подытог", "округление", "принято:", "сдача:",
@@ -146,11 +145,11 @@ final class ReceiptParserService {
         guard letters.count >= minLettersInName else { return }
 
         let prevWordCount = nameQueue.last?
-            .components(separatedBy: .whitespaces).filter({ !$0.isEmpty }).count ?? 0
+            .components(separatedBy: .whitespaces).filter { !$0.isEmpty }.count ?? 0
         let shouldMerge = !nameQueue.isEmpty && (
             prevWordCount == 1 ||
-            (prevWordCount >= 3 &&
-             (isContinuation(after: nameQueue.last!) || isContinuationStart(of: enqueueLine)))
+                (prevWordCount >= 3 &&
+                    (isContinuation(after: nameQueue.last!) || isContinuationStart(of: enqueueLine)))
         )
 
         if shouldMerge {

@@ -1,5 +1,5 @@
-import Foundation
 import CoreData
+import Foundation
 
 extension ReceiptsDataRepository {
     func deleteReceipt(id: UUID) async throws {
@@ -298,7 +298,7 @@ extension ReceiptsDataRepository {
         receipt.event = try context.fetch(eventFetch).first
 
         let existingItems = receipt.items as? Set<CDReceiptItem> ?? []
-        let dtoItemIds = Set(dto.items.map { $0.id })
+        let dtoItemIds = Set(dto.items.map(\.id))
 
         for item in existingItems where !dtoItemIds.contains(item.id ?? UUID()) {
             context.delete(item)

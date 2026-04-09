@@ -2,7 +2,6 @@ import CoreData
 import Foundation
 
 final class UsersDataRepository: UsersRepository {
-
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
 

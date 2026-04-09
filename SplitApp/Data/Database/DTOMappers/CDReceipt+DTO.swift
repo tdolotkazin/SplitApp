@@ -1,7 +1,6 @@
 import CoreData
 
 extension CDReceipt {
-
     /// Convert CoreData entity to DTO, including nested items.
     func toDTO() -> ReceiptDTO {
         let itemDTOs: [ReceiptItemDTO] = (items as? Set<CDReceiptItem>)?
@@ -22,19 +21,18 @@ extension CDReceipt {
 
     /// Update CoreData entity from DTO (does not update nested items — handled in CoreDataStore).
     func update(from dto: ReceiptDTO) {
-        self.id = dto.id
-        self.eventId = dto.eventId
-        self.payerId = dto.payerId
-        self.title = dto.title
-        self.totalAmount = dto.totalAmount
-        self.createdAt = dto.createdAt
-        self.updatedAt = dto.updatedAt
-        self.imageUrl = dto.imageUrl
+        id = dto.id
+        eventId = dto.eventId
+        payerId = dto.payerId
+        title = dto.title
+        totalAmount = dto.totalAmount
+        createdAt = dto.createdAt
+        updatedAt = dto.updatedAt
+        imageUrl = dto.imageUrl
     }
 }
 
 extension CDReceiptItem {
-
     /// Convert CoreData entity to DTO.
     func toDTO() -> ReceiptItemDTO {
         let shareItemDTOs: [ShareItemDTO] = (shareItems as? Set<CDShareItem>)?
@@ -51,15 +49,14 @@ extension CDReceiptItem {
 
     /// Update CoreData entity from DTO.
     func update(from dto: ReceiptItemDTO) {
-        self.id = dto.id
-        self.receiptId = dto.receiptId
-        self.name = dto.name
-        self.cost = dto.cost
+        id = dto.id
+        receiptId = dto.receiptId
+        name = dto.name
+        cost = dto.cost
     }
 }
 
 extension CDShareItem {
-
     /// Convert CoreData entity to DTO.
     func toDTO() -> ShareItemDTO {
         ShareItemDTO(
@@ -72,9 +69,9 @@ extension CDShareItem {
 
     /// Update CoreData entity from DTO.
     func update(from dto: ShareItemDTO) {
-        self.id = dto.id
-        self.receiptItemId = dto.receiptItemId
-        self.userId = dto.userId
-        self.shareValue = dto.shareValue
+        id = dto.id
+        receiptItemId = dto.receiptItemId
+        userId = dto.userId
+        shareValue = dto.shareValue
     }
 }

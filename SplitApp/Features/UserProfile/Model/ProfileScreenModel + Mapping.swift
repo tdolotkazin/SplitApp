@@ -8,18 +8,7 @@ struct ProfileScreenModel {
     let friendsCountText: String
     let closedBillsText: String
     let openBillsText: String
-}
-
-extension ProfileScreenModel {
-    init(from response: ProfileResponse) {
-        self.initials = response.initials
-        self.email = response.email
-        self.name = response.name
-        self.eventsCountText = String(response.eventsCount)
-        self.friendsCountText = String(response.friendsCount)
-        self.closedBillsText = "€\(response.closedBillsAmount)"
-        self.openBillsText = "€\(response.openBillsAmount)"
-    }
+    let avatarURL: URL?
 }
 
 extension ProfileScreenModel {
@@ -29,7 +18,8 @@ extension ProfileScreenModel {
         name: "Иван Волков",
         eventsCountText: "12",
         friendsCountText: "8",
-        closedBillsText: "€340",
-        openBillsText: "€34"
+        closedBillsText: "₽340",
+        openBillsText: "₽34",
+        avatarURL: nil
     )
 }

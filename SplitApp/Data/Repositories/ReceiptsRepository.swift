@@ -1,5 +1,6 @@
-import Foundation
 import CoreData
+import Foundation
+
 final class ReceiptsDataRepository: ReceiptsRepository {
     let apiClient: APIClient
     let coreDataStore: CoreDataStore
@@ -25,12 +26,12 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             try await persistDTOToLocalStores(dto)
 
             logOperation(
-            operation: "create",
+                operation: "create",
                 mode: "network_success",
                 context: "eventId=\(eventId) receiptId=\(dto.id)"
             )
             logOperation(
-            operation: "create",
+                operation: "create",
                 mode: "network_cache_upsert",
                 context: "eventId=\(eventId) receiptId=\(dto.id)"
             )
@@ -44,19 +45,19 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             do {
                 try await persistDTOToLocalStores(localDTO)
                 logOperation(
-            operation: "create",
+                    operation: "create",
                     mode: "local_fallback_success",
                     context: "eventId=\(eventId) receiptId=\(localDTO.id) networkError=\(error.localizedDescription)"
                 )
                 logOperation(
-            operation: "create",
+                    operation: "create",
                     mode: "local_only",
                     context: "eventId=\(eventId) receiptId=\(localDTO.id)"
                 )
                 return localDTO
             } catch {
                 logOperation(
-            operation: "create",
+                    operation: "create",
                     mode: "network_failed_local_failed",
                     context: "eventId=\(eventId) error=\(error.localizedDescription)"
                 )
@@ -76,7 +77,7 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             let dtos: [ReceiptDTO] = try await apiClient.request(endpoint: ListReceiptsEndpoint(eventId: eventId))
 
             logOperation(
-            operation: "list",
+                operation: "list",
                 mode: "network_success",
                 context: "eventId=\(eventId) count=\(dtos.count)"
             )
@@ -85,7 +86,7 @@ final class ReceiptsDataRepository: ReceiptsRepository {
                 let localReceipts = LocalReceiptsStore.shared.getReceipts(for: eventId)
                 if !localReceipts.isEmpty {
                     logOperation(
-            operation: "list",
+                        operation: "list",
                         mode: "local_fallback_success",
                         context: "eventId=\(eventId) count=\(localReceipts.count)"
                     )
@@ -97,7 +98,7 @@ final class ReceiptsDataRepository: ReceiptsRepository {
                 try self?.syncReceipts(dtos, eventId: eventId, in: context)
             }
             logOperation(
-            operation: "list",
+                operation: "list",
                 mode: "network_cache_upsert",
                 context: "eventId=\(eventId) count=\(dtos.count)"
             )
@@ -123,12 +124,12 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             try await persistDTOToLocalStores(dto)
 
             logOperation(
-            operation: "update",
+                operation: "update",
                 mode: "network_success",
                 context: "receiptId=\(id)"
             )
             logOperation(
-            operation: "update",
+                operation: "update",
                 mode: "network_cache_upsert",
                 context: "receiptId=\(id)"
             )
@@ -234,5 +235,4 @@ final class ReceiptsDataRepository: ReceiptsRepository {
         let dto = try await updateReceipt(id: id, request)
         return mapToDomain(dto)
     }
-
 }

@@ -12,11 +12,11 @@ struct BottomTabItem: Identifiable {
     let systemImage: String
     let makeView: () -> AnyView
 
-    init<Content: View>(
+    init(
         id: BottomTabID,
         title: String,
         systemImage: String,
-        @ViewBuilder makeView: @escaping () -> Content
+        @ViewBuilder makeView: @escaping () -> some View
     ) {
         self.id = id
         self.title = title
@@ -43,7 +43,10 @@ extension BottomTabConfiguration {
     static func makeDefault(with dependencies: AppDependencies, appState: AppState) -> BottomTabConfiguration {
         let storage = KeychainStorage()
         let logoutUseCase = LogoutUseCase(secureStorage: storage, appState: appState)
-        let profileVM = ProfileViewModel(logoutUseCase: logoutUseCase)
+        let profileVM = ProfileViewModel(
+            usersRepository: dependencies.usersRepository,
+            logoutUseCase: logoutUseCase
+        )
         return BottomTabConfiguration(
             items: [
                 BottomTabItem(
@@ -56,6 +59,7 @@ extension BottomTabConfiguration {
                         eventsRepository: dependencies.eventsRepository,
                         receiptsRepository: dependencies.receiptsRepository,
                         usersRepository: dependencies.usersRepository,
+                        activeEventRepository: dependencies.activeEventRepository,
                         networkMonitor: dependencies.networkMonitor
                     )
                 },
@@ -71,18 +75,7 @@ extension BottomTabConfiguration {
                     title: "Профиль",
                     systemImage: "person.crop.circle"
                 ) {
-                    ProfileScreenView(
-                        model: ProfileScreenModel(
-                            initials: "ИВ",
-                            email: "ivan@example.com",
-                            name: "Иван Волков 🌸",
-                            eventsCountText: "12",
-                            friendsCountText: "8",
-                            closedBillsText: "€340",
-                            openBillsText: "€34"
-                        ),
-                        viewModel: profileVM
-                    )
+
                 }
             ]
         )

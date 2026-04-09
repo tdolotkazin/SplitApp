@@ -1,6 +1,6 @@
-import SwiftUI
 import AVFoundation
 import PhotosUI
+import SwiftUI
 
 struct CameraView: View {
     @Bindable var viewModel: ReceiptViewModel
@@ -11,7 +11,9 @@ struct CameraView: View {
     @State private var isDismissing = false
     @Environment(\.dismiss) private var dismiss
 
-    private var camera: CameraManager { cameraBox.manager }
+    private var camera: CameraManager {
+        cameraBox.manager
+    }
 
     var body: some View {
         ZStack {
@@ -194,7 +196,7 @@ private final class CameraManager: NSObject {
 
 extension CameraManager: AVCapturePhotoCaptureDelegate {
     func photoOutput(
-        _ output: AVCapturePhotoOutput,
+        _: AVCapturePhotoOutput,
         didFinishProcessingPhoto photo: AVCapturePhoto,
         error: Error?
     ) {
@@ -213,8 +215,11 @@ extension CameraManager: AVCapturePhotoCaptureDelegate {
 private struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
 
-    func makeUIView(context: Context) -> PreviewView { PreviewView(session: session) }
-    func updateUIView(_ view: PreviewView, context: Context) {}
+    func makeUIView(context _: Context) -> PreviewView {
+        PreviewView(session: session)
+    }
+
+    func updateUIView(_: PreviewView, context _: Context) {}
 
     final class PreviewView: UIView {
         private let previewLayer: AVCaptureVideoPreviewLayer
@@ -226,7 +231,10 @@ private struct CameraPreviewView: UIViewRepresentable {
             layer.addSublayer(previewLayer)
         }
 
-        required init?(coder: NSCoder) { fatalError() }
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
+            fatalError()
+        }
 
         override func layoutSubviews() {
             super.layoutSubviews()

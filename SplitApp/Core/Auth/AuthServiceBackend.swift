@@ -1,7 +1,6 @@
 import Foundation
 
 final class AuthServiceBackend {
-
     func sendTokenToBackend(token: String) async throws -> AuthResponse {
         let body = ["yandex_token": token]
 
@@ -10,5 +9,4 @@ final class AuthServiceBackend {
             body: body
         )
     }
-
 }

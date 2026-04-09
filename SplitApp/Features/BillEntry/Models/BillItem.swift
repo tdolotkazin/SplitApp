@@ -12,7 +12,7 @@ struct BillItem: Identifiable {
         id: UUID = UUID(),
         name: String = "",
         amount: Decimal = 0,
-        currency: String = "€",
+        currency: String = "₽",
         assignedTo: [Participant] = [],
         isEditing: Bool = false
     ) {
