@@ -5,8 +5,6 @@ struct Event {
     let creatorId: UUID
     let name: String
     let date: Date
-    var positions: [Position]
-    var bill: Bill
     let users: [User]
     var items: [EventReceiptItem]
     var receipts: [Receipt]

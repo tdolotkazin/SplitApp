@@ -136,27 +136,6 @@ final class EventsHomeViewModel: ObservableObject {
         return formatter.localizedString(for: date, relativeTo: Date())
     }
 
-    private static func mapEventBills(_ event: Event) -> [BillListItem] {
-        return event.positions.map { position in
-            mapPositionToBillListItem(position, eventDate: event.date)
-        }
-    }
-
-    private static func mapPositionToBillListItem(_ position: Position, eventDate: Date) -> BillListItem {
-        let participantsCount = position.participants.count
-        let timeText = formatTime(from: eventDate)
-        let subtitle = "\(participantsCount) уч. · \(timeText)"
-
-        return BillListItem(
-            id: position.id,
-            emoji: "🧾",
-            title: position.name,
-            subtitle: subtitle,
-            amount: position.amount,
-            tone: tone(for: position.amount)
-        )
-    }
-
     private static func formatTime(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
@@ -167,7 +146,11 @@ final class EventsHomeViewModel: ObservableObject {
         print("🔄 Маппинг чека: \(receipt.id), title: \(receipt.title ?? "nil"), items count: \(receipt.items.count)")
 
         // Считаем количество уникальных участников
-        let uniqueParticipants = Set(receipt.items.flatMap { $0.shareItems })
+        let uniqueParticipants = Set(
+            receipt.items.flatMap { item in
+                item.shareItems.map(\.userId)
+            }
+        )
         let participantsCount = uniqueParticipants.count
 
         print("🔄 Участников: \(participantsCount)")

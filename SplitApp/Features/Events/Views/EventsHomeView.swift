@@ -214,7 +214,7 @@ private struct AddButton: View {
         ),
         onScanTap: {},
         onAddTap: {},
-        onBillTap: nil
+        onBillTap: nil,
         onEventTap: { _ in }
     )
 }

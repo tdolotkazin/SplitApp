@@ -11,9 +11,9 @@ final class LocalEventStore {
 
     // Мок-участники по умолчанию
     private let defaultParticipants: [User] = [
-        User(id: UUID(), name: "Артём"),
-        User(id: UUID(), name: "Маша"),
-        User(id: UUID(), name: "Иван")
+        User(id: UUID(), name: "Артём", phoneNumber: ""),
+        User(id: UUID(), name: "Маша", phoneNumber: ""),
+        User(id: UUID(), name: "Иван", phoneNumber: "")
     ]
 
     /// Устанавливает текущее событие с участниками

@@ -12,12 +12,12 @@ protocol EventManagementServiceProtocol {
 
 struct EventManagementService: EventManagementServiceProtocol {
 
-    private let eventsRepository: EventsRepositoryProtocol
-    private let receiptsRepository: ReceiptsRepositoryProtocol
+    private let eventsRepository: any EventsRepository
+    private let receiptsRepository: ReceiptsDataRepository
 
     init(
-        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
-        receiptsRepository: ReceiptsRepositoryProtocol = ReceiptsRepository()
+        eventsRepository: any EventsRepository = EventsDataRepository(),
+        receiptsRepository: ReceiptsDataRepository = ReceiptsDataRepository()
     ) {
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
@@ -48,6 +48,8 @@ struct EventManagementService: EventManagementServiceProtocol {
 
     func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO {
         return try await receiptsRepository.updateReceipt(id: id, request)
+    }
+
     func fetchEvent(id: UUID) async throws -> Event {
         try await eventsRepository.getEvent(id: id)
     }

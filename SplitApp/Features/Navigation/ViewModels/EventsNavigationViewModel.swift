@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 final class EventsNavigationViewModel: ObservableObject {
@@ -65,21 +65,16 @@ final class EventsNavigationViewModel: ObservableObject {
         }
     }
 
+    func didFinishBillEntry() {
+        billEntryDestination = nil
+    }
+
     private func open(_ route: EventsNavigationRoute) {
         switch route {
         case .scanner:
             path.append(.scanner)
-        case .billEntry:
-            path.removeAll()
-            editingReceipt = nil
-            showBillEntry = true
-        case .eventPicker:
-            path.append(.eventPicker)
+        case .eventDetail(let id):
+            path.append(.eventDetail(id))
         }
-    }
-
-    func openReceiptForEdit(_ receipt: ReceiptDTO) {
-        editingReceipt = receipt
-        showBillEntry = true
     }
 }

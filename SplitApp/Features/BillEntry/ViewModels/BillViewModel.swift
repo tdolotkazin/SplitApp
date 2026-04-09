@@ -19,18 +19,12 @@ final class BillViewModel: ObservableObject {
 
     @Published var items: [BillItem] = []
     @Published var participants: [Participant] = []
-    @Published var isAddingItem: Bool = false
+    @Published var isAddingItem = false
     @Published var selectedItemForAssignment: BillItem?
-    @Published var receiptTitle: String = ""
-
-    private let service: EventManagementServiceProtocol
-    var currentEventId: UUID?
-    var currentReceiptId: UUID? // ID редактируемого чека
-    var onReceiptCreated: (() -> Void)?
-    @Published private(set) var isLoading = false
+    @Published var receiptTitle = ""
+    @Published var isLoading = false
     @Published var showParticipantPicker = false
     @Published var triggerAnimation = UUID()
-    @Published var isLoading = false
     @Published private(set) var isSaving = false
     @Published var isUsingCachedData = false
     @Published private(set) var isNetworkAvailable: Bool
@@ -41,8 +35,10 @@ final class BillViewModel: ObservableObject {
     let eventsRepository: any EventsRepository
     let receiptsRepository: any ReceiptsRepository
     private let networkMonitor: NetworkMonitor
+
     private var cancellables: Set<AnyCancellable> = []
     private var hasLoaded = false
+
     var loadedEvent: Event?
     var loadedReceipt: Receipt?
     var payerId: UUID?
@@ -101,8 +97,7 @@ final class BillViewModel: ObservableObject {
             return saveDisabledReason
         }
         if isUsingCachedData {
-            return
-                "Показываем сохранённый чек. Для сохранения изменений нужен интернет."
+            return "Показываем сохранённый чек. Для сохранения изменений нужен интернет."
         }
         return nil
     }
@@ -166,10 +161,7 @@ final class BillViewModel: ObservableObject {
 
         switch mode {
         case .create(let eventId, let scannedItems):
-            await loadCreateContext(
-                eventId: eventId,
-                scannedItems: scannedItems
-            )
+            await loadCreateContext(eventId: eventId, scannedItems: scannedItems)
         case .edit(let eventId, let receiptId):
             await loadEditContext(eventId: eventId, receiptId: receiptId)
         }
@@ -251,8 +243,7 @@ final class BillViewModel: ObservableObject {
         saveErrorMessage = nil
 
         guard let eventId = mode.eventId else {
-            saveErrorMessage =
-                "Нужно открыть счёт из события, чтобы сохранить его на сервер."
+            saveErrorMessage = "Нужно открыть счёт из события, чтобы сохранить его на сервер."
             return false
         }
 
@@ -264,17 +255,12 @@ final class BillViewModel: ObservableObject {
             !$0.name.isEmpty && $0.amount > 0 && !$0.assignedTo.isEmpty
         }
         guard !validItems.isEmpty else {
-            saveErrorMessage =
-                "Добавь хотя бы одну заполненную позицию с назначенным участником."
+            saveErrorMessage = "Добавь хотя бы одну заполненную позицию с назначенным участником."
             return false
         }
 
-        guard
-            let payerId = payerId ?? loadedEvent?.creatorId
-                ?? participants.first?.id
-        else {
-            saveErrorMessage =
-                "Не удалось определить плательщика для этого чека."
+        guard let payerId = payerId ?? loadedEvent?.creatorId ?? participants.first?.id else {
+            saveErrorMessage = "Не удалось определить плательщика для этого чека."
             return false
         }
 
@@ -292,134 +278,5 @@ final class BillViewModel: ObservableObject {
             saveErrorMessage = error.localizedDescription
             return false
         }
-    }
-}
-
-private extension BillViewModel {
-    func loadCreateContext(eventId: UUID?, scannedItems: [BillItem]) async {
-        if items.isEmpty {
-            items = scannedItems
-        }
-
-        guard let eventId else {
-            participants = [
-                Participant(name: "Я", initials: "Я", color: .accentColor),
-                Participant(name: "Друг 1", initials: "Д1", color: .blue),
-                Participant(name: "Друг 2", initials: "Д2", color: .green)
-            ]
-            return
-        }
-
-        // Haptic feedback
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-
-        Task {
-            do {
-                // Проверяем, редактируем ли мы существующий чек или создаём новый
-                if let receiptId = currentReceiptId {
-                    // Обновляем существующий чек
-                    let request = createUpdateReceiptRequest(from: validItems)
-                    print("🔵 Обновляем чек: \(receiptId)")
-                    let receipt = try await service.updateReceipt(id: receiptId, request: request)
-                    print("✅ Чек успешно обновлён! ID: \(receipt.id)")
-                } else {
-                    // Создаём новый чек
-                    let eventId = currentEventId ?? LocalEventStore.shared.currentEventId
-                    guard let eventId = eventId else {
-                        print("Нет текущего события")
-                        return
-                    }
-
-                    let request = createReceiptRequest(from: validItems)
-                    print("🔵 Создаем чек для события: \(eventId)")
-                    let receipt = try await service.createReceipt(eventId: eventId, request: request)
-                    print("✅ Чек успешно создан! ID: \(receipt.id), eventId: \(receipt.eventId)")
-                }
-                onReceiptCreated?()
-            } catch {
-                print("❌ Ошибка сохранения чека: \(error)")
-            }
-        }
-    }
-
-    private func createReceiptRequest(from items: [BillItem]) -> CreateReceiptRequest {
-        // Используем первого участника как плательщика (payer)
-        let payerId = LocalEventStore.shared.getDefaultPayerId()
-
-        let requestItems = items.compactMap { item -> CreateReceiptItemRequest? in
-            guard !item.assignedTo.isEmpty else { return nil }
-
-            // Создаем shareItems для каждого участника позиции
-            let shareItems = item.assignedTo.map { participant in
-                CreateShareItemRequest(
-                    userId: participant.id,
-                    shareValue: NSDecimalNumber(decimal: item.amount).doubleValue / Double(item.assignedTo.count)
-                )
-            }
-
-            return CreateReceiptItemRequest(
-                name: item.name,
-                cost: NSDecimalNumber(decimal: item.amount).doubleValue,
-                shareItems: shareItems
-            )
-        }
-
-        return CreateReceiptRequest(
-            payerId: payerId,
-            title: receiptTitle.isEmpty ? nil : receiptTitle,
-            totalAmount: NSDecimalNumber(decimal: total).doubleValue,
-            items: requestItems
-        )
-    }
-
-    private func createUpdateReceiptRequest(from items: [BillItem]) -> UpdateReceiptRequest {
-        let requestItems = items.compactMap { item -> CreateReceiptItemRequest? in
-            guard !item.assignedTo.isEmpty else { return nil }
-
-            // Создаем shareItems для каждого участника позиции
-            let shareItems = item.assignedTo.map { participant in
-                CreateShareItemRequest(
-                    userId: participant.id,
-                    shareValue: NSDecimalNumber(decimal: item.amount).doubleValue / Double(item.assignedTo.count)
-                )
-            }
-
-            return CreateReceiptItemRequest(
-                name: item.name,
-                cost: NSDecimalNumber(decimal: item.amount).doubleValue,
-                shareItems: shareItems
-            )
-        }
-
-        return UpdateReceiptRequest(
-            title: receiptTitle.isEmpty ? nil : receiptTitle,
-            totalAmount: NSDecimalNumber(decimal: total).doubleValue,
-            items: requestItems
-        )
-    }
-
-    func loadReceipt(_ receipt: ReceiptDTO) {
-        print("📝 Загружаем чек для редактирования: \(receipt.id)")
-
-        currentReceiptId = receipt.id
-        receiptTitle = receipt.title ?? ""
-
-        // Преобразуем ReceiptItemDTO в BillItem
-        items = receipt.items.map { receiptItem in
-            // Находим участников по их ID
-            let assignedParticipants = participants.filter { participant in
-                receiptItem.shareItems.contains(participant.id)
-            }
-
-            return BillItem(
-                id: receiptItem.id,
-                name: receiptItem.name ?? "",
-                amount: Decimal(receiptItem.cost),
-                assignedTo: assignedParticipants
-            )
-        }
-
-        print("📝 Загружено позиций: \(items.count), название: \(receiptTitle)")
     }
 }

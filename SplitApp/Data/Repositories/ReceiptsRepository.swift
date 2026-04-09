@@ -22,18 +22,27 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             return dto
         } catch {
             // Fallback: создаем чек локально если нет бэкенда
+            let receiptId = UUID()
             let receiptItems = request.items.map { item in
-                ReceiptItemDTO(
-                    id: UUID(),
-                    receiptId: UUID(), // Будет обновлено ниже
+                let receiptItemId = UUID()
+                return ReceiptItemDTO(
+                    id: receiptItemId,
+                    receiptId: receiptId,
                     name: item.name,
                     cost: item.cost,
-                    shareItems: item.shareItems.map { $0.userId }
+                    shareItems: item.shareItems.map { shareItem in
+                        ShareItemDTO(
+                            id: UUID(),
+                            receiptItemId: receiptItemId,
+                            userId: shareItem.userId,
+                            shareValue: shareItem.shareValue
+                        )
+                    }
                 )
             }
 
             let dto = ReceiptDTO(
-                id: UUID(),
+                id: receiptId,
                 eventId: eventId,
                 payerId: request.payerId,
                 title: request.title,
@@ -64,7 +73,7 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             }
 
             try await coreDataStore.performBackground { [weak self] context in
-                try self?.upsertReceipts(dtos, in: context)
+                try self?.syncReceipts(dtos, eventId: eventId, in: context)
             }
             return dtos
         } catch {
@@ -94,17 +103,28 @@ final class ReceiptsDataRepository: ReceiptsRepository {
                 CreateReceiptItemRequest(
                     name: existingItem.name,
                     cost: existingItem.cost,
-                    shareItems: existingItem.shareItems.map { userId in
-                        CreateShareItemRequest(userId: userId, shareValue: 0)
+                    shareItems: existingItem.shareItems.map { shareItem in
+                        CreateShareItemRequest(
+                            userId: shareItem.userId,
+                            shareValue: shareItem.shareValue
+                        )
                     }
                 )
             }).map { item in
-                ReceiptItemDTO(
-                    id: UUID(),
+                let receiptItemId = UUID()
+                return ReceiptItemDTO(
+                    id: receiptItemId,
                     receiptId: id,
                     name: item.name,
                     cost: item.cost,
-                    shareItems: item.shareItems.map { $0.userId }
+                    shareItems: item.shareItems.map { shareItem in
+                        ShareItemDTO(
+                            id: UUID(),
+                            receiptItemId: receiptItemId,
+                            userId: shareItem.userId,
+                            shareValue: shareItem.shareValue
+                        )
+                    }
                 )
             }
 
