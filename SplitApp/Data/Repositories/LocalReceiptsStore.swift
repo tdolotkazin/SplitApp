@@ -9,8 +9,13 @@ final class LocalReceiptsStore {
 
     /// Сохраняет чек локально
     func saveReceipt(_ receipt: ReceiptDTO) {
-        receipts.append(receipt)
-        print("💾 LocalReceiptsStore: Сохранен чек ID: \(receipt.id), eventId: \(receipt.eventId)")
+        if let index = receipts.firstIndex(where: { $0.id == receipt.id }) {
+            receipts[index] = receipt
+            print("💾 LocalReceiptsStore: Обновлён чек ID: \(receipt.id), eventId: \(receipt.eventId)")
+        } else {
+            receipts.append(receipt)
+            print("💾 LocalReceiptsStore: Сохранен чек ID: \(receipt.id), eventId: \(receipt.eventId)")
+        }
         print("💾 LocalReceiptsStore: Всего чеков в хранилище: \(receipts.count)")
     }
 

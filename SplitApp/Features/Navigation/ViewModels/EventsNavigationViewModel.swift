@@ -10,18 +10,15 @@ final class EventsNavigationViewModel: ObservableObject {
     let scannerViewModel: ReceiptViewModel
 
     private let rules: EventsNavigationRules
-    private(set) var service: EventManagementServiceProtocol
 
     init(
         homeViewModel: EventsHomeViewModel,
         scannerViewModel: ReceiptViewModel,
-        rules: EventsNavigationRules,
-        service: EventManagementServiceProtocol
+        rules: EventsNavigationRules
     ) {
         self.homeViewModel = homeViewModel
         self.scannerViewModel = scannerViewModel
         self.rules = rules
-        self.service = service
     }
 
     @MainActor
@@ -29,13 +26,10 @@ final class EventsNavigationViewModel: ObservableObject {
         service: EventManagementServiceProtocol,
         rules: EventsNavigationRules
     ) {
-        let resolvedService = service ?? EventManagementService()
-        let resolvedRules = rules ?? EventsNavigationRules()
         self.init(
-            homeViewModel: EventsHomeViewModel(service: resolvedService),
+            homeViewModel: EventsHomeViewModel(service: service),
             scannerViewModel: ReceiptViewModel(),
-            rules: rules,
-            service: service
+            rules: rules
         )
     }
 
@@ -46,9 +40,7 @@ final class EventsNavigationViewModel: ObservableObject {
     func handle(_ action: EventsNavigationAction) {
         switch action {
         case .addButtonTapped:
-            billEntryDestination = .create(eventId: nil)
-        case .addReceiptTapped(let id):
-            billEntryDestination = .create(eventId: id)
+            billEntryDestination = .create(eventId: homeViewModel.currentEvent?.id)
         case .receiptTapped(let eventId, let receiptId):
             billEntryDestination = .edit(eventId: eventId, receiptId: receiptId)
         case .scannerCaptureCompleted:
@@ -77,8 +69,8 @@ final class EventsNavigationViewModel: ObservableObject {
         switch route {
         case .scanner:
             path.append(.scanner)
-        case .eventDetail(let id):
-            path.append(.eventDetail(id))
+        case .eventPicker:
+            path.append(.eventPicker)
         }
     }
 }

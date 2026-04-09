@@ -62,8 +62,16 @@ final class AppDependencies {
             usersRepository: self.usersRepository
         )
 
+        let serviceReceiptsRepository =
+            (self.receiptsRepository as? ReceiptsDataRepository)
+            ?? ReceiptsDataRepository(
+                apiClient: apiClient,
+                coreDataStore: coreDataStore
+            )
+
         self.eventManagementService = EventManagementService(
-            eventsRepository: self.eventsRepository
+            eventsRepository: self.eventsRepository,
+            receiptsRepository: serviceReceiptsRepository
         )
     }
 

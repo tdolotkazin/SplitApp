@@ -216,6 +216,7 @@ private enum BillEntryLayout {
             mode: .create(eventId: nil, scannedItems: [], receiptImageJPEGData: nil),
             eventsRepository: deps.eventsRepository,
             receiptsRepository: deps.receiptsRepository,
+            usersRepository: deps.usersRepository,
             networkMonitor: deps.networkMonitor
         )
     )

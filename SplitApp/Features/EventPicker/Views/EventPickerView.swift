@@ -19,21 +19,6 @@ struct EventPickerView: View {
             AppTheme.backgroundRadialGlow.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
-                // MARK: - Выбранное событие
-                sectionLabel("ВЫБРАННОЕ СОБЫТИЕ")
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 10)
-
-                Group {
-                    if let current = viewModel.currentEvent {
-                        CurrentEventCardView(event: current)
-                    } else {
-                        emptySelectionCard
-                    }
-                }
-                .padding(.horizontal, 20)
-
                 // MARK: - Заголовок списка
                 HStack(alignment: .center) {
                     sectionLabel("ВЫБРАТЬ СОБЫТИЕ")
@@ -58,7 +43,7 @@ struct EventPickerView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 24)
+                .padding(.top, 16)
                 .padding(.bottom, 10)
 
                 List {
@@ -232,18 +217,6 @@ struct EventPickerView: View {
             showCreateSheet = false
             try? await Task.sleep(nanoseconds: 250_000_000)
             dismiss()
-        }
-    }
-
-    private var emptySelectionCard: some View {
-        GlassCard(padding: 14) {
-            HStack(spacing: 12) {
-                Text("❓").font(.system(size: 28))
-                Text("Событие не выбрано")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.textSecondary)
-                Spacer()
-            }
         }
     }
 

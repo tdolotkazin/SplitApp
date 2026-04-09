@@ -6,7 +6,7 @@ struct EventsHomeView: View {
     let onScanTap: () -> Void
     let onAddTap: () -> Void
     let onBillTap: ((UUID) -> Void)?
-    let onEventTap: (UUID) -> Void
+    let onEventTap: () -> Void
 
     var body: some View {
         ZStack {
@@ -38,7 +38,7 @@ struct EventsHomeView: View {
 
                             if let currentEvent = viewModel.currentEvent {
                                 Button(
-                                    action: { onEventTap(currentEvent.id) },
+                                    action: onEventTap,
                                     label: { CurrentEventCardView(event: currentEvent) }
                                 )
                                 .buttonStyle(PlainButtonStyle())
@@ -54,14 +54,17 @@ struct EventsHomeView: View {
                             }
                         }
 
-                        if !viewModel.currentEventBills.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("ЧЕКИ")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .tracking(1.2)
-                                    .foregroundStyle(AppTheme.textSecondary)
-                                    .padding(.horizontal, 20)
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("ЧЕКИ")
+                                .font(.system(size: 13, weight: .semibold))
+                                .tracking(1.2)
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .padding(.horizontal, 20)
 
+                            if viewModel.currentEventBills.isEmpty {
+                                emptyBillsCard
+                                    .padding(.horizontal, 20)
+                            } else {
                                 VStack(spacing: 8) {
                                     ForEach(viewModel.currentEventBills) { bill in
                                         BillRowView(bill: bill, onDelete: {}, onTap: {
@@ -111,6 +114,19 @@ struct EventsHomeView: View {
             RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
                 .stroke(AppTheme.accent.opacity(0.4), lineWidth: 1.5)
         )
+    }
+
+    private var emptyBillsCard: some View {
+        GlassCard(padding: 14) {
+            HStack(spacing: 12) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 28))
+                Text("Чеков пока нет")
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.textSecondary)
+                Spacer()
+            }
+        }
     }
 }
 
@@ -215,6 +231,6 @@ private struct AddButton: View {
         onScanTap: {},
         onAddTap: {},
         onBillTap: nil,
-        onEventTap: { _ in }
+        onEventTap: {}
     )
 }

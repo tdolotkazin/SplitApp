@@ -4,17 +4,20 @@ struct EventsNavigationView: View {
     @StateObject private var viewModel: EventsNavigationViewModel
     private let eventsRepository: any EventsRepository
     private let receiptsRepository: any ReceiptsRepository
+    private let usersRepository: any UsersRepository
     private let networkMonitor: NetworkMonitor
 
     init(
         service: EventManagementServiceProtocol,
         eventsRepository: any EventsRepository,
         receiptsRepository: any ReceiptsRepository,
+        usersRepository: any UsersRepository,
         networkMonitor: NetworkMonitor,
         rules: EventsNavigationRules = .init()
     ) {
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
+        self.usersRepository = usersRepository
         self.networkMonitor = networkMonitor
         _viewModel = StateObject(
             wrappedValue: EventsNavigationViewModel(
@@ -31,13 +34,13 @@ struct EventsNavigationView: View {
                 onScanTap: { viewModel.handle(.scanButtonTapped) },
                 onAddTap: { viewModel.handle(.addButtonTapped) },
                 onBillTap: { billId in
-                    guard let eventId = LocalEventStore.shared.currentEventId else {
+                    guard let eventId = viewModel.homeViewModel.currentEvent?.id else {
                         return
                     }
                     viewModel.handle(.receiptTapped(eventId: eventId, receiptId: billId))
                 },
-                onEventTap: { eventId in
-                    viewModel.handle(.eventRowTapped(eventId))
+                onEventTap: {
+                    viewModel.handle(.currentEventTapped)
                 }
             )
             .task {
@@ -52,20 +55,8 @@ struct EventsNavigationView: View {
                     )
                     .navigationBarBackButtonHidden(true)
 
-                case .eventDetail(let eventId):
-                    EventDetailView(
-                        viewModel: EventDetailViewModel(
-                            eventId: eventId,
-                            service: viewModel.service,
-                            receiptsRepository: receiptsRepository
-                        ),
-                        onAddReceipt: { viewModel.handle(.addReceiptTapped(eventId)) },
-                        onReceiptTap: { receiptId in
-                            viewModel.handle(
-                                .receiptTapped(eventId: eventId, receiptId: receiptId)
-                            )
-                        }
-                    )
+                case .eventPicker:
+                    EventPickerView(viewModel: viewModel.homeViewModel)
                 }
             }
         }
@@ -74,6 +65,7 @@ struct EventsNavigationView: View {
                 mode: destination.mode,
                 eventsRepository: eventsRepository,
                 receiptsRepository: receiptsRepository,
+                usersRepository: usersRepository,
                 networkMonitor: networkMonitor
             )
 
@@ -95,6 +87,7 @@ struct EventsNavigationView: View {
         service: EventManagementService(eventsRepository: EventsDataRepository()),
         eventsRepository: EventsDataRepository(),
         receiptsRepository: ReceiptsDataRepository(),
+        usersRepository: UsersDataRepository(),
         networkMonitor: .shared
     )
 }
