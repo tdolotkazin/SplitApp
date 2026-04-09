@@ -24,11 +24,13 @@ class BillViewModel: ObservableObject {
     init(service: EventManagementServiceProtocol? = nil) {
         self.service = service ?? EventManagementService()
 
-        // Загружаем участников из списка друзей
+        // Загружаем участников: свой аккаунт + список друзей
+        let me = CurrentUserStore.shared.user.toParticipant()
         let friendsVM = FriendsViewModel()
-        participants = friendsVM.friends.map { friend in
+        let friends = friendsVM.friends.map { friend in
             Participant(id: friend.id, name: friend.name, initials: friend.initials, color: friend.color)
         }
+        participants = [me] + friends
 
         let scanned = ScannedReceiptStore.shared.consume()
         if !scanned.isEmpty {
