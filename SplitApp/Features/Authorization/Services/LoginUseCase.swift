@@ -21,7 +21,7 @@ final class LoginUseCase {
             viewContollerProvider: viewContollerProvider
         )
 
-        TokenStore.shared.accessToken = authResponse.accessToken
+        TokenStore.shared.save(token: authResponse.accessToken)
         secureStorage.save(authResponse.refreshToken, for: "refresh_token")
 
         return authResponse
