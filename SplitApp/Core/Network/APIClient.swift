@@ -56,8 +56,7 @@ final class APIClient {
         isRetry: Bool
     ) async throws -> T {
         if requiresAuthorization(endpoint: endpoint),
-            TokenStore.shared.accessToken?.isEmpty ?? true
-        {
+            TokenStore.shared.accessToken?.isEmpty ?? true {
             try? await refreshAccessTokenIfNeeded()
         }
 
@@ -140,8 +139,7 @@ final class APIClient {
 
     func refreshAccessTokenIfNeeded() async throws {
         if TokenStore.shared.accessToken != nil,
-            TokenStore.shared.isValid
-        {
+            TokenStore.shared.isValid {
             return
         }
 
