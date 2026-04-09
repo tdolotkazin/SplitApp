@@ -55,12 +55,10 @@ private extension FriendsView {
     }
 
     var header: some View {
-        FriendsNavigationHeader(onAddFriend: {
-            showAddFriend = true
-        })
-        .onTapGesture {
-            hideKeyboard()
-        }
+        FriendsNavigationHeader()
+            .onTapGesture {
+                hideKeyboard()
+            }
     }
 
     var searchBar: some View {
