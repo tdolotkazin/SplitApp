@@ -53,7 +53,13 @@ class FriendsViewModel: ObservableObject {
             let remoteFriendsList = remoteUsers.map { Friend.from(user: $0) }
             let localFriendsList = locals.map { Friend.from(localFriend: $0) }
 
-            let allFriends = remoteFriendsList + localFriendsList
+            var allFriends = remoteFriendsList + localFriendsList
+
+            // Fallback: если нет друзей, показываем моковые данные для демонстрации
+            if allFriends.isEmpty {
+                print("⚠️ Нет друзей с сервера, показываю моковые данные")
+                allFriends = loadMockFriends()
+            }
 
             let calculatedDebts = try await calculateDebts(friends: allFriends)
 
@@ -63,6 +69,9 @@ class FriendsViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
             print("❌ Ошибка загрузки друзей: \(error)")
+            // При ошибке тоже показываем моковые данные
+            self.friends = loadMockFriends()
+            self.debts = loadMockDebts()
         }
 
         isLoading = false
@@ -115,5 +124,22 @@ class FriendsViewModel: ObservableObject {
         }
 
         return friendDebts
+    }
+
+    private func loadMockFriends() -> [Friend] {
+        return [
+            Friend(name: "Артём Романов", initials: "АР", color: Color(hex: "#FFB5A7")),
+            Friend(name: "Маша Соколова", initials: "МС", color: Color(hex: "#A7D8FF")),
+            Friend(name: "Серёжа Козлов", initials: "СК", color: Color(hex: "#D4C5F9")),
+            Friend(name: "Юля Петрова", initials: "ЮП", color: Color(hex: "#C9F7F5"))
+        ]
+    }
+
+    private func loadMockDebts() -> [FriendDebt] {
+        let mockFriends = loadMockFriends()
+        return [
+            FriendDebt(friend: mockFriends[0], amount: 12.00, type: .owedBy),
+            FriendDebt(friend: mockFriends[1], amount: 18.50, type: .owes)
+        ]
     }
 }
