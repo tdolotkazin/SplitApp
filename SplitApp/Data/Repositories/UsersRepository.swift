@@ -14,14 +14,6 @@ final class UsersRepository: UsersRepositoryProtocol {
         self.coreDataStore = coreDataStore
     }
 
-    /*func createUser(_ request: CreateUserRequest) async throws -> User {
-        let dto: UserDTO = try await apiClient.request(endpoint: CreateUserEndpoint(), body: request)
-        try await coreDataStore.performBackground { [weak self] context in
-            try self?.upsertUser(dto, in: context)
-        }
-        return UserMapper.mapToDomain(dto: dto)
-    }*/
-
     // MARK: - Core Data Internal Methods (Extracted from CoreDataStore+Users)
 
     private func upsertUser(_ dto: UserDTO, in context: NSManagedObjectContext) throws {

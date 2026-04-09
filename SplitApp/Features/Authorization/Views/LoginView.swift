@@ -13,21 +13,7 @@ struct LoginView: View {
             VStack {
                 HeaderView()
 
-                VStack(spacing: 12) {
-                    CustomTextField(
-                        text: $email,
-                        icon: "envelope.fill",
-                        placeholder: "Email",
-                        keyboardType: .emailAddress
-                    )
 
-                    CustomTextField(
-                        text: $password,
-                        icon: "lock.fill",
-                        placeholder: "Пароль",
-                        isSecure: true
-                    )
-                }
                 .padding(.vertical, 20)
                 .cornerRadius(16)
                 .padding(.horizontal, 20)
@@ -38,9 +24,7 @@ struct LoginView: View {
 
                 VStack(spacing: 16) {
 
-                    LegalTextSection()
-
-                    DividerSection()
+                    
                     HStack(spacing: 12) {
                         SocialButton(
                             icon: "applelogo",

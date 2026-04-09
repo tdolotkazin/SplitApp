@@ -9,7 +9,7 @@ struct HeaderView: View {
                     .frame(width: 80, height: 80)
                 }
 
-            Text("SplitBill")
+            Text("SplitApp")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)

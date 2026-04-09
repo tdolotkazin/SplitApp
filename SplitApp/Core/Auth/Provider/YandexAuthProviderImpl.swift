@@ -54,14 +54,3 @@ extension YandexAuthProviderImpl: YandexLoginSDKObserver {
         }
     }
 }
-
-/*
- return try await withCheckedThrowingContinuation { continuation in self.continuation = continuation
-
- do {
- try YandexLoginSDK.shared.authorize(with: vc)
- } catch {
- continuation.resume(throwing: error)
- self.continuation = nil
- }
- }*/

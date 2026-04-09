@@ -258,6 +258,34 @@ final class APIClient {
         return request
     }
 
+    func refreshAccessTokenIfNeeded() async throws {
+            if let _ = TokenStore.shared.accessToken, TokenStore.shared.isValid { return }
+
+            guard let refreshToken = secureStorage.get("refresh_token") else {
+                throw NetworkError.unauthorized
+            }
+
+            print("Refreshing access token with refresh token: \(refreshToken)")
+
+            let url = baseURL.appendingPathComponent("/api/refresh")
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["refresh_token": refreshToken])
+
+            let (data, response) = try await session.data(for: request)
+            try validateResponse(response, data: data)
+
+            let authResponse = try decoder.decode(AuthResponse.self, from: data)
+            TokenStore.shared.save(token: authResponse.accessToken)
+
+            if secureStorage.get("refresh_token") != authResponse.refreshToken {
+                secureStorage.save(authResponse.refreshToken, for: "refresh_token")
+            }
+
+            print("Access token refreshed: \(authResponse.accessToken)")
+        }
+
     func refreshToken() async throws {
 
         guard let refreshToken = secureStorage.get("refresh_token") else {

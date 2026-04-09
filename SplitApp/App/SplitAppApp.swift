@@ -67,7 +67,37 @@ struct SplitAppApp: App {
 
     private func bootstrap() async {
         let storage = KeychainStorage()
+        guard storage.get("refresh_token") != nil else {
+            await MainActor.run {
+                appState.isLoggedIn = false
+                appState.isLoading = false
+            }
+            return
+        }
 
+        do {
+            try await APIClient.shared.refreshAccessTokenIfNeeded()
+            await MainActor.run {
+                appState.isLoggedIn = true
+                appState.isLoading = false
+            }
+        } catch {
+            print("Не удалось обновить токен: \(error)")
+            await MainActor.run {
+                appState.isLoggedIn = false
+                appState.isLoading = false
+            }
+        }
+    }
+
+    /*
+    private func bootstrap() async {
+        let storage = KeychainStorage()
+    
+        //guard TokenStore.shared.accessToken.hashValue("refresh_token") != nil else {
+    
+        //}
+    
         guard storage.get("refresh_token") != nil else {
             await MainActor.run {
                 appState.isLoggedIn = false
@@ -77,6 +107,6 @@ struct SplitAppApp: App {
         }
         appState.isLoggedIn = true
         appState.isLoading = false
-
-    }
+    
+    }*/
 }
