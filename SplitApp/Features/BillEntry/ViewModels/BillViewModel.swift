@@ -6,6 +6,7 @@ class BillViewModel: ObservableObject {
     @Published var items: [BillItem] = []
     @Published var participants: [Participant] = []
     @Published var selectedItemForAssignment: BillItem?
+    @Published var receiptName: String = ""
 
     var total: Decimal {
         items.reduce(0) { $0 + $1.amount }
@@ -104,7 +105,8 @@ class BillViewModel: ObservableObject {
         }
 
         // Здесь можно добавить сохранение в CoreData или другой persistence layer
-        print("Сохранено \(validItems.count) позиций. Итого: €\(total)")
+        let name = receiptName.isEmpty ? "Чек" : receiptName
+        print("Сохранено \"\(name)\": \(validItems.count) позиций. Итого: €\(total)")
 
         // Haptic feedback
         let generator = UINotificationFeedbackGenerator()
