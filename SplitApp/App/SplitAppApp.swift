@@ -33,7 +33,7 @@ struct SplitAppApp: App {
             secureStorage: storage
         )
 
-        viewModel = AuthViewModel(
+        self.viewModel = AuthViewModel(
             vcProvider: vcProvider,
             useCase: useCase
         )
@@ -69,6 +69,7 @@ struct SplitAppApp: App {
         let storage = KeychainStorage()
 
         guard storage.get("refresh_token") != nil else {
+            TokenStore.shared.clear()
             await MainActor.run {
                 appState.isLoggedIn = false
                 appState.isLoading = false
@@ -84,6 +85,8 @@ struct SplitAppApp: App {
             }
         } catch {
             print("Не удалось обновить токен: \(error)")
+            storage.delete("refresh_token")
+            TokenStore.shared.clear()
             await MainActor.run {
                 appState.isLoggedIn = false
                 appState.isLoading = false

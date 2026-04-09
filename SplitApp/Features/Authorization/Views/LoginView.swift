@@ -1,37 +1,36 @@
-import AuthenticationServices
 import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var appState: AppState
-    @StateObject var viewModel: AuthViewModel
+    @ObservedObject var viewModel: AuthViewModel
 
     var body: some View {
         ZStack {
-            AppTheme.backgroundRadialGlow
+            Color("ColorGreen")
                 .ignoresSafeArea()
+            VStack(spacing: 0) {
+                Spacer(minLength: 80)
 
-            VStack {
                 HeaderView()
-                    .padding(.horizontal, 16)
-                VStack(spacing: 16) {
-                    HStack(spacing: 12) {
-                        SocialButton(
-                            icon: "yandex",
-                            backgroundColor: .white,
-                            textColor: .black,
-                            hasBorder: true
-                        ) {
-                            Task {
-                                let success = await viewModel.login()
+                    .padding(.horizontal, 28)
 
-                                if success {
-                                    appState.isLoggedIn = true
-                                }
-                            }
+                Spacer()
+
+                SocialButton(
+                    icon: "yandex",
+                    backgroundColor: .white,
+                    textColor: .black,
+                    hasBorder: false
+                ) {
+                    Task {
+                        let success = await viewModel.login()
+                        if success {
+                            appState.isLoggedIn = true
                         }
                     }
                 }
-                .padding(.horizontal, 20)
+
+                Spacer(minLength: 180)
             }
         }
     }
