@@ -66,5 +66,5 @@ fastlane/test_output
 **/.DS_Store
 
 backend.md
-openapi.yml
+openapi.yaml
 *.backup
