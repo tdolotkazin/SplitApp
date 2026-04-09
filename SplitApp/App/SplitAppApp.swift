@@ -33,7 +33,7 @@ struct SplitAppApp: App {
             secureStorage: storage
         )
 
-        viewModel = AuthViewModel(
+        self.viewModel = AuthViewModel(
             vcProvider: vcProvider,
             useCase: useCase
         )
