@@ -5,15 +5,21 @@ import Combine
 final class EventsHomeViewModel: ObservableObject {
     @Published private(set) var balanceSummary: EventBalanceSummary
     @Published private(set) var latestEvents: [EventListItem]
+    @Published private(set) var currentEvent: EventListItem?
+    @Published private(set) var currentEventBills: [BillListItem]
     @Published private(set) var isLoaded = false
     @Published private(set) var errorMessage: String?
 
     private let service: EventManagementServiceProtocol
+    private var currentEventData: Event?
 
     init(service: EventManagementServiceProtocol) {
         self.service = service
         self.balanceSummary = EventBalanceSummary(totalBalance: 0, owedToYou: 0, youOwe: 0)
         self.latestEvents = []
+        self.currentEvent = nil
+        self.currentEventBills = []
+        self.currentEventData = nil
     }
 
     func loadDataIfNeeded() async {
@@ -23,17 +29,43 @@ final class EventsHomeViewModel: ObservableObject {
             let homeData = try await service.fetchHomeData()
             balanceSummary = homeData.balanceSummary
             latestEvents = homeData.events.map(Self.mapEventToListItem)
+
+            // Выбираем первое событие как текущее
+            if let firstEvent = homeData.events.first {
+                currentEventData = firstEvent
+                currentEvent = Self.mapEventToListItem(firstEvent)
+
+                // Сохраняем участников события в локальное хранилище
+                LocalEventStore.shared.setCurrentEvent(id: firstEvent.id, participants: firstEvent.users)
+
+                await loadReceipts(for: firstEvent.id)
+            }
+
             isLoaded = true
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
+    func loadReceipts(for eventId: UUID) async {
+        do {
+            print("🔵 Загружаем чеки для события: \(eventId)")
+            let receipts = try await service.fetchReceipts(eventId: eventId)
+            print("✅ Загружено чеков: \(receipts.count)")
+            currentEventBills = receipts.map(Self.mapReceiptToBillListItem)
+            print("✅ Обновлен список чеков: \(currentEventBills.count)")
+        } catch {
+            print("❌ Ошибка загрузки чеков: \(error)")
+            currentEventBills = []
+        }
+    }
+
     private static func mapEventToListItem(_ event: Event) -> EventListItem {
         EventListItem(
+            id: event.id,
             emoji: event.icon,
             title: event.name,
-            subtitle: "\(event.participantsCount) уч. · \(relativeDateText(from: event.date))",
+            subtitle: relativeDateText(from: event.date),
             amount: event.balanceDelta,
             tone: tone(for: event.balanceDelta)
         )
@@ -49,6 +81,59 @@ final class EventsHomeViewModel: ObservableObject {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
         return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    private static func mapEventBills(_ event: Event) -> [BillListItem] {
+        return event.positions.map { position in
+            mapPositionToBillListItem(position, eventDate: event.date)
+        }
+    }
+
+    private static func mapPositionToBillListItem(_ position: Position, eventDate: Date) -> BillListItem {
+        let participantsCount = position.participants.count
+        let timeText = formatTime(from: eventDate)
+        let subtitle = "\(participantsCount) уч. · \(timeText)"
+
+        return BillListItem(
+            id: position.id,
+            emoji: "🧾",
+            title: position.name,
+            subtitle: subtitle,
+            amount: position.amount,
+            tone: tone(for: position.amount)
+        )
+    }
+
+    private static func formatTime(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+
+    private static func mapReceiptToBillListItem(_ receipt: ReceiptDTO) -> BillListItem {
+        print("🔄 Маппинг чека: \(receipt.id), title: \(receipt.title ?? "nil"), items count: \(receipt.items.count)")
+
+        // Считаем количество уникальных участников
+        let uniqueParticipants = Set(receipt.items.flatMap { $0.shareItems })
+        let participantsCount = uniqueParticipants.count
+
+        print("🔄 Участников: \(participantsCount)")
+
+        let timeText = formatTime(from: receipt.createdAt)
+        let subtitle = "\(participantsCount) уч. · \(timeText)"
+
+        let billItem = BillListItem(
+            id: receipt.id,
+            emoji: "🧾",
+            title: receipt.title ?? "Чек",
+            subtitle: subtitle,
+            amount: receipt.totalAmount,
+            tone: tone(for: receipt.totalAmount)
+        )
+
+        print("🔄 Создан BillListItem: id=\(billItem.id), title=\(billItem.title), amount=\(billItem.amount)")
+
+        return billItem
     }
 }
 

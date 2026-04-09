@@ -6,6 +6,7 @@ struct Event {
     let date: Date
     var positions: [Position]
     var bill: Bill
+    let users: [User]
 
     let icon: String
     let participantsCount: Int
@@ -18,7 +19,8 @@ struct Event {
         date: Date = Date(),
         icon: String = "📌",
         participantsCount: Int = 0,
-        balanceDelta: Double = 0
+        balanceDelta: Double = 0,
+        users: [User] = []
     ) {
         self.id = id
         self.name = name
@@ -28,5 +30,6 @@ struct Event {
         self.icon = icon
         self.participantsCount = participantsCount
         self.balanceDelta = balanceDelta
+        self.users = users
     }
 }
