@@ -2,9 +2,16 @@ import Foundation
 import SwiftUI
 
 extension BillViewModel {
-    func loadCreateContext(eventId: UUID?, scannedItems: [BillItem]) async {
+    func loadCreateContext(
+        eventId: UUID?,
+        scannedItems: [BillItem],
+        receiptImageJPEGData: Data?
+    ) async {
         if items.isEmpty {
             items = scannedItems
+        }
+        if self.receiptImageJPEGData == nil {
+            self.receiptImageJPEGData = receiptImageJPEGData
         }
 
         guard let eventId else {
@@ -172,7 +179,8 @@ extension BillViewModel {
                         )
                     }
                 )
-            }
+            },
+            receiptImageJPEGData: receiptImageJPEGData
         )
     }
 

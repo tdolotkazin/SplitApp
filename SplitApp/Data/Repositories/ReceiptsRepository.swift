@@ -1,6 +1,5 @@
 import Foundation
 import CoreData
-
 final class ReceiptsDataRepository: ReceiptsRepository {
     private let apiClient: APIClient
     private let coreDataStore: CoreDataStore
@@ -49,7 +48,8 @@ final class ReceiptsDataRepository: ReceiptsRepository {
                 totalAmount: request.totalAmount,
                 createdAt: Date(),
                 updatedAt: Date(),
-                items: receiptItems
+                items: receiptItems,
+                imageUrl: nil
             )
 
             LocalReceiptsStore.shared.saveReceipt(dto)
@@ -112,10 +112,23 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             totalAmount: command.totalAmount,
             items: command.items.map(mapCreateReceiptItemCommand)
         )
-        let dto: ReceiptDTO = try await apiClient.request(
+        var dto: ReceiptDTO = try await apiClient.request(
             endpoint: CreateReceiptEndpoint(eventId: eventId),
             body: request
         )
+
+        if let receiptImageJPEGData = command.receiptImageJPEGData {
+            do {
+                let uploadResponse = try await uploadReceiptImage(
+                    receiptId: dto.id,
+                    imageJPEGData: receiptImageJPEGData
+                )
+                dto = updateImageUrl(in: dto, imageUrl: uploadResponse.imageUrl)
+            } catch {
+                print("Не удалось загрузить фото чека \(dto.id): \(error)")
+            }
+        }
+
         try await coreDataStore.performBackground { [weak self] context in
             try self?.upsertReceipt(dto, in: context)
         }
@@ -222,7 +235,8 @@ private extension ReceiptsDataRepository {
             totalAmount: request.totalAmount ?? existingReceipt.totalAmount,
             createdAt: existingReceipt.createdAt,
             updatedAt: Date(),
-            items: receiptItems
+            items: receiptItems,
+            imageUrl: existingReceipt.imageUrl
         )
     }
 
@@ -259,6 +273,33 @@ private extension ReceiptsDataRepository {
         )
     }
 
+    private func uploadReceiptImage(
+        receiptId: UUID,
+        imageJPEGData: Data
+    ) async throws -> ReceiptImageUploadResponseDTO {
+        try await apiClient.requestMultipart(
+            endpoint: UploadReceiptImageEndpoint(id: receiptId),
+            fileFieldName: "file",
+            fileName: "receipt-\(receiptId.uuidString).jpg",
+            mimeType: "image/jpeg",
+            fileData: imageJPEGData
+        )
+    }
+
+    private func updateImageUrl(in dto: ReceiptDTO, imageUrl: String) -> ReceiptDTO {
+        ReceiptDTO(
+            id: dto.id,
+            eventId: dto.eventId,
+            payerId: dto.payerId,
+            title: dto.title,
+            totalAmount: dto.totalAmount,
+            createdAt: dto.createdAt,
+            updatedAt: dto.updatedAt,
+            items: dto.items,
+            imageUrl: imageUrl
+        )
+    }
+
     private func mapToDomain(_ cdReceipt: CDReceipt) -> Receipt {
         let cdItems = ((cdReceipt.items as? Set<CDReceiptItem>) ?? [])
             .sorted { ($0.name ?? "") < ($1.name ?? "") }
@@ -280,7 +321,8 @@ private extension ReceiptsDataRepository {
             title: cdReceipt.title,
             totalAmount: cdReceipt.totalAmount,
             createdAt: cdReceipt.createdAt ?? Date(),
-            items: items
+            items: items,
+            imageURL: cdReceipt.imageUrl
         )
     }
 

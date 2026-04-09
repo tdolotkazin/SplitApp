@@ -6,6 +6,11 @@ struct BillItemRow: View {
     let onDelete: () -> Void
     let onUpdate: (String, Decimal) -> Void
 
+    @State private var emojis: [EmojiPredictModel] = []
+    private var matcher: EmojiAutoReplaceMatcher {
+        EmojiAutoReplaceMatcher(emojis: emojis)
+    }
+
     @State private var name: String
     @State private var amount: Decimal
     @State private var isDeleting: Bool = false
@@ -33,10 +38,16 @@ struct BillItemRow: View {
                     .font(AppTheme.fontBody)
                     .foregroundStyle(AppTheme.textPrimary)
                     .focused($isNameFocused)
-                    .onChange(of: name) { _, newValue in
-                        onUpdate(newValue, amount)
-                    }
                     .frame(maxWidth: .infinity)
+                    .modifier(
+                        EmojiTextEffectModifier(
+                            text: $name,
+                            matcher: matcher,
+                            onUpdate: { updatedName in
+                                onUpdate(updatedName, amount)
+                            }
+                        )
+                    )
 
                 AmountField(amount: $amount)
                     .frame(width: BillEntryColumns.amountWidth)
@@ -87,6 +98,9 @@ struct BillItemRow: View {
                 didAppear = true
             }
         }
+        .task {
+            loadEmojisIfNeeded()
+        }
         .deleteTransition(isDeleting: isDeleting)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {
@@ -109,6 +123,17 @@ struct BillItemRow: View {
                 }
             }
             .tint(.red)
+        }
+    }
+
+    private func loadEmojisIfNeeded() {
+        guard emojis.isEmpty else { return }
+
+        do {
+            let parser = EmojiTextParser()
+            emojis = try parser.parse()
+        } catch {
+            print(error.localizedDescription)
         }
     }
 }

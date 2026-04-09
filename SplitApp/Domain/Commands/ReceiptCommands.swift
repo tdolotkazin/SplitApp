@@ -5,6 +5,7 @@ struct CreateReceiptCommand {
     let title: String?
     let totalAmount: Double
     let items: [CreateReceiptItemCommand]
+    let receiptImageJPEGData: Data?
 }
 
 struct CreateReceiptItemCommand {

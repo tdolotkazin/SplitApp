@@ -6,6 +6,7 @@ import PhotosUI
 final class ReceiptViewModel {
 
     var items: [ScannedReceiptItem] = []
+    var scannedReceiptImageJPEGData: Data?
     var isScanning = false
     var errorMessage: String?
     var selectedPhoto: PhotosPickerItem? {
@@ -23,6 +24,7 @@ final class ReceiptViewModel {
     func process(image: UIImage) async {
         isScanning = true
         errorMessage = nil
+        scannedReceiptImageJPEGData = image.jpegData(compressionQuality: 0.85)
         defer { isScanning = false }
 
         do {
@@ -39,6 +41,7 @@ final class ReceiptViewModel {
     func process(photo: PhotosPickerItem) async {
         guard let data = try? await photo.loadTransferable(type: Data.self),
               let image = UIImage(data: data) else { return }
+        scannedReceiptImageJPEGData = image.jpegData(compressionQuality: 0.85)
         await process(image: image)
     }
 

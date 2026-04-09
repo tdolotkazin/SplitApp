@@ -4,12 +4,16 @@ import SwiftUI
 @MainActor
 final class BillViewModel: ObservableObject {
     enum Mode {
-        case create(eventId: UUID?, scannedItems: [BillItem])
+        case create(
+            eventId: UUID?,
+            scannedItems: [BillItem],
+            receiptImageJPEGData: Data?
+        )
         case edit(eventId: UUID, receiptId: UUID)
 
         var eventId: UUID? {
             switch self {
-            case .create(let eventId, _):
+            case .create(let eventId, _, _):
                 return eventId
             case .edit(let eventId, _):
                 return eventId
@@ -42,6 +46,7 @@ final class BillViewModel: ObservableObject {
     var loadedEvent: Event?
     var loadedReceipt: Receipt?
     var payerId: UUID?
+    var receiptImageJPEGData: Data?
 
     var total: Decimal {
         items.reduce(0) { $0 + $1.amount }
@@ -82,7 +87,7 @@ final class BillViewModel: ObservableObject {
 
     private var saveDisabledReason: String? {
         switch mode {
-        case .create(let eventId, _) where eventId == nil:
+        case .create(let eventId, _, _) where eventId == nil:
             return "Сохранение доступно только внутри события."
         default:
             break
@@ -107,8 +112,9 @@ final class BillViewModel: ObservableObject {
         self.networkMonitor = networkMonitor
         self.isNetworkAvailable = networkMonitor.isConnected
 
-        if case .create(_, let scannedItems) = mode {
+        if case .create(_, let scannedItems, let receiptImageJPEGData) = mode {
             items = scannedItems
+            self.receiptImageJPEGData = receiptImageJPEGData
         }
 
         networkMonitor.$isConnected
@@ -130,8 +136,12 @@ final class BillViewModel: ObservableObject {
         saveErrorMessage = nil
 
         switch mode {
-        case .create(let eventId, let scannedItems):
-            await loadCreateContext(eventId: eventId, scannedItems: scannedItems)
+        case .create(let eventId, let scannedItems, let receiptImageJPEGData):
+            await loadCreateContext(
+                eventId: eventId,
+                scannedItems: scannedItems,
+                receiptImageJPEGData: receiptImageJPEGData
+            )
         case .edit(let eventId, let receiptId):
             await loadEditContext(eventId: eventId, receiptId: receiptId)
         }

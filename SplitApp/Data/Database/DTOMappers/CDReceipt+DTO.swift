@@ -15,7 +15,8 @@ extension CDReceipt {
             totalAmount: totalAmount,
             createdAt: createdAt!,
             updatedAt: updatedAt!,
-            items: itemDTOs
+            items: itemDTOs,
+            imageUrl: imageUrl
         )
     }
 
@@ -28,6 +29,7 @@ extension CDReceipt {
         self.totalAmount = dto.totalAmount
         self.createdAt = dto.createdAt
         self.updatedAt = dto.updatedAt
+        self.imageUrl = dto.imageUrl
     }
 }
 

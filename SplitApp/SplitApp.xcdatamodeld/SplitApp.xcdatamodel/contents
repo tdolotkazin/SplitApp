@@ -27,6 +27,7 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="payerId" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="imageUrl" optional="YES" attributeType="String"/>
         <attribute name="totalAmount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDEvent" inverseName="receipts" inverseEntity="CDEvent"/>
@@ -55,4 +56,12 @@
         <attribute name="phoneNumber" attributeType="String"/>
         <relationship name="events" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CDEvent" inverseName="participants" inverseEntity="CDEvent"/>
     </entity>
+    <elements>
+        <element name="CDUser" positionX="-63" positionY="-18" width="128" height="104"/>
+        <element name="CDEvent" positionX="160" positionY="-18" width="128" height="178"/>
+        <element name="CDReceipt" positionX="384" positionY="-18" width="128" height="178"/>
+        <element name="CDReceiptItem" positionX="384" positionY="200" width="128" height="133"/>
+        <element name="CDShareItem" positionX="384" positionY="380" width="128" height="118"/>
+        <element name="CDPayment" positionX="160" positionY="200" width="128" height="163"/>
+    </elements>
 </model>
