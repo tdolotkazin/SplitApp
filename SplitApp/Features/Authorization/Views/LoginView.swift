@@ -31,7 +31,7 @@ struct LoginView: View {
                                 }
                             }
                         }
-                        
+
                     }
                 }
                 .padding(.horizontal, 20)
