@@ -19,7 +19,7 @@ final class ProfileViewModel: ObservableObject {
         isLoading = true
         error = nil
 
-        guard let currentUser = CurrentUserStore.shared.user else {
+        guard let currentUser = await CurrentUserStore.shared.user else {
             handleMissingUser()
             return
         }

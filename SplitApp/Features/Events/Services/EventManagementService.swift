@@ -36,7 +36,7 @@ struct EventManagementService: EventManagementServiceProtocol {
     }
 
     private func calculateBalanceSummary(for events: [Event]) async -> EventBalanceSummary {
-        guard let currentUserId = CurrentUserStore.shared.user?.id else {
+        guard let currentUserId = await CurrentUserStore.shared.user?.id else {
             return EventBalanceSummary(totalBalance: 0, owedToYou: 0, youOwe: 0)
         }
         var owedToYou: Double = 0
