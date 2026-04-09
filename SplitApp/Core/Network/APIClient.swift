@@ -256,10 +256,11 @@ final class APIClient {
             throw NetworkError.httpError(statusCode: 403, detail: "Forbidden")
         default:
             let body = String(data: data, encoding: .utf8) ?? "<non-UTF8>"
+            let detail = (try? decoder.decode(ErrorResponseDTO.self, from: data).detail) ?? body
             print("[APIClient] HTTP \(http.statusCode) body: \(body)")
             throw NetworkError.httpError(
                 statusCode: http.statusCode,
-                detail: body
+                detail: detail
             )
         }
     }
