@@ -101,6 +101,9 @@ final class EventsHomeViewModel: ObservableObject {
 
     func deleteEvent(_ item: EventListItem) {
         let isDeletingCurrentEvent = currentEvent?.id == item.id
+        let removedEvent = allEvents.first { $0.id == item.id }
+        let removedIndex = allEvents.firstIndex { $0.id == item.id }
+        let removedItemIndex = latestEvents.firstIndex { $0.id == item.id }
 
         withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
             latestEvents.removeAll { $0.id == item.id }
@@ -126,7 +129,23 @@ final class EventsHomeViewModel: ObservableObject {
         }
 
         Task {
-            try? await service.deleteEvent(id: item.id)
+            do {
+                try await service.deleteEvent(id: item.id)
+            } catch {
+                // Восстанавливаем событие если бэкенд вернул ошибку
+                if let event = removedEvent {
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
+                        let idx = removedIndex ?? allEvents.endIndex
+                        allEvents.insert(event, at: min(idx, allEvents.endIndex))
+                        let itemIdx = removedItemIndex ?? latestEvents.endIndex
+                        latestEvents.insert(item, at: min(itemIdx, latestEvents.endIndex))
+                    }
+                    if isDeletingCurrentEvent {
+                        applyCurrentEvent(event)
+                    }
+                }
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -152,9 +171,14 @@ final class EventsHomeViewModel: ObservableObject {
         }
     }
 
+    var currentUserId: UUID? {
+        CurrentUserStore.shared.user?.id
+    }
+
     private static func mapEventToListItem(_ event: Event) -> EventListItem {
         EventListItem(
             id: event.id,
+            creatorId: event.creatorId,
             emoji: event.icon,
             title: event.name,
             subtitle: relativeDateText(from: event.date),
