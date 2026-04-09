@@ -35,6 +35,7 @@ final class BillViewModel: ObservableObject {
     let eventsRepository: any EventsRepository
     let receiptsRepository: any ReceiptsRepository
     private let networkMonitor: NetworkMonitor
+    let friendsRepository: (any FriendsRepository)?
 
     private var cancellables: Set<AnyCancellable> = []
     private var hasLoaded = false
@@ -99,12 +100,14 @@ final class BillViewModel: ObservableObject {
         mode: Mode,
         eventsRepository: any EventsRepository,
         receiptsRepository: any ReceiptsRepository,
-        networkMonitor: NetworkMonitor
+        networkMonitor: NetworkMonitor,
+        friendsRepository: (any FriendsRepository)? = nil
     ) {
         self.mode = mode
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
         self.networkMonitor = networkMonitor
+        self.friendsRepository = friendsRepository
         self.isNetworkAvailable = networkMonitor.isConnected
 
         if case .create(_, let scannedItems) = mode {

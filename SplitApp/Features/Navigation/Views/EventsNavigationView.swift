@@ -5,17 +5,20 @@ struct EventsNavigationView: View {
     private let eventsRepository: any EventsRepository
     private let receiptsRepository: any ReceiptsRepository
     private let networkMonitor: NetworkMonitor
+    private let friendsRepository: any FriendsRepository
 
     init(
         service: EventManagementServiceProtocol,
         eventsRepository: any EventsRepository,
         receiptsRepository: any ReceiptsRepository,
         networkMonitor: NetworkMonitor,
+        friendsRepository: any FriendsRepository,
         rules: EventsNavigationRules = .init()
     ) {
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
         self.networkMonitor = networkMonitor
+        self.friendsRepository = friendsRepository
         _viewModel = StateObject(
             wrappedValue: EventsNavigationViewModel(
                 service: service,
@@ -74,7 +77,8 @@ struct EventsNavigationView: View {
                 mode: destination.mode,
                 eventsRepository: eventsRepository,
                 receiptsRepository: receiptsRepository,
-                networkMonitor: networkMonitor
+                networkMonitor: networkMonitor,
+                friendsRepository: friendsRepository
             )
 
             BillEntryView(viewModel: billViewModel)
@@ -91,10 +95,12 @@ struct EventsNavigationView: View {
 }
 
 #Preview {
-    EventsNavigationView(
-        service: EventManagementService(eventsRepository: EventsDataRepository()),
-        eventsRepository: EventsDataRepository(),
-        receiptsRepository: ReceiptsDataRepository(),
-        networkMonitor: .shared
+    let deps = AppDependencies.preview
+    return EventsNavigationView(
+        service: deps.eventManagementService,
+        eventsRepository: deps.eventsRepository,
+        receiptsRepository: deps.receiptsRepository,
+        networkMonitor: deps.networkMonitor,
+        friendsRepository: deps.friendsRepository
     )
 }

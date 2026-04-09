@@ -8,11 +8,31 @@ extension BillViewModel {
         }
 
         guard let eventId else {
-            participants = [
-                Participant(name: "Я", initials: "Я", color: .accentColor),
-                Participant(name: "Друг 1", initials: "Д1", color: .blue),
-                Participant(name: "Друг 2", initials: "Д2", color: .green)
-            ]
+            // Загружаем локальных друзей как участников
+            if let friendsRepository {
+                do {
+                    let localFriends = try await friendsRepository.listLocalFriends()
+                    participants = localFriends.map { friend in
+                        let initials = friend.name.split(separator: " ")
+                            .prefix(2)
+                            .compactMap { $0.first }
+                            .map { String($0).uppercased() }
+                            .joined()
+
+                        return Participant(
+                            id: friend.id,
+                            name: friend.name,
+                            initials: initials.isEmpty ? "?" : initials,
+                            color: .accentColor
+                        )
+                    }
+                } catch {
+                    print("❌ Ошибка загрузки локальных друзей: \(error)")
+                    participants = []
+                }
+            } else {
+                participants = []
+            }
             return
         }
 
