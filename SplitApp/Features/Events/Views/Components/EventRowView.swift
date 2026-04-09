@@ -13,9 +13,12 @@ struct EventRowView: View {
                 Text(event.title)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color(.label))
+                    .multilineTextAlignment(.leading)
+                    .padding(.vertical, 2)
                 Text(event.subtitle)
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(Color(.secondaryLabel))
+                    .multilineTextAlignment(.leading)
             }
 
             Spacer()

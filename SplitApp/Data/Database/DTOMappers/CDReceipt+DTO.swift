@@ -35,16 +35,24 @@ extension CDReceiptItem {
 
     /// Convert CoreData entity to DTO.
     func toDTO() -> ReceiptItemDTO {
-        let shareItemIds: [UUID] = (shareItems as? Set<CDShareItem>)?
-            .compactMap { $0.id } ?? []
+        let shareItemDTOs: [ShareItemDTO] = (shareItems as? Set<CDShareItem>)?
+            .map { $0.toDTO() } ?? []
 
         return ReceiptItemDTO(
             id: id!,
             receiptId: receiptId!,
             name: name,
             cost: cost,
-            shareItems: shareItemIds
+            shareItems: shareItemDTOs
         )
+    }
+
+    /// Update CoreData entity from DTO.
+    func update(from dto: ReceiptItemDTO) {
+        self.id = dto.id
+        self.receiptId = dto.receiptId
+        self.name = dto.name
+        self.cost = dto.cost
     }
 }
 
