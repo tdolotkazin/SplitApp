@@ -12,7 +12,7 @@ final class LogoutUseCase {
 
     @MainActor
     func execute() {
-        TokenStore.shared.accessToken = nil
+        TokenStore.shared.clear()
         secureStorage.delete("refresh_token")
 
         do {

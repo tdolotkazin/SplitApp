@@ -48,11 +48,11 @@ struct EventsNavigationRules {
     func route(for action: EventsNavigationAction) -> EventsNavigationRoute? {
         switch action {
         case .scanButtonTapped:
-            return scanButtonRoute
+            scanButtonRoute
         case .currentEventTapped:
-            return .eventPicker
+            .eventPicker
         case .addButtonTapped, .scannerCaptureCompleted, .receiptTapped:
-            return nil
+            nil
         }
     }
 }

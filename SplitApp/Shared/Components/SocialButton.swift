@@ -9,25 +9,35 @@ struct SocialButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(textColor)
-
+            Group {
+                if icon == "yandex" {
+                    Image(icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 112, height: 112)
+                        .clipShape(Circle())
+                        .contentShape(Circle())
+                        .shadow(color: .black.opacity(0.06), radius: 18, y: 8)
+                } else {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundColor(textColor)
+                        .frame(width: 25, height: 50)
+                        .padding(.horizontal, 20)
+                        .background(backgroundColor)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(
+                                    hasBorder ? Color.gray.opacity(0.3) : Color.clear,
+                                    lineWidth: 1
+                                )
+                        )
+                        .cornerRadius(25)
+                }
             }
-            .frame(width: 25)
-            .frame(height: 50)
-            .padding(.horizontal, 20)
-            .background(backgroundColor)
-            .overlay(
-                RoundedRectangle(cornerRadius: 25)
-                    .stroke(
-                        hasBorder ? Color.gray.opacity(0.3) : Color.clear,
-                        lineWidth: 1
-                    )
-            )
-            .cornerRadius(25)
         }
+        .frame(width: icon == "yandex" ? 112 : nil, height: icon == "yandex" ? 112 : nil)
+        .buttonStyle(.plain)
     }
 }
 
@@ -43,12 +53,12 @@ struct SocialButton_Previews: PreviewProvider {
             }
 
             SocialButton(
-                icon: "g.circle.fill",
+                icon: "yandex",
                 backgroundColor: .white,
                 textColor: .black,
                 hasBorder: true
             ) {
-                print("Google sign in")
+                print("Yandex sign in")
             }
         }
         .padding()

@@ -5,6 +5,26 @@ struct FriendAvatar: View {
     var size: CGFloat = 56
 
     var body: some View {
+        AsyncImage(url: friend.avatarURL) { phase in
+            Group {
+                if case let .success(image) = phase {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    initialsAvatar
+                }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+        .overlay(
+            Circle()
+                .stroke(AppTheme.avatarStroke, lineWidth: 1)
+        )
+    }
+
+    private var initialsAvatar: some View {
         ZStack {
             LinearGradient(
                 colors: [
@@ -19,11 +39,5 @@ struct FriendAvatar: View {
                 .font(.system(size: size * 0.375, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
         }
-        .frame(width: size, height: size)
-        .clipShape(Circle())
-        .overlay(
-            Circle()
-                .stroke(AppTheme.avatarStroke, lineWidth: 1)
-        )
     }
 }

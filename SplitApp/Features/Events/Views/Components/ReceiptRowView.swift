@@ -37,7 +37,7 @@ struct ReceiptRowView: View {
 
                 Spacer()
 
-                Text(receipt.totalAmount.euroText(minimumFractionDigits: 2))
+                Text(receipt.totalAmount.rubleText(minimumFractionDigits: 2))
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.accentColor)
             }

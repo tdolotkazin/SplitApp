@@ -2,7 +2,6 @@ import Foundation
 import KeychainSwift
 
 final class BootstrapAuthUseCase {
-
     private let storage: SecureStorage
 
     init(storage: SecureStorage) {

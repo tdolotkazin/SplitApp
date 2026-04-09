@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AmountField: View {
     @Binding var amount: Decimal
-    var currency: String = "€"
+    var currency: String = "₽"
 
     @FocusState private var isFocused: Bool
 

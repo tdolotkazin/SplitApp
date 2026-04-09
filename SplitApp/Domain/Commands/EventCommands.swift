@@ -1,7 +1,6 @@
 import Foundation
 
 struct CreateEventCommand {
-    let creatorId: UUID
     let name: String
 }
 

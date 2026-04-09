@@ -12,11 +12,11 @@ struct BottomTabItem: Identifiable {
     let systemImage: String
     let makeView: () -> AnyView
 
-    init<Content: View>(
+    init(
         id: BottomTabID,
         title: String,
         systemImage: String,
-        @ViewBuilder makeView: @escaping () -> Content
+        @ViewBuilder makeView: @escaping () -> some View
     ) {
         self.id = id
         self.title = title
@@ -56,6 +56,7 @@ extension BottomTabConfiguration {
                         eventsRepository: dependencies.eventsRepository,
                         receiptsRepository: dependencies.receiptsRepository,
                         usersRepository: dependencies.usersRepository,
+                        activeEventRepository: dependencies.activeEventRepository,
                         networkMonitor: dependencies.networkMonitor
                     )
                 },
@@ -64,7 +65,7 @@ extension BottomTabConfiguration {
                     title: "Друзья",
                     systemImage: "person.2"
                 ) {
-                    FriendsView()
+                    FriendsView(friendsRepository: dependencies.friendsRepository)
                 },
                 BottomTabItem(
                     id: .profile,
@@ -78,8 +79,8 @@ extension BottomTabConfiguration {
                             name: "Иван Волков 🌸",
                             eventsCountText: "12",
                             friendsCountText: "8",
-                            closedBillsText: "€340",
-                            openBillsText: "€34"
+                            closedBillsText: "₽340",
+                            openBillsText: "₽34"
                         ),
                         viewModel: profileVM
                     )

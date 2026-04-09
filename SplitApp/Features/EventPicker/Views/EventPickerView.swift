@@ -20,6 +20,7 @@ struct EventPickerView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 // MARK: - Заголовок списка
+
                 HStack(alignment: .center) {
                     sectionLabel("ВЫБРАТЬ СОБЫТИЕ")
                     Spacer()
@@ -171,7 +172,7 @@ struct EventPickerView: View {
                     .padding(.horizontal, 20)
                     .disabled(
                         viewModel.isCreatingEvent ||
-                        newEventName.trimmingCharacters(in: .whitespaces).isEmpty
+                            newEventName.trimmingCharacters(in: .whitespaces).isEmpty
                     )
                     .opacity(newEventName.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1)
                     .animation(.easeInOut(duration: 0.2), value: newEventName.isEmpty)
@@ -229,9 +230,9 @@ struct EventPickerView: View {
 
     private func amountColor(for tone: EventAmountTone) -> Color {
         switch tone {
-        case .positive: return Color(red: 0.17, green: 0.76, blue: 0.32)
-        case .negative: return Color(red: 0.92, green: 0.29, blue: 0.29)
-        case .neutral:  return AppTheme.textSecondary
+        case .positive: Color(red: 0.17, green: 0.76, blue: 0.32)
+        case .negative: Color(red: 0.92, green: 0.29, blue: 0.29)
+        case .neutral: AppTheme.textSecondary
         }
     }
 
@@ -280,7 +281,7 @@ private struct SwipeableEventRow: View {
                             .foregroundStyle(AppTheme.accent)
                             .transition(.scale.combined(with: .opacity))
                     } else {
-                        Text(event.amount.euroText(signed: true, minimumFractionDigits: 0))
+                        Text(event.amount.rubleText(signed: true, minimumFractionDigits: 0))
                             .font(.system(size: 15, weight: .bold, design: .rounded))
                             .foregroundStyle(amountColor)
                     }
@@ -312,11 +313,11 @@ private struct SwipeableEventRow: View {
     private var amountColor: Color {
         switch event.tone {
         case .positive:
-            return Color(red: 0.17, green: 0.76, blue: 0.32)
+            Color(red: 0.17, green: 0.76, blue: 0.32)
         case .negative:
-            return Color(red: 0.92, green: 0.29, blue: 0.29)
+            Color(red: 0.92, green: 0.29, blue: 0.29)
         case .neutral:
-            return AppTheme.textSecondary
+            AppTheme.textSecondary
         }
     }
 }

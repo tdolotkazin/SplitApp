@@ -1,7 +1,6 @@
 import CoreData
 
 final class CoreDataStore {
-
     static let shared = CoreDataStore()
 
     private let persistenceController: PersistenceController

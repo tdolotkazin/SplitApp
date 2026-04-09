@@ -1,7 +1,6 @@
 import Foundation
 
 enum EventMapper {
-
     static func mapToListItem(_ event: Event) -> EventListItem {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
@@ -44,12 +43,13 @@ enum EventMapper {
     static func mapToDomain(cdEvent: CDEvent) -> Event? {
         guard let id = cdEvent.id,
               let name = cdEvent.name,
-              let createdAt = cdEvent.createdAt else {
+              let createdAt = cdEvent.createdAt
+        else {
             return nil
         }
 
         let participantIds = (cdEvent.participants as? Set<CDUser>)?
-            .compactMap { $0.id } ?? []
+            .compactMap(\.id) ?? []
         let participants = (cdEvent.participants as? Set<CDUser>)?
             .compactMap(UserMapper.mapToDomain(cdUser:))
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending } ?? []

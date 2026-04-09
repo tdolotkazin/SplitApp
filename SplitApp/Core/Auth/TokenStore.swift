@@ -1,7 +1,6 @@
 import Foundation
 
 final class TokenStore {
-
     static let shared = TokenStore()
 
     private init() {}
@@ -23,5 +22,4 @@ final class TokenStore {
         accessToken = nil
         expirationDate = nil
     }
-
 }

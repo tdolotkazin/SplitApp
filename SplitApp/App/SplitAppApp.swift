@@ -49,7 +49,6 @@ struct SplitAppApp: App {
                 } else {
                     LoginView(viewModel: viewModel)
                         .onOpenURL { url in
-
                             do {
                                 try YandexLoginSDK.shared.handleOpenURL(url)
                                 print("URL успешно передан в SDK")
@@ -70,6 +69,7 @@ struct SplitAppApp: App {
         let storage = KeychainStorage()
 
         guard storage.get("refresh_token") != nil else {
+            TokenStore.shared.clear()
             await MainActor.run {
                 appState.isLoggedIn = false
                 appState.isLoading = false
@@ -85,6 +85,8 @@ struct SplitAppApp: App {
             }
         } catch {
             print("Не удалось обновить токен: \(error)")
+            storage.delete("refresh_token")
+            TokenStore.shared.clear()
             await MainActor.run {
                 appState.isLoggedIn = false
                 appState.isLoading = false

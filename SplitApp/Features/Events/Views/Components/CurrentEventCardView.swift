@@ -21,18 +21,14 @@ struct CurrentEventCardView: View {
 
                 Spacer()
 
-                Text(formattedAmount)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.accentGradient)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.textSecondary)
             }
         }
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
                 .stroke(AppTheme.accent, lineWidth: 2)
         )
-    }
-
-    private var formattedAmount: String {
-        event.amount.euroText(signed: true, minimumFractionDigits: 0)
     }
 }

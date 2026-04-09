@@ -1,7 +1,6 @@
 import CoreData
 
 extension CDUser {
-
     /// Convert CoreData entity to DTO.
     func toDTO() -> UserDTO {
         UserDTO(
@@ -15,10 +14,10 @@ extension CDUser {
 
     /// Update CoreData entity from DTO.
     func update(from dto: UserDTO) {
-        self.id = dto.id
-        self.name = dto.name
-        self.phoneNumber = dto.phoneNumber
-        self.email = dto.email
-        self.avatarUrl = dto.avatarUrl
+        id = dto.id
+        name = dto.name
+        phoneNumber = dto.phoneNumber
+        email = dto.email
+        avatarUrl = dto.avatarUrl
     }
 }

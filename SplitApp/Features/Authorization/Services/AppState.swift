@@ -3,7 +3,6 @@ import Foundation
 
 @MainActor
 final class AppState: ObservableObject {
-
     @Published var isLoading = false
     @Published var isLoggedIn = false
 
@@ -11,5 +10,4 @@ final class AppState: ObservableObject {
         self.isLoading = isLoading
         self.isLoggedIn = isLoggedIn
     }
-
 }

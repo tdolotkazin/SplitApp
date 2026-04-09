@@ -24,10 +24,14 @@ final class EventsNavigationViewModel: ObservableObject {
     @MainActor
     convenience init(
         service: EventManagementServiceProtocol,
+        activeEventRepository: any ActiveEventRepository,
         rules: EventsNavigationRules
     ) {
         self.init(
-            homeViewModel: EventsHomeViewModel(service: service),
+            homeViewModel: EventsHomeViewModel(
+                service: service,
+                activeEventRepository: activeEventRepository
+            ),
             scannerViewModel: ReceiptViewModel(),
             rules: rules
         )
@@ -41,7 +45,7 @@ final class EventsNavigationViewModel: ObservableObject {
         switch action {
         case .addButtonTapped:
             billEntryDestination = .create(eventId: homeViewModel.currentEvent?.id)
-        case .receiptTapped(let eventId, let receiptId):
+        case let .receiptTapped(eventId, receiptId):
             billEntryDestination = .edit(eventId: eventId, receiptId: receiptId)
         case .scannerCaptureCompleted:
             let billItems = scannerViewModel.items.map {

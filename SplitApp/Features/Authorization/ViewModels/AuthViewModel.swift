@@ -4,7 +4,6 @@ import YandexLoginSDK
 
 @MainActor
 final class AuthViewModel: ObservableObject {
-
     private let vcProvider: ViewControllerProvider
     private let useCase: LoginUseCase
 
@@ -18,7 +17,6 @@ final class AuthViewModel: ObservableObject {
     }
 
     func login() async -> Bool {
-
         guard let viewContollerProvider = vcProvider.rootViewController else {
             return false
         }

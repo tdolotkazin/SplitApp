@@ -20,7 +20,7 @@ struct ProfileCardView: View {
     private var avatarCircle: some View {
         AsyncImage(url: avatarURL) { phase in
             Group {
-                if case .success(let image) = phase {
+                if case let .success(image) = phase {
                     image
                         .resizable()
                         .scaledToFill()

@@ -8,11 +8,11 @@ enum RepositoryError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .offlineNoCache:
-            return "Данные недоступны: нет интернета и локального кэша."
+            "Данные недоступны: нет интернета и локального кэша."
         case .unsupportedByBackend:
-            return "Операция пока не поддерживается backend-контрактом."
+            "Операция пока не поддерживается backend-контрактом."
         case .notFound:
-            return "Запрошенная сущность не найдена."
+            "Запрошенная сущность не найдена."
         }
     }
 }
