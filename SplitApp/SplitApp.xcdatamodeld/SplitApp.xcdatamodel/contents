@@ -4,6 +4,8 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="phoneNumber" attributeType="String"/>
+        <attribute name="email" optional="YES" attributeType="String"/>
+        <attribute name="avatarUrl" optional="YES" attributeType="String"/>
         <relationship name="events" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CDEvent" inverseName="participants" inverseEntity="CDEvent"/>
     </entity>
     <entity name="CDEvent" representedClassName="CDEvent" syncable="YES" codeGenerationType="class">

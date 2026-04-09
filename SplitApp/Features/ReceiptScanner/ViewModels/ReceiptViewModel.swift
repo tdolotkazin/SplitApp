@@ -5,7 +5,7 @@ import PhotosUI
 @Observable
 final class ReceiptViewModel {
 
-    var items: [ReceiptItem] = []
+    var items: [ScannedReceiptItem] = []
     var isScanning = false
     var errorMessage: String?
     var selectedPhoto: PhotosPickerItem? {

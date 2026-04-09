@@ -1,6 +1,6 @@
 import Foundation
 
-struct CreateUserEndpoint: Endpoint {
+struct ListUsersEndpoint: Endpoint {
     let path = "/api/users"
-    let method: HTTPMethod = .POST
+    let method: HTTPMethod = .GET
 }
