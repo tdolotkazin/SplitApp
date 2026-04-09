@@ -109,6 +109,7 @@ struct CameraView: View {
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
             viewModel.items = []
+            viewModel.scannedReceiptImageJPEGData = nil
             camera.requestAccessAndStart()
         }
         .onDisappear { camera.stop() }

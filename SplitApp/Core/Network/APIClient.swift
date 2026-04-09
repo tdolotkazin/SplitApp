@@ -61,6 +61,43 @@ final class APIClient {
         try validateResponse(response, data: data)
     }
 
+    func requestMultipart<T: Decodable>(
+        endpoint: Endpoint,
+        fileFieldName: String,
+        fileName: String,
+        mimeType: String,
+        fileData: Data
+    ) async throws -> T {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = try buildRequest(endpoint: endpoint, body: nil)
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+
+        var body = Data()
+        body.append(Data("--\(boundary)\r\n".utf8))
+        body.append(
+            Data(
+                "Content-Disposition: form-data; name=\"\(fileFieldName)\"; filename=\"\(fileName)\"\r\n"
+                    .utf8
+            )
+        )
+        body.append(Data("Content-Type: \(mimeType)\r\n\r\n".utf8))
+        body.append(fileData)
+        body.append(Data("\r\n--\(boundary)--\r\n".utf8))
+        request.httpBody = body
+
+        let (data, response) = try await session.data(for: request)
+        try validateResponse(response, data: data)
+
+        do {
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            throw NetworkError.decodingError(error)
+        }
+    }
+
     private func buildRequest(
         endpoint: Endpoint,
         body: (any Encodable)?

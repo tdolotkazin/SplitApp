@@ -9,8 +9,18 @@ struct BillEntryDestination: Identifiable {
     let id = UUID()
     let mode: BillViewModel.Mode
 
-    static func create(eventId: UUID?, scannedItems: [BillItem] = []) -> BillEntryDestination {
-        BillEntryDestination(mode: .create(eventId: eventId, scannedItems: scannedItems))
+    static func create(
+        eventId: UUID?,
+        scannedItems: [BillItem] = [],
+        receiptImageJPEGData: Data? = nil
+    ) -> BillEntryDestination {
+        BillEntryDestination(
+            mode: .create(
+                eventId: eventId,
+                scannedItems: scannedItems,
+                receiptImageJPEGData: receiptImageJPEGData
+            )
+        )
     }
 
     static func edit(eventId: UUID, receiptId: UUID) -> BillEntryDestination {

@@ -55,7 +55,11 @@ final class EventsNavigationViewModel: ObservableObject {
             let billItems = scannerViewModel.items.map {
                 BillItem(name: $0.name, amount: $0.amount)
             }
-            billEntryDestination = .create(eventId: nil, scannedItems: billItems)
+            billEntryDestination = .create(
+                eventId: nil,
+                scannedItems: billItems,
+                receiptImageJPEGData: scannerViewModel.scannedReceiptImageJPEGData
+            )
         default:
             break
         }
