@@ -64,7 +64,7 @@ extension BottomTabConfiguration {
                     title: "Друзья",
                     systemImage: "person.2"
                 ) {
-                    FriendsView()
+                    FriendsView(friendsRepository: dependencies.friendsRepository)
                 },
                 BottomTabItem(
                     id: .profile,

@@ -18,10 +18,6 @@ struct FriendRowView: View {
             }
 
             Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(AppTheme.textTertiary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
