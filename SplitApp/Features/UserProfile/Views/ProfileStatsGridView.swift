@@ -3,8 +3,6 @@ import SwiftUI
 struct ProfileStatsGridView: View {
     let eventsCountText: String
     let friendsCountText: String
-    let closedReceiptsText: String
-    let openReceiptsText: String
 
     private let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -15,8 +13,6 @@ struct ProfileStatsGridView: View {
         LazyVGrid(columns: columns, spacing: 16) {
             events
             friends
-            closedReceiptView
-            openReceiptView
         }
     }
 
@@ -35,20 +31,5 @@ struct ProfileStatsGridView: View {
             valueColor: AppTheme.textPrimary
         )
     }
-
-    private var closedReceiptView: some View {
-        ProfileStatCardView(
-            title: "Закрытые чеки",
-            value: closedReceiptsText,
-            valueColor: .green
-        )
-    }
-
-    private var openReceiptView: some View {
-        ProfileStatCardView(
-            title: "Открытые чеки",
-            value: openReceiptsText,
-            valueColor: .red
-        )
-    }
 }
+

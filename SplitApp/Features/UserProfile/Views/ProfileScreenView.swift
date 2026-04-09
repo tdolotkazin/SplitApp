@@ -55,8 +55,6 @@ struct ProfileScreenView: View {
         ProfileStatsGridView(
             eventsCountText: model.eventsCountText,
             friendsCountText: model.friendsCountText,
-            closedReceiptsText: model.closedBillsText,
-            openReceiptsText: model.openBillsText
         )
     }
 
