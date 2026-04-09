@@ -48,35 +48,46 @@ class FriendsViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
+        // Загружаем удалённых и локальных друзей независимо
+        var remoteUsers: [User] = []
+        var locals: [LocalFriend] = []
+
+        // Пытаемся загрузить с сервера (может упасть, но не критично)
         do {
-            async let remoteFriends = try friendsRepository.listRemoteFriends()
-            async let localFriends = try friendsRepository.listLocalFriends()
-
-            let (remoteUsers, locals) = try await (remoteFriends, localFriends)
-
+            remoteUsers = try await friendsRepository.listRemoteFriends()
             print("🔍 Загружено с сервера: \(remoteUsers.count) друзей")
-            print("🔍 Загружено локально: \(locals.count) друзей")
+        } catch {
+            print("⚠️ Не удалось загрузить с сервера: \(error)")
+        }
 
+        // Загружаем локальных друзей (должно всегда работать)
+        do {
+            locals = try await friendsRepository.listLocalFriends()
+            print("🔍 Загружено локально: \(locals.count) друзей")
             for friend in locals {
                 print("  - \(friend.name) (id: \(friend.id))")
             }
-
-            let remoteFriendsList = remoteUsers.map { Friend.from(user: $0) }
-            let localFriendsList = locals.map { Friend.from(localFriend: $0) }
-
-            let allFriends = remoteFriendsList + localFriendsList
-
-            let calculatedDebts = try await calculateDebts(friends: allFriends)
-
-            self.friends = allFriends
-            self.debts = calculatedDebts
-
-            print("✅ Всего друзей после загрузки: \(self.friends.count)")
-
         } catch {
+            print("❌ Ошибка загрузки локальных друзей: \(error)")
             errorMessage = error.localizedDescription
-            print("❌ Ошибка загрузки друзей: \(error)")
         }
+
+        let remoteFriendsList = remoteUsers.map { Friend.from(user: $0) }
+        let localFriendsList = locals.map { Friend.from(localFriend: $0) }
+
+        let allFriends = remoteFriendsList + localFriendsList
+
+        // Пытаемся посчитать долги (может упасть, но не критично)
+        do {
+            let calculatedDebts = try await calculateDebts(friends: allFriends)
+            self.debts = calculatedDebts
+        } catch {
+            print("⚠️ Не удалось посчитать долги: \(error)")
+            self.debts = []
+        }
+
+        self.friends = allFriends
+        print("✅ Всего друзей после загрузки: \(self.friends.count)")
 
         isLoading = false
     }
