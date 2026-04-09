@@ -170,7 +170,7 @@ struct BillEntryView: View {
                         .font(.system(size: 24, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
                     Spacer()
-                    Text("€\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
+                    Text("₽\(NSDecimalNumber(decimal: viewModel.total).stringValue)")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.accent)
                         .contentTransition(.numericText())

@@ -34,9 +34,9 @@ struct EventRowView: View {
     private var amountLabel: String {
         switch event.tone {
         case .positive:
-            event.amount.euroText(signed: true, minimumFractionDigits: 0)
+            event.amount.rubleText(signed: true, minimumFractionDigits: 0)
         case .negative:
-            event.amount.euroText(signed: true, minimumFractionDigits: 0)
+            event.amount.rubleText(signed: true, minimumFractionDigits: 0)
         case .neutral:
             "Закрыт"
         }

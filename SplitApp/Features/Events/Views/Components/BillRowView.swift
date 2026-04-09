@@ -74,9 +74,9 @@ struct BillRowView: View {
     private var amountLabel: String {
         switch bill.tone {
         case .positive:
-            bill.amount.euroText(signed: true, minimumFractionDigits: 0)
+            bill.amount.rubleText(signed: true, minimumFractionDigits: 0)
         case .negative:
-            bill.amount.euroText(signed: true, minimumFractionDigits: 0)
+            bill.amount.rubleText(signed: true, minimumFractionDigits: 0)
         case .neutral:
             "Закрыт"
         }

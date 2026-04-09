@@ -21,7 +21,7 @@ struct FriendDebtCard: View {
                             .font(.system(size: 15, weight: .regular, design: .rounded))
                             .foregroundStyle(debt.type == .owedBy ? Color.green : Color.red)
 
-                        Text("€\(NSDecimalNumber(decimal: debt.amount).stringValue)")
+                        Text("₽\(NSDecimalNumber(decimal: debt.amount).stringValue)")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundStyle(debt.type == .owedBy ? Color.green : Color.red)
                     }

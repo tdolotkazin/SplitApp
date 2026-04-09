@@ -33,6 +33,6 @@ struct CurrentEventCardView: View {
     }
 
     private var formattedAmount: String {
-        event.amount.euroText(signed: true, minimumFractionDigits: 0)
+        event.amount.rubleText(signed: true, minimumFractionDigits: 0)
     }
 }

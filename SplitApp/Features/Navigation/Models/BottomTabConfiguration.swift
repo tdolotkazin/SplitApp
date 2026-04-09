@@ -78,8 +78,8 @@ extension BottomTabConfiguration {
                             name: "Иван Волков 🌸",
                             eventsCountText: "12",
                             friendsCountText: "8",
-                            closedBillsText: "€340",
-                            openBillsText: "€34"
+                            closedBillsText: "₽340",
+                            openBillsText: "₽34"
                         ),
                         viewModel: profileVM
                     )

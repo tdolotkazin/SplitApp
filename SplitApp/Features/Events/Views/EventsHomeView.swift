@@ -139,7 +139,7 @@ private struct BalanceCardView: View {
                 Text("Общий баланс")
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.textSecondary)
-                Text(summary.totalBalance.euroText(signed: true, minimumFractionDigits: 2))
+                Text(summary.totalBalance.rubleText(signed: true, minimumFractionDigits: 2))
                     .font(.system(size: 56, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.accentGradient)
                     .shadow(color: AppTheme.accent.opacity(0.25), radius: 12, x: 0, y: 4)
