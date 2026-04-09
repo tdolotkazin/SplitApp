@@ -213,9 +213,15 @@ extension BillViewModel {
                 let cachedUsers = try await usersRepository.getCachedUsers()
                 let filtered = cachedUsers.filter { participantIds.contains($0.id) }
                 participants = filtered.map(Self.makeParticipant)
-                print("[BillParticipants] mode=cache_fallback eventId=\(event.id) count=\(participants.count) networkError=\(error.localizedDescription)")
+                let message =
+                    "[BillParticipants] mode=cache_fallback eventId=\(event.id) " +
+                    "count=\(participants.count) networkError=\(error.localizedDescription)"
+                print(message)
             } catch {
-                print("[BillParticipants] mode=network_failed_local_failed eventId=\(event.id) error=\(error.localizedDescription)")
+                let message =
+                    "[BillParticipants] mode=network_failed_local_failed eventId=\(event.id) " +
+                    "error=\(error.localizedDescription)"
+                print(message)
             }
         }
 
