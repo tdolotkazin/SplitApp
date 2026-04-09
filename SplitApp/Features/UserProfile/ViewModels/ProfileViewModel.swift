@@ -8,10 +8,12 @@ final class ProfileViewModel: ObservableObject {
     @Published var error: Error?
 
     private let usersRepository: UsersRepository
+    private let eventsRepository: any EventsRepository
     private let logoutUseCase: LogoutUseCase
 
-    init(usersRepository: UsersRepository, logoutUseCase: LogoutUseCase) {
+    init(usersRepository: any UsersRepository, eventsRepository: any EventsRepository, logoutUseCase: LogoutUseCase) {
         self.usersRepository = usersRepository
+        self.eventsRepository = eventsRepository
         self.logoutUseCase = logoutUseCase
     }
 
@@ -41,8 +43,12 @@ final class ProfileViewModel: ObservableObject {
 
     private func loadProfileData(for currentUser: CurrentUser) async throws {
         print("📡 ProfileViewModel: Loading users list...")
-        let users = try await usersRepository.listUsers()
-        print("✅ ProfileViewModel: Loaded \(users.count) users")
+        async let usersFetch = usersRepository.listUsers()
+        async let eventsFetch = eventsRepository.listEvents(userId: nil)
+
+        let users = try await usersFetch
+        let events = try await eventsFetch
+        print("✅ ProfileViewModel: Loaded \(users.count) users, \(events.count) events")
 
         if let foundUser = users.first(where: { $0.id == currentUser.id }) {
             print("✅ ProfileViewModel: Found current user in list, updating...")
@@ -53,14 +59,14 @@ final class ProfileViewModel: ObservableObject {
             print("⚠️ ProfileViewModel: Current user NOT found in users list")
         }
 
-        profileModel = createProfileModel(from: currentUser, friendsCount: users.count - 1)
+        profileModel = createProfileModel(from: currentUser, friendsCount: users.count - 1, eventsCount: events.count)
         print("✅ ProfileViewModel: Profile model created successfully")
         isLoading = false
     }
 
     private func handleLoadError(_ error: Error, for currentUser: CurrentUser) {
         print("❌ ProfileViewModel: Error loading users - \(error)")
-        profileModel = createProfileModel(from: currentUser, friendsCount: nil)
+        profileModel = createProfileModel(from: currentUser, friendsCount: nil, eventsCount: nil)
         self.error = error
         isLoading = false
     }
@@ -78,12 +84,12 @@ final class ProfileViewModel: ObservableObject {
         )
     }
 
-    private func createProfileModel(from user: CurrentUser, friendsCount: Int?) -> ProfileScreenModel {
+    private func createProfileModel(from user: CurrentUser, friendsCount: Int?, eventsCount: Int?) -> ProfileScreenModel {
         ProfileScreenModel(
             initials: user.initials,
             email: user.email ?? "Не указан",
             name: user.name,
-            eventsCountText: "—",
+            eventsCountText: eventsCount.map(String.init) ?? "—",
             friendsCountText: friendsCount.map(String.init) ?? "—",
             closedBillsText: "—",
             openBillsText: "—",
