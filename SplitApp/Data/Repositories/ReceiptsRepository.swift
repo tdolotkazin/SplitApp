@@ -92,58 +92,19 @@ final class ReceiptsDataRepository: ReceiptsRepository {
             }
             return dto
         } catch {
-            // Fallback: обновляем чек локально если нет бэкенда
-            // Получаем существующий чек из локального хранилища
             guard let existingReceipt = LocalReceiptsStore.shared.getReceipt(id: id) else {
                 throw error
             }
-
-            // Преобразуем UpdateReceiptRequest обратно в ReceiptDTO
-            let receiptItems = (request.items ?? existingReceipt.items.map { existingItem in
-                CreateReceiptItemRequest(
-                    name: existingItem.name,
-                    cost: existingItem.cost,
-                    shareItems: existingItem.shareItems.map { shareItem in
-                        CreateShareItemRequest(
-                            userId: shareItem.userId,
-                            shareValue: shareItem.shareValue
-                        )
-                    }
-                )
-            }).map { item in
-                let receiptItemId = UUID()
-                return ReceiptItemDTO(
-                    id: receiptItemId,
-                    receiptId: id,
-                    name: item.name,
-                    cost: item.cost,
-                    shareItems: item.shareItems.map { shareItem in
-                        ShareItemDTO(
-                            id: UUID(),
-                            receiptItemId: receiptItemId,
-                            userId: shareItem.userId,
-                            shareValue: shareItem.shareValue
-                        )
-                    }
-                )
-            }
-
-            let updatedDto = ReceiptDTO(
+            let updatedDto = makeUpdatedReceiptDTO(
                 id: id,
-                eventId: existingReceipt.eventId,
-                payerId: existingReceipt.payerId,
-                title: request.title ?? existingReceipt.title,
-                totalAmount: request.totalAmount ?? existingReceipt.totalAmount,
-                createdAt: existingReceipt.createdAt,
-                updatedAt: Date(),
-                items: receiptItems
+                request: request,
+                existingReceipt: existingReceipt
             )
-
             LocalReceiptsStore.shared.updateReceipt(updatedDto)
             return updatedDto
         }
     }
-    
+
     func createReceipt(eventId: UUID, _ command: CreateReceiptCommand) async throws -> Receipt {
         let request = CreateReceiptRequest(
             payerId: command.payerId,
@@ -229,6 +190,62 @@ final class ReceiptsDataRepository: ReceiptsRepository {
         try await apiClient.requestVoid(endpoint: DeleteReceiptEndpoint(id: id))
         try await coreDataStore.performBackground { [weak self] context in
             try self?.deleteLocalReceipt(id: id, in: context)
+        }
+    }
+}
+
+private extension ReceiptsDataRepository {
+    func makeUpdatedReceiptDTO(
+        id: UUID,
+        request: UpdateReceiptRequest,
+        existingReceipt: ReceiptDTO
+    ) -> ReceiptDTO {
+        let baseItems = request.items ?? existingReceipt.items.map { existingItem in
+            CreateReceiptItemRequest(
+                name: existingItem.name,
+                cost: existingItem.cost,
+                shareItems: existingItem.shareItems.map { shareItem in
+                    CreateShareItemRequest(
+                        userId: shareItem.userId,
+                        shareValue: shareItem.shareValue
+                    )
+                }
+            )
+        }
+        let receiptItems = mapCreateItemsToReceiptItems(baseItems, receiptId: id)
+
+        return ReceiptDTO(
+            id: id,
+            eventId: existingReceipt.eventId,
+            payerId: existingReceipt.payerId,
+            title: request.title ?? existingReceipt.title,
+            totalAmount: request.totalAmount ?? existingReceipt.totalAmount,
+            createdAt: existingReceipt.createdAt,
+            updatedAt: Date(),
+            items: receiptItems
+        )
+    }
+
+    func mapCreateItemsToReceiptItems(
+        _ items: [CreateReceiptItemRequest],
+        receiptId: UUID
+    ) -> [ReceiptItemDTO] {
+        items.map { item in
+            let receiptItemId = UUID()
+            return ReceiptItemDTO(
+                id: receiptItemId,
+                receiptId: receiptId,
+                name: item.name,
+                cost: item.cost,
+                shareItems: item.shareItems.map { shareItem in
+                    ShareItemDTO(
+                        id: UUID(),
+                        receiptItemId: receiptItemId,
+                        userId: shareItem.userId,
+                        shareValue: shareItem.shareValue
+                    )
+                }
+            )
         }
     }
 

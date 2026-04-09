@@ -28,9 +28,7 @@ struct BillEntryView: View {
                 if viewModel.isLoading && viewModel.items.isEmpty {
                     ProgressView("Загрузка чека...")
                         .font(.system(size: 17, weight: .medium, design: .rounded))
-                } else if let errorMessage = viewModel.loadErrorMessage,
-                    viewModel.items.isEmpty
-                {
+                } else if let errorMessage = viewModel.loadErrorMessage, viewModel.items.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 44))
@@ -82,9 +80,7 @@ struct BillEntryView: View {
                                     }
                                 }
                                 .onChange(of: viewModel.items.count) { oldCount, newCount in
-                                    if newCount > oldCount,
-                                        let lastItem = viewModel.items.last
-                                    {
+                                    if newCount > oldCount, let lastItem = viewModel.items.last {
                                         withAnimation(
                                             .spring(response: 0.5, dampingFraction: 0.8)
                                         ) {
