@@ -36,10 +36,10 @@ struct BillRowView: View {
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         bill.tone == .neutral
-                            ? AnyShapeStyle(AppTheme.textSecondary)
-                            : AnyShapeStyle(
-                                AppTheme.accentGradient
-                            )
+                        ? AnyShapeStyle(AppTheme.textSecondary)
+                        : AnyShapeStyle(
+                            AppTheme.accentGradient
+                        )
                     )
             }
         }

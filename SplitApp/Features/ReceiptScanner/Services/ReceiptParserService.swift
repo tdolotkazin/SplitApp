@@ -71,9 +71,9 @@ final class ReceiptParserService {
 
     // MARK: - Public
 
-    func parse(lines: [String]) -> [ReceiptItem] {
+    func parse(lines: [String]) -> [ScannedReceiptItem] {
         let cleaned = lines.map { $0.trimmingCharacters(in: .whitespaces) }
-        var items: [ReceiptItem] = []
+        var items: [ScannedReceiptItem] = []
         var nameQueue: [String] = []
 
         for line in cleaned {
@@ -112,7 +112,7 @@ final class ReceiptParserService {
         return false
     }
 
-    private func processLine(_ line: String, nameQueue: inout [String], items: inout [ReceiptItem]) {
+    private func processLine(_ line: String, nameQueue: inout [String], items: inout [ScannedReceiptItem]) {
         if let (namePart, amount) = findPriceAtEnd(of: line) {
             let nameParts = namePart.isEmpty
                 ? (nameQueue.isEmpty ? [] : [nameQueue.removeFirst()])

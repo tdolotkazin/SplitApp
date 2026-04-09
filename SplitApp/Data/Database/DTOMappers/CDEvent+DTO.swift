@@ -4,8 +4,9 @@ extension CDEvent {
 
     /// Convert CoreData entity to DTO.
     func toDTO() -> EventDTO {
-        let participantIds: [UUID] = (participants as? Set<CDUser>)?
-            .compactMap { $0.id } ?? []
+        let participantSet = (participants as? Set<CDUser>) ?? []
+        let participantIds: [UUID] = participantSet.compactMap(\.id)
+        let participantDTOs = participantSet.map { $0.toDTO() }
 
         return EventDTO(
             id: id!,
@@ -13,6 +14,7 @@ extension CDEvent {
             name: name!,
             isClosed: isClosed,
             users: participantIds,
+            participants: participantDTOs,
             createdAt: createdAt!,
             updatedAt: updatedAt!
         )

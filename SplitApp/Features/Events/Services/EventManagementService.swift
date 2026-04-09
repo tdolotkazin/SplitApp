@@ -1,21 +1,25 @@
 import Foundation
-import SwiftUI
 
 protocol EventManagementServiceProtocol {
     func fetchHomeData() async throws -> EventsHomeData
     func fetchReceipts(eventId: UUID) async throws -> [ReceiptDTO]
     func createReceipt(eventId: UUID, request: CreateReceiptRequest) async throws -> ReceiptDTO
     func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO
+    func fetchEvent(id: UUID) async throws -> Event
+    func cachedEvent(id: UUID) async throws -> Event?
+    func refreshEvent(id: UUID) async throws -> Event
+    func createEvent(name: String) async throws -> EventListItem
+    func deleteEvent(id: UUID) async throws
 }
 
 struct EventManagementService: EventManagementServiceProtocol {
 
-    private let eventsRepository: EventsRepositoryProtocol
-    private let receiptsRepository: ReceiptsRepositoryProtocol
+    private let eventsRepository: any EventsRepository
+    private let receiptsRepository: ReceiptsDataRepository
 
     init(
-        eventsRepository: EventsRepositoryProtocol = EventsRepository(),
-        receiptsRepository: ReceiptsRepositoryProtocol = ReceiptsRepository()
+        eventsRepository: any EventsRepository = EventsDataRepository(),
+        receiptsRepository: ReceiptsDataRepository = ReceiptsDataRepository()
     ) {
         self.eventsRepository = eventsRepository
         self.receiptsRepository = receiptsRepository
@@ -46,5 +50,28 @@ struct EventManagementService: EventManagementServiceProtocol {
 
     func updateReceipt(id: UUID, request: UpdateReceiptRequest) async throws -> ReceiptDTO {
         return try await receiptsRepository.updateReceipt(id: id, request)
+    }
+
+    func fetchEvent(id: UUID) async throws -> Event {
+        try await eventsRepository.getEvent(id: id)
+    }
+
+    func cachedEvent(id: UUID) async throws -> Event? {
+        try await eventsRepository.getCachedEvent(id: id)
+    }
+
+    func refreshEvent(id: UUID) async throws -> Event {
+        try await eventsRepository.refreshEvent(id: id)
+    }
+
+    func createEvent(name: String) async throws -> EventListItem {
+        let creatorId = CurrentUserStore.shared.user.id
+        let command = CreateEventCommand(creatorId: creatorId, name: name)
+        let event = try await eventsRepository.createEvent(command)
+        return EventMapper.mapToListItem(event)
+    }
+
+    func deleteEvent(id: UUID) async throws {
+        try await eventsRepository.deleteEvent(id: id)
     }
 }

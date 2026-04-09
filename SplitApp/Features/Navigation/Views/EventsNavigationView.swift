@@ -2,11 +2,20 @@ import SwiftUI
 
 struct EventsNavigationView: View {
     @StateObject private var viewModel: EventsNavigationViewModel
+    private let eventsRepository: any EventsRepository
+    private let receiptsRepository: any ReceiptsRepository
+    private let networkMonitor: NetworkMonitor
 
     init(
-        service: EventManagementServiceProtocol = EventManagementService(),
+        service: EventManagementServiceProtocol,
+        eventsRepository: any EventsRepository,
+        receiptsRepository: any ReceiptsRepository,
+        networkMonitor: NetworkMonitor,
         rules: EventsNavigationRules = .init()
     ) {
+        self.eventsRepository = eventsRepository
+        self.receiptsRepository = receiptsRepository
+        self.networkMonitor = networkMonitor
         _viewModel = StateObject(
             wrappedValue: EventsNavigationViewModel(
                 service: service,
@@ -22,14 +31,13 @@ struct EventsNavigationView: View {
                 onScanTap: { viewModel.handle(.scanButtonTapped) },
                 onAddTap: { viewModel.handle(.addButtonTapped) },
                 onBillTap: { billId in
-                    // Находим чек по ID в LocalReceiptsStore
-                    if let eventId = LocalEventStore.shared.currentEventId {
-                        let receipt = LocalReceiptsStore.shared.getReceipts(for: eventId)
-                            .first(where: { $0.id == billId })
-                        if let receipt = receipt {
-                            viewModel.openReceiptForEdit(receipt)
-                        }
+                    guard let eventId = LocalEventStore.shared.currentEventId else {
+                        return
                     }
+                    viewModel.handle(.receiptTapped(eventId: eventId, receiptId: billId))
+                },
+                onEventTap: { eventId in
+                    viewModel.handle(.eventRowTapped(eventId))
                 }
             )
             .task {
@@ -43,37 +51,50 @@ struct EventsNavigationView: View {
                         onCapture: { viewModel.handle(.scannerCaptureCompleted) }
                     )
                     .navigationBarBackButtonHidden(true)
-                case .billEntry:
-                    // BillEntry отображается через fullScreenCover ниже
-                    EmptyView()
+
+                case .eventDetail(let eventId):
+                    EventDetailView(
+                        viewModel: EventDetailViewModel(
+                            eventId: eventId,
+                            service: viewModel.service,
+                            receiptsRepository: receiptsRepository
+                        ),
+                        onAddReceipt: { viewModel.handle(.addReceiptTapped(eventId)) },
+                        onReceiptTap: { receiptId in
+                            viewModel.handle(
+                                .receiptTapped(eventId: eventId, receiptId: receiptId)
+                            )
+                        }
+                    )
                 }
             }
         }
-        .fullScreenCover(isPresented: $viewModel.showBillEntry) {
-            BillEntryView(
-                eventId: LocalEventStore.shared.currentEventId,
-                receipt: viewModel.editingReceipt,
-                onReceiptCreated: {
-                    Task { @MainActor in
-                        // Сначала загружаем чеки
-                        if let eventId = LocalEventStore.shared.currentEventId {
-                            print("📱 Вызываем loadReceipts для события: \(eventId)")
-                            await viewModel.homeViewModel.loadReceipts(for: eventId)
-                            let billsCount = viewModel.homeViewModel
-                                .currentEventBills.count
-                            print("📱 currentEventBills.count после loadReceipts: \(billsCount)")
-                        }
+        .fullScreenCover(item: $viewModel.billEntryDestination) { destination in
+            let billViewModel = BillViewModel(
+                mode: destination.mode,
+                eventsRepository: eventsRepository,
+                receiptsRepository: receiptsRepository,
+                networkMonitor: networkMonitor
+            )
 
-                        // Затем закрываем экран
-                        viewModel.editingReceipt = nil
-                        viewModel.showBillEntry = false
+            BillEntryView(viewModel: billViewModel)
+                .onDisappear {
+                    Task { @MainActor in
+                        if let eventId = LocalEventStore.shared.currentEventId {
+                            await viewModel.homeViewModel.loadReceipts(for: eventId)
+                        }
+                        viewModel.didFinishBillEntry()
                     }
                 }
-            )
         }
     }
 }
 
 #Preview {
-    EventsNavigationView()
+    EventsNavigationView(
+        service: EventManagementService(eventsRepository: EventsDataRepository()),
+        eventsRepository: EventsDataRepository(),
+        receiptsRepository: ReceiptsDataRepository(),
+        networkMonitor: .shared
+    )
 }
