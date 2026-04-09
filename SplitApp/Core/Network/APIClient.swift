@@ -164,8 +164,7 @@ final class APIClient {
 
     func refreshAccessTokenIfNeeded() async throws {
         if TokenStore.shared.accessToken != nil,
-           TokenStore.shared.isValid
-        {
+           TokenStore.shared.isValid {
             return
         }
 

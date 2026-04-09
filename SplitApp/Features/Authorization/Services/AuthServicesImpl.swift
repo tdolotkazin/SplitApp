@@ -19,8 +19,7 @@ final class AuthServicesImpl: AuthService {
 
     func login(provider: AuthProvider, viewContollerProvider: UIViewController)
         async throws
-        -> AuthResponse
-    {
+        -> AuthResponse {
         let token = try await repository.login(
             provider: provider,
             viewContollerProvider: viewContollerProvider

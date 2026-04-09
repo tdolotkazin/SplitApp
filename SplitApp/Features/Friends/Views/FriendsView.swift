@@ -118,8 +118,7 @@ private extension FriendsView {
     var errorState: some View {
         if !viewModel.isLoading,
            viewModel.filteredFriends.isEmpty,
-           let errorMessage = viewModel.errorMessage
-        {
+           let errorMessage = viewModel.errorMessage {
             Text(errorMessage)
                 .font(.system(size: 15, weight: .regular, design: .rounded))
                 .foregroundStyle(AppTheme.textSecondary)

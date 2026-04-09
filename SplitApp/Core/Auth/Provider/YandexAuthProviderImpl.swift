@@ -20,8 +20,7 @@ final class YandexAuthProviderImpl: YandexAuthProvider {
     }
 
     func login(from _: UIViewController) async throws
-        -> UserSessionToken
-    {
+        -> UserSessionToken {
         guard let viewContollerProvider = vcProvider.rootViewController else {
             throw AuthError.invalidToken
         }

@@ -53,8 +53,7 @@ extension ReceiptParserService {
         let tokens = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
 
         if tokens.count == 1, let first = tokens[0].unicodeScalars.first,
-           !CharacterSet.alphanumerics.contains(first)
-        {
+           !CharacterSet.alphanumerics.contains(first) {
             return true
         }
 
@@ -190,8 +189,7 @@ extension ReceiptParserService {
         let parts = stripped.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         if parts.count == 2,
            let last = parts.last,
-           last.count == 1, last.first?.isLetter == true
-        {
+           last.count == 1, last.first?.isLetter == true {
             stripped = parts[0]
         }
 
@@ -211,8 +209,7 @@ extension ReceiptParserService {
             let dashParts = token.components(separatedBy: "-")
             if dashParts.count == 2,
                !dashParts[0].isEmpty, dashParts[0].allSatisfy(\.isNumber),
-               dashParts[1].count <= 2, dashParts[1].allSatisfy(\.isNumber)
-            {
+               dashParts[1].count <= 2, dashParts[1].allSatisfy(\.isNumber) {
                 token = dashParts.joined(separator: ".")
             }
         }
