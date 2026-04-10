@@ -1,45 +1,39 @@
-name: iOS CI
+name: iOS Unit Tests
 
 on:
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  build_and_lint:
-    name: Build and Lint
+  unit_tests:
+    name: Unit Tests
     runs-on: macos-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SwiftLint
-        run: brew install swiftlint
-
-      - name: Run SwiftLint
-        run: swiftlint --strict
-
-      - name: Build iOS App
+      - name: Run Unit Tests
         run: |
           PROJECT=$(find . -name "*.xcodeproj" -maxdepth 2 | head -n 1)
           if [ -z "$PROJECT" ]; then
             echo "Ошибка: Файл .xcodeproj не найден"
             exit 1
           fi
-          
+
           SCHEME=$(xcodebuild -list -project "$PROJECT" | awk '/Schemes:/{flag=1;next}/^$/{flag=0}flag' | sed 's/^[[:space:]]*//' | head -n 1)
           if [ -z "$SCHEME" ]; then
             echo "Ошибка: Схема не найдена"
             exit 1
           fi
 
-          echo "Найден проект: $PROJECT"
-          echo "Найдена схема: $SCHEME"
+          echo "Запуск unit-тестов для схемы: $SCHEME"
 
-          xcodebuild clean build \
+          xcodebuild test \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
+            -only-testing:SplitAppTests \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
