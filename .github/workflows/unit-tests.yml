@@ -4,35 +4,43 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ios-unit-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit_tests:
     name: Unit Tests
     runs-on: macos-latest
+    env:
+      PROJECT_PATH: SplitApp.xcodeproj
+      UNIT_TEST_SCHEME: SplitAppUnitTests
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.swiftpm
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
       - name: Run Unit Tests
         run: |
-          PROJECT=$(find . -name "*.xcodeproj" -maxdepth 2 | head -n 1)
-          if [ -z "$PROJECT" ]; then
-            echo "Ошибка: Файл .xcodeproj не найден"
-            exit 1
-          fi
-
-          SCHEME=$(xcodebuild -list -project "$PROJECT" | awk '/Schemes:/{flag=1;next}/^$/{flag=0}flag' | sed 's/^[[:space:]]*//' | head -n 1)
-          if [ -z "$SCHEME" ]; then
-            echo "Ошибка: Схема не найдена"
-            exit 1
-          fi
-
-          echo "Запуск unit-тестов для схемы: $SCHEME"
+          echo "Запуск unit-тестов для схемы: $UNIT_TEST_SCHEME"
 
           xcodebuild test \
-            -project "$PROJECT" \
-            -scheme "$SCHEME" \
+            -project "$PROJECT_PATH" \
+            -scheme "$UNIT_TEST_SCHEME" \
             -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
+            -parallel-testing-enabled YES \
+            -maximum-parallel-testing-workers 2 \
             -only-testing:SplitAppTests \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
