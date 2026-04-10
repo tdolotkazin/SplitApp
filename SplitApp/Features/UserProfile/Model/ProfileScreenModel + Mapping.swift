@@ -6,8 +6,6 @@ struct ProfileScreenModel {
     let name: String
     let eventsCountText: String
     let friendsCountText: String
-    let closedBillsText: String
-    let openBillsText: String
     let avatarURL: URL?
 }
 
@@ -18,8 +16,6 @@ extension ProfileScreenModel {
         name: "Иван Волков",
         eventsCountText: "12",
         friendsCountText: "8",
-        closedBillsText: "₽340",
-        openBillsText: "₽34",
         avatarURL: nil
     )
 }

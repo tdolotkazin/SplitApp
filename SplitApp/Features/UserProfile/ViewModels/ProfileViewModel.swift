@@ -78,8 +78,6 @@ final class ProfileViewModel: ObservableObject {
             name: "Загрузка...",
             eventsCountText: "—",
             friendsCountText: "—",
-            closedBillsText: "—",
-            openBillsText: "—",
             avatarURL: nil
         )
     }
@@ -93,8 +91,6 @@ final class ProfileViewModel: ObservableObject {
             name: user.name,
             eventsCountText: eventsCount.map(String.init) ?? "—",
             friendsCountText: friendsCount.map(String.init) ?? "—",
-            closedBillsText: "—",
-            openBillsText: "—",
             avatarURL: user.avatarURL
         )
     }
