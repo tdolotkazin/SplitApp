@@ -45,6 +45,15 @@ final class EventsHomeViewModel: ObservableObject {
 
     func loadDataIfNeeded() async {
         guard !isLoaded else { return }
+        await loadData()
+    }
+
+    func refreshData() async {
+        await loadData()
+    }
+
+    private func loadData() async {
+        let previouslySelectedEventId = currentEvent?.id
 
         do {
             let homeData = try await service.fetchHomeData()
@@ -53,7 +62,10 @@ final class EventsHomeViewModel: ObservableObject {
             latestEvents = homeData.events.map(Self.mapEventToListItem)
             currentEventBills = []
 
-            if let resolvedEvent = await resolveCurrentEvent(from: homeData.events) {
+            if let resolvedEvent = await resolveCurrentEvent(
+                from: homeData.events,
+                preferredEventId: previouslySelectedEventId
+            ) {
                 applyCurrentEvent(resolvedEvent)
                 await loadReceipts(for: resolvedEvent.id)
             } else {
@@ -144,7 +156,7 @@ final class EventsHomeViewModel: ObservableObject {
             print("🔵 Загружаем чеки для события: \(eventId)")
             let receipts = try await service.fetchReceipts(eventId: eventId)
             print("✅ Загружено чеков: \(receipts.count)")
-            currentEventBills = receipts.map(mapReceiptToBillListItem)
+            currentEventBills = receipts.compactMap(mapReceiptToBillListItem)
             print("✅ Обновлен список чеков: \(currentEventBills.count)")
         } catch {
             print("❌ Ошибка загрузки чеков: \(error)")
@@ -181,7 +193,14 @@ final class EventsHomeViewModel: ObservableObject {
         return formatter.string(from: date)
     }
 
-    private func mapReceiptToBillListItem(_ receipt: ReceiptDTO) -> BillListItem {
+    private func mapReceiptToBillListItem(_ receipt: ReceiptDTO) -> BillListItem? {
+        let currentUserId = CurrentUserStore.shared.user?.id
+        if let currentUserId, !receiptInvolvesUser(receipt, userId: currentUserId) {
+            return nil
+        }
+
+        let amount = currentUserId.map { signedAmount(in: receipt, userId: $0) } ?? receipt.totalAmount
+
         // Считаем количество уникальных участников
         let uniqueParticipants = Set(
             receipt.items.flatMap { item in
@@ -199,15 +218,21 @@ final class EventsHomeViewModel: ObservableObject {
             emoji: receiptEmojiResolver.emoji(for: displayTitle),
             title: displayTitle,
             subtitle: subtitle,
-            amount: receipt.totalAmount,
-            tone: Self.tone(for: receipt.totalAmount)
+            amount: amount,
+            tone: Self.tone(for: amount)
         )
     }
 
-    private func resolveCurrentEvent(from events: [Event]) async -> Event? {
+    private func resolveCurrentEvent(from events: [Event], preferredEventId: UUID? = nil) async -> Event? {
         guard !events.isEmpty else {
             await activeEventRepository.clearActiveEventId()
             return nil
+        }
+
+        if let preferredEventId,
+           let preferredEvent = events.first(where: { $0.id == preferredEventId }) {
+            await activeEventRepository.setActiveEventId(preferredEvent.id)
+            return preferredEvent
         }
 
         if let storedEventId = await activeEventRepository.getActiveEventId(),
@@ -223,12 +248,75 @@ final class EventsHomeViewModel: ObservableObject {
     private func applyCurrentEvent(_ event: Event) {
         currentEventData = event
         currentEvent = Self.mapEventToListItem(event)
-        LocalEventStore.shared.setCurrentEvent(id: event.id, participants: event.users)
+        LocalEventStore.shared.setCurrentEvent(
+            id: event.id,
+            participants: Array(
+                Dictionary(
+                    uniqueKeysWithValues: (event.participants + event.users).map { ($0.id, $0) }
+                ).values
+            )
+        )
     }
 
     private func normalizedReceiptTitle(_ title: String?) -> String {
         let trimmedTitle = title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return trimmedTitle.isEmpty ? "Чек" : trimmedTitle
+    }
+
+    private func receiptInvolvesUser(_ receipt: ReceiptDTO, userId: UUID) -> Bool {
+        guard canReliablyDetermineParticipation(in: receipt) else {
+            return true
+        }
+
+        if receipt.payerId == userId {
+            return true
+        }
+
+        return receipt.items.contains { item in
+            item.shareItems.contains(where: { $0.userId == userId })
+        }
+    }
+
+    private func userShareAmount(in receipt: ReceiptDTO, userId: UUID) -> Double {
+        guard canReliablyDetermineParticipation(in: receipt) else {
+            return receipt.totalAmount
+        }
+
+        return receipt.items.reduce(0) { partialResult, item in
+            let totalShareWeight = item.shareItems.reduce(0) { $0 + $1.shareValue }
+            guard totalShareWeight > 0 else { return partialResult }
+
+            let userShareWeight = item.shareItems
+                .filter { $0.userId == userId }
+                .reduce(0) { $0 + $1.shareValue }
+
+            guard userShareWeight > 0 else { return partialResult }
+            return partialResult + item.cost * (userShareWeight / totalShareWeight)
+        }
+    }
+
+    private func signedAmount(in receipt: ReceiptDTO, userId: UUID) -> Double {
+        let ownShare = userShareAmount(in: receipt, userId: userId)
+
+        if receipt.payerId == userId {
+            return max(0, receipt.totalAmount - ownShare)
+        }
+
+        return -ownShare
+    }
+
+    private func canReliablyDetermineParticipation(in receipt: ReceiptDTO) -> Bool {
+        guard let currentEventData else { return true }
+
+        let knownParticipantIds = Set(currentEventData.participantIds + [currentEventData.creatorId])
+        guard !knownParticipantIds.isEmpty else { return true }
+
+        let shareUserIds = Set(receipt.items.flatMap { item in
+            item.shareItems.map(\.userId)
+        })
+
+        guard !shareUserIds.isEmpty else { return receipt.payerId == CurrentUserStore.shared.user?.id }
+        return !knownParticipantIds.isDisjoint(with: shareUserIds)
     }
 }
 

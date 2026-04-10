@@ -57,25 +57,18 @@ struct ReceiptItemDTO: Codable, Identifiable {
         let name = try container.decodeIfPresent(String.self, forKey: .name)
         let cost = try container.decode(Double.self, forKey: .cost)
 
-        if let objects = try? container.decode([ShareItemDTO].self, forKey: .shareItems) {
+        if let userIds = try? container.decode([UUID].self, forKey: .shareItems) {
             self.init(
                 id: id,
                 receiptId: receiptId,
                 name: name,
                 cost: cost,
-                shareItems: objects
+                shareItems: Self.makeNormalizedShareItems(
+                    for: userIds,
+                    receiptItemId: id
+                )
             )
             return
-        }
-
-        let userIds = try container.decode([UUID].self, forKey: .shareItems)
-        let normalizedShares = userIds.map {
-            ShareItemDTO(
-                id: UUID(),
-                receiptItemId: id,
-                userId: $0,
-                shareValue: 1
-            )
         }
 
         self.init(
@@ -83,8 +76,28 @@ struct ReceiptItemDTO: Codable, Identifiable {
             receiptId: receiptId,
             name: name,
             cost: cost,
-            shareItems: normalizedShares
+            shareItems: try container.decode([ShareItemDTO].self, forKey: .shareItems)
         )
+    }
+
+    private static func makeNormalizedShareItems(
+        for userIds: [UUID],
+        receiptItemId: UUID
+    ) -> [ShareItemDTO] {
+        guard !userIds.isEmpty else { return [] }
+
+        let scale = 1_000_000
+        let baseScaled = scale / userIds.count
+        let lastScaled = scale - baseScaled * (userIds.count - 1)
+
+        return userIds.enumerated().map { index, userId in
+            ShareItemDTO(
+                id: UUID(),
+                receiptItemId: receiptItemId,
+                userId: userId,
+                shareValue: Double(index == userIds.count - 1 ? lastScaled : baseScaled) / Double(scale)
+            )
+        }
     }
 }
 

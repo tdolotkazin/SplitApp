@@ -21,7 +21,7 @@ final class CurrentUserStore: ObservableObject {
 
     func updateFromAuth(_ authUser: User) {
         let initials = makeInitials(from: authUser.name)
-        let avatarURL = authUser.avatarUrl.flatMap { URL(string: $0) }
+        let avatarURL = authUser.avatarURL
 
         user = CurrentUser(
             id: authUser.id,
@@ -56,7 +56,7 @@ final class CurrentUserStore: ObservableObject {
             id: decoded.id,
             name: decoded.name,
             initials: decoded.initials,
-            avatarURL: decoded.avatarURLString.flatMap { URL(string: $0) },
+            avatarURL: User.resolveAvatarURL(decoded.avatarURLString),
             color: Color(hex: "#7CB342"),
             email: decoded.email,
             phoneNumber: decoded.phoneNumber

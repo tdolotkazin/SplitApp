@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct EventsNavigationView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var viewModel: EventsNavigationViewModel
     private let eventsRepository: any EventsRepository
     private let receiptsRepository: any ReceiptsRepository
@@ -48,6 +49,17 @@ struct EventsNavigationView: View {
             .task {
                 await viewModel.loadInitialDataIfNeeded()
             }
+            .onAppear {
+                Task {
+                    await viewModel.refreshData()
+                }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active else { return }
+                Task {
+                    await viewModel.refreshData()
+                }
+            }
             .navigationDestination(for: EventsNavigationRoute.self) { route in
                 switch route {
                 case .scanner:
@@ -66,9 +78,7 @@ struct EventsNavigationView: View {
             item: $viewModel.billEntryDestination,
             onDismiss: {
                 Task { @MainActor in
-                    if let eventId = LocalEventStore.shared.currentEventId {
-                        await viewModel.homeViewModel.loadReceipts(for: eventId)
-                    }
+                    await viewModel.refreshData()
                     viewModel.didFinishBillEntry()
                 }
             },

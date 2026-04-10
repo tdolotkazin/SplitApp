@@ -41,6 +41,10 @@ final class EventsNavigationViewModel: ObservableObject {
         await homeViewModel.loadDataIfNeeded()
     }
 
+    func refreshData() async {
+        await homeViewModel.refreshData()
+    }
+
     func handle(_ action: EventsNavigationAction) {
         switch action {
         case .addButtonTapped:
