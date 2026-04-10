@@ -72,9 +72,7 @@ struct ProfileScreenView: View {
     private func userGrid(model: ProfileScreenModel) -> some View {
         ProfileStatsGridView(
             eventsCountText: model.eventsCountText,
-            friendsCountText: model.friendsCountText,
-            closedReceiptsText: model.closedBillsText,
-            openReceiptsText: model.openBillsText
+            friendsCountText: model.friendsCountText
         )
     }
 
