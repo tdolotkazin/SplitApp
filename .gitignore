@@ -65,6 +65,11 @@ fastlane/test_output
 .DS_Store
 **/.DS_Store
 
+# Local tool caches / temp artifacts
+.swiftpm-local/
+.xcode-home/
+.xcode-tmp/
+
 backend.md
 *.backup
 openapi.yaml

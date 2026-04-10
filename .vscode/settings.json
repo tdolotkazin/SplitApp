@@ -1,0 +1,7 @@
+{
+  "files.exclude": {
+    "**/.xcode-tmp": true,
+    "**/.xcode-home": true,
+    "**/.swiftpm-local": true
+  }
+}

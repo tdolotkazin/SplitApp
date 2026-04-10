@@ -1,0 +1,33 @@
+name: iOS Unit Tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ios-unit-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit_tests:
+    name: Unit Tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Unit Tests
+        run: |
+          echo "Запуск unit-тестов для схемы: SplitAppUnitTests"
+
+          xcodebuild test \
+            -project "SplitApp.xcodeproj" \
+            -scheme "SplitAppUnitTests" \
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
+            -parallel-testing-enabled YES \
+            -maximum-parallel-testing-workers 2 \
+            -only-testing:SplitAppTests/EmojiLogicTests \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
