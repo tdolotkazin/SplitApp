@@ -90,7 +90,15 @@ struct EventsNavigationView: View {
                     usersRepository: usersRepository,
                     networkMonitor: networkMonitor
                 )
-                BillEntryView(viewModel: billViewModel)
+                BillEntryView(
+                    viewModel: billViewModel,
+                    onSaved: {
+                        Task { @MainActor in
+                            await viewModel.refreshData()
+                            viewModel.didFinishBillEntry()
+                        }
+                    }
+                )
             }
         )
     }

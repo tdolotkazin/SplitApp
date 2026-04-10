@@ -156,11 +156,20 @@ final class ReceiptsDataRepository: ReceiptsRepository {
         )
 
         if let receiptImageJPEGData = command.receiptImageJPEGData {
-            let uploadResponse = try await uploadReceiptImage(
-                receiptId: dto.id,
-                imageJPEGData: receiptImageJPEGData
-            )
-            dto = updateImageUrl(in: dto, imageUrl: uploadResponse.imageUrl)
+            do {
+                let uploadResponse = try await uploadReceiptImage(
+                    receiptId: dto.id,
+                    imageJPEGData: receiptImageJPEGData
+                )
+                dto = updateImageUrl(in: dto, imageUrl: uploadResponse.imageUrl)
+            } catch {
+                // Receipt has already been created on the backend.
+                // Don't block the user flow if only the image upload fails.
+                print(
+                    "[ReceiptsRepo] op=upload_image mode=failed_non_fatal " +
+                    "receiptId=\(dto.id) error=\(error.localizedDescription)"
+                )
+            }
         }
 
         do {

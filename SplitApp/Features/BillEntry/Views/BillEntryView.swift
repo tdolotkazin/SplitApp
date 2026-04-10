@@ -10,9 +10,11 @@ struct BillEntryView: View {
     @State private var savingTextOpacity: Double = 0
     @FocusState private var isReceiptTitleFocused: Bool
     @Environment(\.dismiss) private var dismiss
+    private let onSaved: (() -> Void)?
 
-    init(viewModel: BillViewModel) {
+    init(viewModel: BillViewModel, onSaved: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onSaved = onSaved
     }
 
     var body: some View {
@@ -258,6 +260,15 @@ struct BillEntryView: View {
             }
             .padding(.horizontal, 20)
 
+            if let statusMessage = viewModel.statusMessage {
+                Text(statusMessage)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(viewModel.saveErrorMessage == nil ? AppTheme.textSecondary : .orange)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+            }
+
             GlassButton(title: viewModel.saveButtonTitle) {
                 saveAndDismiss()
             }
@@ -275,7 +286,11 @@ struct BillEntryView: View {
     private func saveAndDismiss() {
         Task {
             if await viewModel.save() {
-                dismiss()
+                if let onSaved {
+                    onSaved()
+                } else {
+                    dismiss()
+                }
             }
         }
     }

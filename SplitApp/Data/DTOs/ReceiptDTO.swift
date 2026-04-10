@@ -160,14 +160,6 @@ struct CreateReceiptItemRequest: Encodable {
         case name, cost
         case shareItems = "share_items"
     }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(name, forKey: .name)
-        try container.encode(cost, forKey: .cost)
-        // Backend expects share_items as an array of user UUIDs.
-        try container.encode(shareItems.map(\.userId), forKey: .shareItems)
-    }
 }
 
 struct CreateShareItemRequest: Encodable {
