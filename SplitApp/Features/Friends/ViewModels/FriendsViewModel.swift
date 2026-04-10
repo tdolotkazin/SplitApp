@@ -69,7 +69,7 @@ private extension FriendsViewModel {
             name: user.name,
             initials: makeInitials(from: user.name),
             color: makeStableColor(for: user.id),
-            avatarURL: makeAvatarURL(from: user.avatarUrl)
+            avatarURL: user.avatarURL
         )
     }
 
@@ -94,12 +94,5 @@ private extension FriendsViewModel {
         }
         let index = checksum % avatarColors.count
         return avatarColors[index]
-    }
-
-    static func makeAvatarURL(from value: String?) -> URL? {
-        guard let value, !value.isEmpty else {
-            return nil
-        }
-        return URL(string: value)
     }
 }

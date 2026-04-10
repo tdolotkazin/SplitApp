@@ -135,7 +135,9 @@ extension BillViewModel {
     func apply(event: Event) {
         loadedEvent = event
         payerId = loadedReceipt?.payerId ?? event.creatorId
-        let eventParticipants = (event.participants + event.users).map(Self.makeParticipant)
+        let eventParticipants = includeCurrentUser(
+            in: participantUsers(from: event).map(Self.makeParticipant)
+        )
         participants = mergeParticipants(eventParticipants)
 
         if let loadedReceipt {
@@ -209,7 +211,7 @@ extension BillViewModel {
             name: user.name,
             initials: makeInitials(from: user.name),
             color: makeStableColor(for: user.id),
-            avatarURL: makeAvatarURL(from: user.avatarUrl)
+            avatarURL: user.avatarURL
         )
     }
 
@@ -245,14 +247,6 @@ extension BillViewModel {
         return avatarColors[index]
     }
 
-    static func makeAvatarURL(from value: String?) -> URL? {
-        guard let value, !value.isEmpty else {
-            return nil
-        }
-
-        return URL(string: value)
-    }
-
     static func makeFallbackParticipant(for userId: UUID) -> Participant {
         return Participant(
             id: userId,
@@ -264,24 +258,26 @@ extension BillViewModel {
     }
 
     func loadParticipantsFromBackendIfNeeded(for event: Event) async {
-        let eventParticipants = (event.participants + event.users).map(Self.makeParticipant)
+        let eventParticipants = includeCurrentUser(
+            in: participantUsers(from: event).map(Self.makeParticipant)
+        )
         participants = mergeParticipants(eventParticipants)
 
         do {
             let users = try await usersRepository.listUsers()
-            participants = mergeParticipants(users.map(Self.makeParticipant))
+            participants = mergeParticipants(includeCurrentUser(in: users.map(Self.makeParticipant)))
         } catch {
             if let cached = try? await usersRepository.getCachedUsers() {
-                participants = mergeParticipants(cached.map(Self.makeParticipant))
+                participants = mergeParticipants(includeCurrentUser(in: cached.map(Self.makeParticipant)))
             }
         }
 
         if let loadedReceipt {
-            let unresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+            let unresolved = missingParticipantIds(in: loadedReceipt, knownParticipants: participants)
             if !unresolved.isEmpty {
                 let resolvedById = await resolveParticipantsByIds(unresolved)
                 participants = mergeParticipants(resolvedById)
-                let stillUnresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+                let stillUnresolved = missingParticipantIds(in: loadedReceipt, knownParticipants: participants)
                 if !stillUnresolved.isEmpty {
                     print("[BillParticipants] unresolved_after_event_load ids=\(stillUnresolved)")
                 }
@@ -308,36 +304,36 @@ extension BillViewModel {
     func loadFriendsIntoParticipants() async {
         do {
             let users = try await usersRepository.listUsers()
-            participants = mergeParticipants(users.map(Self.makeParticipant))
+            participants = mergeParticipants(includeCurrentUser(in: users.map(Self.makeParticipant)))
         } catch {
             do {
                 let cachedUsers = try await usersRepository.getCachedUsers()
-                participants = mergeParticipants(cachedUsers.map(Self.makeParticipant))
+                participants = mergeParticipants(includeCurrentUser(in: cachedUsers.map(Self.makeParticipant)))
             } catch {
-                participants = mergeParticipants([])
+                participants = mergeParticipants(includeCurrentUser(in: []))
             }
         }
     }
 
     func loadMissingParticipantsForLoadedReceipt() async {
         guard let loadedReceipt else { return }
-        let missingBeforeLoad = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+        let missingBeforeLoad = missingParticipantIds(in: loadedReceipt, knownParticipants: participants)
         guard !missingBeforeLoad.isEmpty else { return }
 
         do {
             let users = try await usersRepository.listUsers()
-            participants = mergeParticipants(users.map(Self.makeParticipant))
+            participants = mergeParticipants(includeCurrentUser(in: users.map(Self.makeParticipant)))
         } catch {
             if let cachedUsers = try? await usersRepository.getCachedUsers() {
-                participants = mergeParticipants(cachedUsers.map(Self.makeParticipant))
+                participants = mergeParticipants(includeCurrentUser(in: cachedUsers.map(Self.makeParticipant)))
             }
         }
 
-        let unresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+        let unresolved = missingParticipantIds(in: loadedReceipt, knownParticipants: participants)
         if !unresolved.isEmpty {
             let resolvedById = await resolveParticipantsByIds(unresolved)
             participants = mergeParticipants(resolvedById)
-            let stillUnresolved = missingShareUserIds(in: loadedReceipt, knownParticipants: participants)
+            let stillUnresolved = missingParticipantIds(in: loadedReceipt, knownParticipants: participants)
             if !stillUnresolved.isEmpty {
                 print("[BillParticipants] unresolved_after_receipt_load ids=\(stillUnresolved)")
             }
@@ -375,11 +371,13 @@ extension BillViewModel {
         }
     }
 
-    func missingShareUserIds(in receipt: Receipt, knownParticipants: [Participant]) -> [UUID] {
+    func missingParticipantIds(in receipt: Receipt, knownParticipants: [Participant]) -> [UUID] {
         let knownIds = Set(knownParticipants.map(\.id))
-        let missingIds = Set(receipt.items.flatMap { item in
+        var requiredIds = Set(receipt.items.flatMap { item in
             item.shares.map(\.userId)
-        }).subtracting(knownIds)
+        })
+        requiredIds.insert(receipt.payerId)
+        let missingIds = requiredIds.subtracting(knownIds)
 
         return Array(missingIds)
     }
@@ -390,16 +388,44 @@ extension BillViewModel {
             users = try await usersRepository.listUsers()
         } catch {
             guard let cachedUsers = try? await usersRepository.getCachedUsers() else {
-                return []
+                return includeCurrentUser(in: [])
             }
-            return cachedUsers
+            return includeCurrentUser(
+                in: cachedUsers
                 .filter { ids.contains($0.id) }
                 .map(Self.makeParticipant)
+            )
         }
 
-        return users
-            .filter { ids.contains($0.id) }
-            .map(Self.makeParticipant)
+        return includeCurrentUser(
+            in: users
+                .filter { ids.contains($0.id) }
+                .map(Self.makeParticipant)
+        )
+    }
+
+    func participantUsers(from event: Event) -> [User] {
+        var byId: [UUID: User] = [:]
+
+        for user in event.participants + event.users {
+            byId[user.id] = user
+        }
+
+        return byId.values.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
+    }
+
+    func includeCurrentUser(in participants: [Participant]) -> [Participant] {
+        guard let currentUserParticipant = CurrentUserStore.shared.toParticipant() else {
+            return participants
+        }
+
+        if participants.contains(where: { $0.id == currentUserParticipant.id }) {
+            return participants
+        }
+
+        return participants + [currentUserParticipant]
     }
 }
 // swiftlint:enable file_length

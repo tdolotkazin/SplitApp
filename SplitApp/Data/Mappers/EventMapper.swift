@@ -35,7 +35,8 @@ enum EventMapper {
             date: dto.createdAt,
             icon: "📌",
             participantsCount: participantIds.count,
-            balanceDelta: 0
+            balanceDelta: 0,
+            users: participants
         )
     }
 
@@ -65,7 +66,8 @@ enum EventMapper {
             date: createdAt,
             icon: "📌",
             participantsCount: participantIds.count,
-            balanceDelta: 0
+            balanceDelta: 0,
+            users: participants
         )
     }
 }
