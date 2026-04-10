@@ -283,7 +283,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-				shellScript = "if [ \"$CI\" = \"true\" ] || [ \"$CI\" = \"1\" ]; then\n  echo \"SwiftFormat skipped on CI\"\n  exit 0\nfi\n\nif [ \"$ENABLE_USER_SCRIPT_SANDBOXING\" = \"YES\" ]; then\n  echo \"warning: SwiftFormat skipped because ENABLE_USER_SCRIPT_SANDBOXING=YES\"\n  exit 0\nfi\n\nif which swiftformat > /dev/null; then\n  swiftformat \"$SRCROOT\"\nelse\n  echo \"warning: SwiftFormat not installed. Run 'brew install swiftformat'\"\nfi\n";
+			shellScript = "if [ \"$CI\" = \"true\" ] || [ \"$CI\" = \"1\" ]; then\n  echo \"SwiftFormat skipped on CI\"\n  exit 0\nfi\n\nif [ \"$ENABLE_USER_SCRIPT_SANDBOXING\" = \"YES\" ]; then\n  echo \"warning: SwiftFormat skipped because ENABLE_USER_SCRIPT_SANDBOXING=YES\"\n  exit 0\nfi\n\nif which swiftformat > /dev/null; then\n  swiftformat \"$SRCROOT\"\nelse\n  echo \"warning: SwiftFormat not installed. Run 'brew install swiftformat'\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

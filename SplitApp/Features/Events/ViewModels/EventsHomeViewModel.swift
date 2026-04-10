@@ -244,7 +244,8 @@ final class EventsHomeViewModel: ObservableObject {
             title: displayTitle,
             subtitle: subtitle,
             amount: amount,
-            tone: Self.tone(for: amount)
+            tone: Self.tone(for: amount),
+            imageURL: receipt.imageUrl.flatMap { URL(string: $0) }
         )
     }
 

@@ -7,6 +7,7 @@ struct BillListItem: Identifiable, Hashable {
     let subtitle: String
     let amount: Double
     let tone: EventAmountTone
+    let imageURL: URL?
 
     init(
         id: UUID = UUID(),
@@ -14,7 +15,8 @@ struct BillListItem: Identifiable, Hashable {
         title: String,
         subtitle: String,
         amount: Double,
-        tone: EventAmountTone
+        tone: EventAmountTone,
+        imageURL: URL? = nil
     ) {
         self.id = id
         self.emoji = emoji
@@ -22,5 +24,6 @@ struct BillListItem: Identifiable, Hashable {
         self.subtitle = subtitle
         self.amount = amount
         self.tone = tone
+        self.imageURL = imageURL
     }
 }

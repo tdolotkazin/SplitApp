@@ -138,7 +138,7 @@ struct ShareItemDTO: Codable, Identifiable {
     }
 }
 
-struct CreateReceiptRequest: Codable {
+struct CreateReceiptRequest: Encodable {
     let payerId: UUID
     let title: String?
     let totalAmount: Double
@@ -151,7 +151,7 @@ struct CreateReceiptRequest: Codable {
     }
 }
 
-struct CreateReceiptItemRequest: Codable {
+struct CreateReceiptItemRequest: Encodable {
     let name: String?
     let cost: Double
     let shareItems: [CreateShareItemRequest]
@@ -160,9 +160,17 @@ struct CreateReceiptItemRequest: Codable {
         case name, cost
         case shareItems = "share_items"
     }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encode(cost, forKey: .cost)
+        // Backend expects share_items as an array of user UUIDs.
+        try container.encode(shareItems.map(\.userId), forKey: .shareItems)
+    }
 }
 
-struct CreateShareItemRequest: Codable {
+struct CreateShareItemRequest: Encodable {
     let userId: UUID
     let shareValue: Double
 
@@ -172,7 +180,7 @@ struct CreateShareItemRequest: Codable {
     }
 }
 
-struct UpdateReceiptRequest: Codable {
+struct UpdateReceiptRequest: Encodable {
     let title: String?
     let totalAmount: Double?
     let items: [CreateReceiptItemRequest]?
