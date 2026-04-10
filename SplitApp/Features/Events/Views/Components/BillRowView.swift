@@ -6,6 +6,7 @@ struct BillRowView: View {
     let onTap: (() -> Void)?
 
     @State private var isDeleting: Bool = false
+    @State private var showImageViewer = false
 
     init(bill: BillListItem, onDelete: @escaping () -> Void, onTap: (() -> Void)? = nil) {
         self.bill = bill
@@ -16,9 +17,7 @@ struct BillRowView: View {
     var body: some View {
         GlassCard(padding: 12) {
             HStack(spacing: 12) {
-                Text(bill.emoji)
-                    .font(.system(size: 28))
-                    .frame(width: 44, height: 44)
+                receiptIcon
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(bill.title)
@@ -46,6 +45,11 @@ struct BillRowView: View {
         .onTapGesture {
             onTap?()
         }
+        .sheet(isPresented: $showImageViewer) {
+            if let url = bill.imageURL {
+                ReceiptImageViewerSheet(url: url, title: bill.title)
+            }
+        }
         .deleteTransition(isDeleting: isDeleting)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {
@@ -68,6 +72,40 @@ struct BillRowView: View {
                 }
             }
             .tint(.red)
+        }
+    }
+
+    @ViewBuilder
+    private var receiptIcon: some View {
+        if let url = bill.imageURL {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showImageViewer = true
+            } label: {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 44, height: 44)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(AppTheme.accent.opacity(0.3), lineWidth: 1)
+                            )
+                    default:
+                        Text(bill.emoji)
+                            .font(.system(size: 28))
+                            .frame(width: 44, height: 44)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+        } else {
+            Text(bill.emoji)
+                .font(.system(size: 28))
+                .frame(width: 44, height: 44)
         }
     }
 
