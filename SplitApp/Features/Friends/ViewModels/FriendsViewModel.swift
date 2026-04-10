@@ -26,7 +26,6 @@ class FriendsViewModel: ObservableObject {
 
     init(friendsRepository: any FriendsRepository) {
         self.friendsRepository = friendsRepository
-        loadMockDebts()
     }
 
     func load() async {
@@ -63,17 +62,6 @@ private extension FriendsViewModel {
         Color(hex: "#FADCB6"),
         Color(hex: "#C8F4CC")
     ]
-
-    func loadMockDebts() {
-        let debtFriends = [
-            Friend(name: "Артём Романов", initials: "АР", color: Color(hex: "#FFB5A7")),
-            Friend(name: "Маша Соколова", initials: "МС", color: Color(hex: "#A7D8FF"))
-        ]
-        debts = [
-            FriendDebt(friend: debtFriends[0], amount: 12.00, type: .owedBy),
-            FriendDebt(friend: debtFriends[1], amount: 18.50, type: .owes)
-        ]
-    }
 
     static func mapUserToFriend(_ user: User) -> Friend {
         Friend(

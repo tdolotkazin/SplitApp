@@ -291,9 +291,7 @@ extension BillViewModel {
     }
 
     func ensureParticipantsInEvent(eventId: UUID, items: [BillItem], payerId: UUID) async throws {
-        let eventParticipantIds = Set(
-            ((loadedEvent?.participants ?? []) + (loadedEvent?.users ?? [])).map(\.id)
-        )
+        let eventParticipantIds = Set(loadedEvent?.participantIds ?? [])
 
         var neededIds = Set(items.flatMap { $0.assignedTo.map(\.id) })
         neededIds.insert(payerId)
