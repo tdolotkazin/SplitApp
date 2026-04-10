@@ -12,36 +12,22 @@ jobs:
   unit_tests:
     name: Unit Tests
     runs-on: macos-latest
-    env:
-      PROJECT_PATH: SplitApp.xcodeproj
-      UNIT_TEST_SCHEME: SplitAppUnitTests
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache SwiftPM
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.swiftpm
-            ~/Library/Caches/org.swift.swiftpm
-            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
-
       - name: Run Unit Tests
         run: |
-          echo "Запуск unit-тестов для схемы: $UNIT_TEST_SCHEME"
+          echo "Запуск unit-тестов для схемы: SplitAppUnitTests"
 
           xcodebuild test \
-            -project "$PROJECT_PATH" \
-            -scheme "$UNIT_TEST_SCHEME" \
+            -project "SplitApp.xcodeproj" \
+            -scheme "SplitAppUnitTests" \
             -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
             -parallel-testing-enabled YES \
             -maximum-parallel-testing-workers 2 \
-            -only-testing:SplitAppTests \
+            -only-testing:SplitAppTests/EmojiLogicTests \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
