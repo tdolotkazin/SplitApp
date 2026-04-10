@@ -6,7 +6,7 @@ on:
 
 jobs:
   build_and_lint:
-    name: Build and Lint
+    name: Build and Lint and Test
     runs-on: macos-latest
 
     steps:
@@ -39,7 +39,32 @@ jobs:
           xcodebuild clean build \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 17,OS=26.2" \
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Run Unit Tests
+        run: |
+          PROJECT=$(find . -name "*.xcodeproj" -maxdepth 2 | head -n 1)
+          if [ -z "$PROJECT" ]; then
+            echo "Ошибка: Файл .xcodeproj не найден"
+            exit 1
+          fi
+
+          SCHEME=$(xcodebuild -list -project "$PROJECT" | awk '/Schemes:/{flag=1;next}/^$/{flag=0}flag' | sed 's/^[[:space:]]*//' | head -n 1)
+          if [ -z "$SCHEME" ]; then
+            echo "Ошибка: Схема не найдена"
+            exit 1
+          fi
+
+          echo "Запуск unit-тестов для схемы: $SCHEME"
+
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \
+            -only-testing:SplitAppTests \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
