@@ -2,6 +2,7 @@ import Combine
 import Foundation
 import SwiftUI
 
+// swiftlint:disable type_body_length
 @MainActor
 final class EventsHomeViewModel: ObservableObject {
     @Published private(set) var balanceSummary: EventBalanceSummary
@@ -328,6 +329,7 @@ extension EventsHomeViewModel {
         return viewModel
     }
 }
+// swiftlint:enable type_body_length
 
 private struct ReceiptTitleEmojiResolver {
     static let shared = ReceiptTitleEmojiResolver()
